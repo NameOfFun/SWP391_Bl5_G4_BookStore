@@ -28,8 +28,9 @@ namespace BookStore
                 .AddEntityFrameworkStores<BookStoreDbContext>()
                 .AddDefaultTokenProviders();
 
-            // Đăng ký Services
+            // DI Services
             builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<IAboutService, AboutService>();
 
             builder.Services.AddControllersWithViews();
 

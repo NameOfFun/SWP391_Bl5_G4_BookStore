@@ -1,0 +1,36 @@
+﻿@model BookStore.Dtos.Common.AboutDto
+@{
+    ViewData["Title"] = "Chỉnh sửa About";
+}
+
+<div class="container mt-4">
+    <h2>Chỉnh sửa About</h2>
+    <hr />
+
+    <form asp-action="Edit" asp-route-id="@Model.AboutId" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="AboutId" />
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="mb-3">
+            <label asp-for="Title" class="form-label">Tiêu đề</label>
+            <input asp-for="Title" class="form-control" />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="ContentHtml" class="form-label">Nội dung</label>
+            <textarea asp-for="ContentHtml" class="form-control" rows="10"></textarea>
+            <span asp-validation-for="ContentHtml" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-warning">Cập nhật</button>
+        <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

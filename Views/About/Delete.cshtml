@@ -1,0 +1,27 @@
+﻿@model BookStore.Dtos.Common.AboutDto
+@{
+    ViewData["Title"] = "Xóa About";
+}
+
+<div class="container mt-4">
+    <h2>Xác nhận xóa</h2>
+    <hr />
+
+    <div class="alert alert-warning">
+        Bạn có chắc muốn xóa mục <strong>"@Model.Title"</strong> không?
+    </div>
+
+    <dl class="row">
+        <dt class="col-sm-2">Tiêu đề</dt>
+        <dd class="col-sm-10">@Model.Title</dd>
+
+        <dt class="col-sm-2">Cập nhật lần cuối</dt>
+        <dd class="col-sm-10">@Model.UpdatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
+    </dl>
+
+    <form asp-action="Delete" asp-route-id="@Model.AboutId" method="post">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="btn btn-danger">Xác nhận xóa</button>
+        <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+    </form>
+</div>
