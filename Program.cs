@@ -1,4 +1,9 @@
 using BookStore.Models;
+<<<<<<< HEAD
+=======
+using BookStore.Service.Implements;
+using BookStore.Service.Interfaces;
+>>>>>>> Hduc
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,6 +31,12 @@ namespace BookStore
                 .AddEntityFrameworkStores<BookStoreDbContext>()
                 .AddDefaultTokenProviders();
 
+<<<<<<< HEAD
+=======
+            // Đăng ký Services
+            builder.Services.AddScoped<IAuthService, AuthService>();
+
+>>>>>>> Hduc
             builder.Services.AddControllersWithViews();
 
             var app = builder.Build();

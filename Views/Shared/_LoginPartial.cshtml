@@ -1,0 +1,53 @@
+@using Microsoft.AspNetCore.Identity
+
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+<ul class="navbar-nav">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle text-dark" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-person-circle"></i> @User.Identity?.Name
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                <li>
+                    <a class="dropdown-item" asp-controller="Account" asp-action="Profile">
+                        <i class="bi bi-person"></i> Tài khoản của tôi
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" asp-controller="Order" asp-action="MyOrders">
+                        <i class="bi bi-receipt"></i> Đơn hàng của tôi
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" asp-controller="Wishlist" asp-action="Index">
+                        <i class="bi bi-heart"></i> Sách yêu thích
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
+                        <button type="submit" class="dropdown-item">
+                            <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Account" asp-action="Register">
+                <i class="bi bi-person-plus"></i> Đăng ký
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">
+                <i class="bi bi-box-arrow-in-right"></i> Đăng nhập
+            </a>
+        </li>
+    }
+</ul>
