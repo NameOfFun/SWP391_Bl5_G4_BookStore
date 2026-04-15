@@ -7,8 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-<<<<<<< HEAD
-=======
     <Compile Remove="Service\Implement\**" />
     <Compile Remove="Service\Interface\**" />
     <Content Remove="Service\Implement\**" />
@@ -21,7 +19,6 @@
 
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Core" Version="1.6.0" />
->>>>>>> Hduc
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
       <PrivateAssets>all</PrivateAssets>
@@ -42,17 +39,12 @@
     <Folder Include="Dtos\Common\" />
     <Folder Include="Dtos\Staff\" />
     <Folder Include="Helpers\" />
-<<<<<<< HEAD
-    <Folder Include="Service\Implement\" />
-    <Folder Include="Service\Interface\" />
-=======
   </ItemGroup>
 
   <ItemGroup>
     <Content Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
->>>>>>> Hduc
   </ItemGroup>
 
 </Project>
