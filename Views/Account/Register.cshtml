@@ -1,0 +1,139 @@
+@model BookStore.Dtos.Auth.RegisterDto
+@{
+    ViewData["Title"] = "Đăng ký";
+    Layout = "~/Views/Shared/_LayoutAuth.cshtml";
+    var returnUrl = ViewData["ReturnUrl"] as string;
+}
+
+<!-- Start: Page Banner -->
+<section class="page-banner services-banner">
+    <div class="container">
+        <div class="banner-header">
+            <h2>Đăng ký tài khoản</h2>
+            <span class="underline center"></span>
+            <p class="lead">Tạo tài khoản để mua sắm dễ dàng hơn</p>
+        </div>
+        <div class="breadcrumb">
+            <ul>
+                <li><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                <li><a asp-action="Login">Đăng nhập</a></li>
+                <li>Đăng ký</li>
+            </ul>
+        </div>
+    </div>
+</section>
+<!-- End: Page Banner -->
+
+<!-- Start: Register Section -->
+<div class="signin-main">
+    <div class="container">
+        <div class="woocommerce">
+            <!-- Alert Messages -->
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="woocommerce-error">
+                    <i class="fa fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+                </div>
+            }
+
+            <div class="woocommerce-login">
+                <div class="company-info signin-register">
+                    <!-- Register Form -->
+                    <div class="col-md-6 col-md-offset-3 border-dark-left">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="company-detail bg-dark margin-left">
+                                    <div class="signin-head">
+                                        <h2>Tạo tài khoản mới</h2>
+                                        <span class="underline left"></span>
+                                    </div>
+                                    <form class="login" asp-action="Register" asp-route-returnUrl="@returnUrl" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                                        
+                                        <p class="form-row form-row-first input-required">
+                                            <input type="text" asp-for="FullName" class="input-text" placeholder="Họ tên" required />
+                                            <span asp-validation-for="FullName" class="text-danger"></span>
+                                        </p>
+                                        
+                                        <p class="form-row form-row-last input-required">
+                                            <input type="email" asp-for="Email" class="input-text" placeholder="Email" required />
+                                            <span asp-validation-for="Email" class="text-danger"></span>
+                                        </p>
+                                        
+                                        <div class="clear"></div>
+                                        
+                                        <p class="form-row form-row-first input-required">
+                                            <input type="password" asp-for="Password" id="registerPassword" class="input-text" placeholder="Mật khẩu (ít nhất 6 ký tự)" required />
+                                            <span asp-validation-for="Password" class="text-danger"></span>
+                                        </p>
+                                        
+                                        <p class="form-row form-row-last input-required">
+                                            <input type="password" asp-for="ConfirmPassword" id="confirmPassword" class="input-text" placeholder="Xác nhận mật khẩu" required />
+                                            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                                        </p>
+                                        
+                                        <div class="clear"></div>
+                                        
+                                        <p class="form-row form-row-wide">
+                                            <input type="tel" asp-for="PhoneNumber" class="input-text" placeholder="Số điện thoại (tùy chọn)" />
+                                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                                        </p>
+                                        
+                                        <div class="clear"></div>
+                                        
+                                        <p class="form-row input-checkbox">
+                                            <input type="checkbox" id="agreeTerms" required />
+                                            <label class="inline" for="agreeTerms">
+                                                Tôi đồng ý với <a href="#" target="_blank">Điều khoản sử dụng</a> 
+                                                và <a href="#" target="_blank">Chính sách bảo mật</a>
+                                            </label>
+                                        </p>
+                                        
+                                        <input type="submit" value="Đăng ký" name="register" class="button btn btn-default">
+                                        <div class="clear"></div>
+                                    </form>
+                                </div>
+                                
+                                <div class="company-detail new-account bg-light margin-left mt-20">
+                                    <p class="text-center">
+                                        Đã có tài khoản? 
+                                        <a asp-action="Login" asp-route-returnUrl="@returnUrl">
+                                            <strong>Đăng nhập ngay</strong>
+                                        </a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End: Register Section -->
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Real-time password confirmation validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            var password = document.getElementById('registerPassword').value;
+            var confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                alert('Mật khẩu xác nhận không khớp!');
+                return false;
+            }
+            
+            var agreeTerms = document.getElementById('agreeTerms');
+            if (!agreeTerms.checked) {
+                e.preventDefault();
+                alert('Bạn cần đồng ý với Điều khoản sử dụng và Chính sách bảo mật!');
+                return false;
+            }
+        });
+    </script>
+}

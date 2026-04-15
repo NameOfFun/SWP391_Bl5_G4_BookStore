@@ -1,0 +1,136 @@
+@model BookStore.Dtos.Auth.LoginDto
+@{
+    ViewData["Title"] = "Đăng nhập";
+    Layout = "~/Views/Shared/_LayoutAuth.cshtml";
+    var returnUrl = ViewData["ReturnUrl"] as string;
+}
+
+<!-- Start: Page Banner -->
+<section class="page-banner services-banner">
+    <div class="container">
+        <div class="banner-header">
+            <h2>Đăng nhập</h2>
+            <span class="underline center"></span>
+            <p class="lead">Chào mừng bạn quay trở lại BookStore</p>
+        </div>
+        <div class="breadcrumb">
+            <ul>
+                <li><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                <li>Đăng nhập</li>
+            </ul>
+        </div>
+    </div>
+</section>
+<!-- End: Page Banner -->
+
+<!-- Start: Signin Section -->
+<div class="signin-main">
+    <div class="container">
+        <div class="woocommerce">
+            <!-- Alert Messages -->
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="woocommerce-message">
+                    <i class="fa fa-check"></i> @TempData["SuccessMessage"]
+                </div>
+            }
+            
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="woocommerce-error">
+                    <i class="fa fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+                </div>
+            }
+
+            <div class="woocommerce-login">
+                <div class="company-info signin-register">
+                    <!-- Login Form -->
+                    <div class="col-md-5 col-md-offset-1 border-dark-left">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="company-detail bg-dark margin-left">
+                                    <div class="signin-head">
+                                        <h2>Đăng nhập</h2>
+                                        <span class="underline left"></span>
+                                    </div>
+                                    <form class="login" asp-action="Login" asp-route-returnUrl="@returnUrl" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                                        
+                                        <p class="form-row form-row-first input-required">
+                                            <input type="email" asp-for="Email" class="input-text" placeholder="Email" required />
+                                            <span asp-validation-for="Email" class="text-danger"></span>
+                                        </p>
+                                        
+                                        <p class="form-row form-row-last input-required">
+                                            <input type="password" asp-for="Password" id="loginPassword" class="input-text" placeholder="Mật khẩu" required />
+                                            <span asp-validation-for="Password" class="text-danger"></span>
+                                        </p>
+                                        
+                                        <div class="clear"></div>
+                                        
+                                        <div class="password-form-row">
+                                            <p class="form-row input-checkbox">
+                                                <input type="checkbox" asp-for="RememberMe" id="rememberme" />
+                                                <label class="inline" for="rememberme">Ghi nhớ đăng nhập</label>
+                                            </p>
+                                            <p class="lost_password">
+                                                <a asp-action="ForgotPassword">Quên mật khẩu?</a>
+                                            </p>
+                                        </div>
+                                        
+                                        <input type="submit" value="Đăng nhập" name="login" class="button btn btn-default">
+                                        <div class="clear"></div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Register Link -->
+                    <div class="col-md-5 border-dark new-user">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="company-detail new-account bg-light margin-right">
+                                    <div class="new-user-head">
+                                        <h2>Tạo tài khoản mới</h2>
+                                        <span class="underline left"></span>
+                                        <p>Đăng ký ngay để trở thành thành viên của BookStore và nhận nhiều ưu đãi hấp dẫn!</p>
+                                    </div>
+                                    <ul class="benefits-list">
+                                        <li><i class="fa fa-check"></i> Theo dõi đơn hàng dễ dàng</li>
+                                        <li><i class="fa fa-check"></i> Nhận thông báo khuyến mãi</li>
+                                        <li><i class="fa fa-check"></i> Lưu sách yêu thích</li>
+                                        <li><i class="fa fa-check"></i> Thanh toán nhanh chóng</li>
+                                    </ul>
+                                    <a asp-action="Register" asp-route-returnUrl="@returnUrl" class="button btn btn-default">
+                                        <i class="fa fa-user-plus"></i> Đăng ký ngay
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End: Signin Section -->
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Toggle password visibility on click
+        var passwordField = document.getElementById('loginPassword');
+        if (passwordField) {
+            passwordField.addEventListener('click', function() {
+                this.type = 'text';
+                var self = this;
+                setTimeout(function() { 
+                    self.type = 'password'; 
+                }, 2000);
+            });
+        }
+    </script>
+}
