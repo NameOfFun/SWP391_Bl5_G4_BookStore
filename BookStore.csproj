@@ -36,7 +36,6 @@
     <Folder Include="Dtos\Auth\" />
     <Folder Include="Dtos\Manager\" />
     <Folder Include="Dtos\Customer\" />
-    <Folder Include="Dtos\Common\" />
     <Folder Include="Dtos\Staff\" />
     <Folder Include="Helpers\" />
   </ItemGroup>
