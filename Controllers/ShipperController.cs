@@ -17,18 +17,55 @@ public class ShipperController : Controller
         _userManager    = userManager;
     }
 
-    // GET /Shipper/Dashboard
+    // ─── GET /Shipper/Dashboard ───────────────────────────────
     public async Task<IActionResult> Dashboard()
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null) return Challenge();
 
         var vm = await _shipperService.GetDashboardAsync(user.Id);
-
-        ViewData["Title"]              = "Dashboard Shipper";
-        ViewData["BreadcrumbParent"]   = "Shipper";
-        ViewData["BreadcrumbParentUrl"] = "#";
-
+        ViewData["Title"]               = "Dashboard";
+        ViewData["BreadcrumbParent"]    = "Shipper";
+        ViewData["BreadcrumbParentUrl"] = Url.Action("Dashboard", "Shipper");
         return View(vm);
+    }
+
+    // ─── GET /Shipper/AssignedOrders?filter=all|assigned|delivering ──
+    public async Task<IActionResult> AssignedOrders(string? filter)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null) return Challenge();
+
+        var vm = await _shipperService.GetAssignedOrdersAsync(user.Id, filter);
+        ViewData["Title"]               = "Đơn được giao";
+        ViewData["BreadcrumbParent"]    = "Shipper";
+        ViewData["BreadcrumbParentUrl"] = Url.Action("Dashboard", "Shipper");
+        return View(vm);
+    }
+
+    // ─── POST /Shipper/AcceptOrder ────────────────────────────
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> AcceptOrder(int orderId, string? returnFilter)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null) return Challenge();
+
+        var (ok, message) = await _shipperService.AcceptOrderAsync(orderId, user.Id);
+
+        TempData[ok ? "Success" : "Error"] = message;
+        return RedirectToAction(nameof(AssignedOrders), new { filter = returnFilter ?? "all" });
+    }
+
+    // ─── POST /Shipper/RejectOrder ────────────────────────────
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> RejectOrder(int orderId, string? returnFilter)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null) return Challenge();
+
+        var (ok, message) = await _shipperService.RejectOrderAsync(orderId, user.Id);
+
+        TempData[ok ? "Success" : "Error"] = message;
+        return RedirectToAction(nameof(AssignedOrders), new { filter = returnFilter ?? "all" });
     }
 }
