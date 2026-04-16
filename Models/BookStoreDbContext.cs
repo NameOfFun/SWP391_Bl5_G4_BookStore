@@ -203,6 +203,7 @@ public partial class BookStoreDbContext : IdentityDbContext
             entity.Property(e => e.PaymentMethod).HasMaxLength(50);
             entity.Property(e => e.PaymentStatus).HasMaxLength(50);
             entity.HasOne<IdentityUser>().WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.Shipper).WithMany().HasForeignKey(e => e.ShipperId).IsRequired(false).OnDelete(DeleteBehavior.SetNull);
             entity.HasOne(e => e.Voucher).WithMany(v => v.Orders).HasForeignKey(e => e.VoucherId).OnDelete(DeleteBehavior.SetNull);
         });
 

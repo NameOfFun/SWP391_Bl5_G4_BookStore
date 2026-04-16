@@ -1,0 +1,461 @@
+@model BookStore.Dtos.ShipperDashboardViewModel
+@using BookStore.Models
+
+@{
+    ViewData["Title"] = "Dashboard Shipper";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    /* ── Design Tokens ── */
+    :root {
+        --sd-blue:   #1677ff;
+        --sd-green:  #52c41a;
+        --sd-orange: #fa8c16;
+        --sd-red:    #ff4d4f;
+        --sd-purple: #722ed1;
+        --sd-card-radius: 14px;
+        --sd-shadow: 0 2px 12px rgba(0,0,0,.08);
+    }
+
+    /* ── Page header ── */
+    .sd-page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 28px;
+    }
+    .sd-page-title {
+        font-size: 1.45rem;
+        font-weight: 700;
+        color: #1a1a2e;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .sd-page-title i { color: var(--sd-blue); }
+    .sd-page-subtitle { color: #8c8c8c; font-size: .875rem; margin-top: 3px; }
+    .sd-date-badge {
+        background: #f0f7ff;
+        border: 1px solid #bae0ff;
+        color: var(--sd-blue);
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: .8rem;
+        font-weight: 500;
+    }
+
+    /* ── Stat Cards ── */
+    .sd-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        margin-bottom: 28px;
+    }
+    @@media (max-width: 1100px) { .sd-stats-grid { grid-template-columns: repeat(2, 1fr); } }
+    @@media (max-width: 600px)  { .sd-stats-grid { grid-template-columns: 1fr; } }
+
+    .sd-stat-card {
+        background: #fff;
+        border-radius: var(--sd-card-radius);
+        padding: 22px 24px;
+        box-shadow: var(--sd-shadow);
+        position: relative;
+        overflow: hidden;
+        transition: transform .2s, box-shadow .2s;
+        cursor: default;
+    }
+    .sd-stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(0,0,0,.12);
+    }
+    .sd-stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 4px;
+        border-radius: var(--sd-card-radius) var(--sd-card-radius) 0 0;
+    }
+    .sd-stat-card.blue::before   { background: linear-gradient(90deg, #1677ff, #69b1ff); }
+    .sd-stat-card.orange::before { background: linear-gradient(90deg, #fa8c16, #ffc53d); }
+    .sd-stat-card.green::before  { background: linear-gradient(90deg, #52c41a, #95de64); }
+    .sd-stat-card.red::before    { background: linear-gradient(90deg, #ff4d4f, #ff7875); }
+
+    .sd-stat-icon-wrap {
+        width: 46px; height: 46px;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.3rem;
+        margin-bottom: 14px;
+    }
+    .sd-stat-card.blue   .sd-stat-icon-wrap { background: #e6f4ff; color: #1677ff; }
+    .sd-stat-card.orange .sd-stat-icon-wrap { background: #fff7e6; color: #fa8c16; }
+    .sd-stat-card.green  .sd-stat-icon-wrap { background: #f6ffed; color: #52c41a; }
+    .sd-stat-card.red    .sd-stat-icon-wrap { background: #fff1f0; color: #ff4d4f; }
+
+    .sd-stat-value {
+        font-size: 2.1rem;
+        font-weight: 800;
+        line-height: 1;
+        color: #1a1a2e;
+        margin-bottom: 6px;
+        letter-spacing: -1px;
+    }
+    .sd-stat-label {
+        font-size: .82rem;
+        color: #8c8c8c;
+        font-weight: 500;
+    }
+    .sd-stat-chip {
+        position: absolute;
+        bottom: 18px; right: 18px;
+        font-size: .7rem;
+        font-weight: 600;
+        padding: 3px 10px;
+        border-radius: 20px;
+    }
+    .sd-stat-card.blue   .sd-stat-chip { background: #e6f4ff; color: #1677ff; }
+    .sd-stat-card.orange .sd-stat-chip { background: #fff7e6; color: #fa8c16; }
+    .sd-stat-card.green  .sd-stat-chip { background: #f6ffed; color: #52c41a; }
+    .sd-stat-card.red    .sd-stat-chip { background: #fff1f0; color: #ff4d4f; }
+
+    /* ── Urgent Orders Section ── */
+    .sd-section-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1a1a2e;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .sd-section-title .sd-urgent-dot {
+        width: 8px; height: 8px;
+        background: #ff4d4f;
+        border-radius: 50%;
+        animation: pulse-red 1.4s infinite;
+    }
+    @@keyframes pulse-red {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(255,77,79,.5); }
+        50%       { box-shadow: 0 0 0 5px rgba(255,77,79,0); }
+    }
+
+    .sd-urgent-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 16px;
+    }
+
+    .sd-order-card {
+        background: #fff;
+        border-radius: var(--sd-card-radius);
+        box-shadow: var(--sd-shadow);
+        overflow: hidden;
+        transition: transform .2s, box-shadow .2s;
+        display: flex;
+        flex-direction: column;
+    }
+    .sd-order-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0,0,0,.13);
+    }
+
+    .sd-order-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px 12px;
+        border-bottom: 1px solid #f5f5f5;
+    }
+    .sd-order-id {
+        font-weight: 700;
+        font-size: .95rem;
+        color: #1a1a2e;
+    }
+    .sd-order-id span { color: #1677ff; }
+
+    /* urgency badge by hours */
+    .sd-urgency { font-size: .72rem; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+    .sd-urgency.critical { background: #fff1f0; color: #ff4d4f; }
+    .sd-urgency.high     { background: #fff7e6; color: #fa8c16; }
+    .sd-urgency.normal   { background: #f0f7ff; color: #1677ff; }
+
+    .sd-order-body {
+        padding: 14px 20px;
+        flex: 1;
+    }
+    .sd-order-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 9px;
+        font-size: .84rem;
+        color: #595959;
+    }
+    .sd-order-row i { color: #bfbfbf; font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+    .sd-order-row strong { color: #1a1a2e; }
+
+    .sd-order-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 20px;
+        background: #fafafa;
+        border-top: 1px solid #f0f0f0;
+    }
+    .sd-order-total {
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: #1a1a2e;
+    }
+    .sd-order-total span { color: var(--sd-green); }
+
+    .sd-btn-deliver {
+        background: linear-gradient(135deg, #1677ff, #4096ff);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 7px 16px;
+        font-size: .8rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: opacity .15s, transform .15s;
+        text-decoration: none;
+    }
+    .sd-btn-deliver:hover { opacity: .88; transform: scale(1.03); color: #fff; }
+
+    /* ── Empty state ── */
+    .sd-empty {
+        background: #fff;
+        border-radius: var(--sd-card-radius);
+        box-shadow: var(--sd-shadow);
+        text-align: center;
+        padding: 56px 24px;
+        color: #bfbfbf;
+    }
+    .sd-empty i { font-size: 3.5rem; margin-bottom: 12px; display: block; }
+    .sd-empty p { margin: 0; font-size: .95rem; }
+
+    /* ── Progress ring ── */
+    .sd-progress-wrap {
+        background: #fff;
+        border-radius: var(--sd-card-radius);
+        box-shadow: var(--sd-shadow);
+        padding: 24px 28px;
+        margin-bottom: 28px;
+        display: flex;
+        align-items: center;
+        gap: 28px;
+        flex-wrap: wrap;
+    }
+    .sd-progress-ring-wrap {
+        position: relative;
+        width: 110px; height: 110px;
+        flex-shrink: 0;
+    }
+    .sd-progress-ring { transform: rotate(-90deg); }
+    .sd-progress-center {
+        position: absolute;
+        inset: 0;
+        display: flex; align-items: center; justify-content: center;
+        flex-direction: column;
+    }
+    .sd-progress-pct { font-size: 1.35rem; font-weight: 800; color: #1a1a2e; line-height: 1; }
+    .sd-progress-sub { font-size: .65rem; color: #8c8c8c; }
+    .sd-progress-info h4 { margin: 0 0 6px; font-size: 1rem; font-weight: 700; color: #1a1a2e; }
+    .sd-progress-info p  { margin: 0; font-size: .84rem; color: #8c8c8c; }
+    .sd-legend {
+        display: flex; flex-wrap: wrap; gap: 14px; margin-top: 12px;
+    }
+    .sd-legend-item { display: flex; align-items: center; gap: 6px; font-size: .8rem; color: #595959; }
+    .sd-legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+</style>
+
+<!-- ── Page Header ── -->
+<div class="sd-page-header">
+    <div>
+        <h1 class="sd-page-title">
+            <i class="bi bi-speedometer2"></i> Dashboard Shipper
+        </h1>
+        <p class="sd-page-subtitle">Tổng quan công việc giao hàng của bạn</p>
+    </div>
+    <span class="sd-date-badge">
+        <i class="bi bi-calendar3 me-1"></i>
+        @DateTime.Now.ToString("dd/MM/yyyy — HH:mm")
+    </span>
+</div>
+
+<!-- ── Stat Cards ── -->
+@{
+    var total = Model.AssignedCount + Model.DeliveredCount + Model.FailedCount;
+    var deliveredPct = total > 0 ? (int)Math.Round(Model.DeliveredCount * 100.0 / total) : 0;
+    // SVG ring params
+    const int r = 48;
+    const double circ = 2 * Math.PI * r;
+    double dashOffset = circ - (deliveredPct / 100.0 * circ);
+}
+
+<div class="sd-stats-grid">
+
+    <!-- Đã được assign -->
+    <div class="sd-stat-card blue">
+        <div class="sd-stat-icon-wrap">
+            <i class="bi bi-box-seam"></i>
+        </div>
+        <div class="sd-stat-value">@Model.AssignedCount</div>
+        <div class="sd-stat-label">Đã được assign</div>
+        <span class="sd-stat-chip">Chờ giao</span>
+    </div>
+
+    <!-- Đang giao -->
+    <div class="sd-stat-card orange">
+        <div class="sd-stat-icon-wrap">
+            <i class="bi bi-truck"></i>
+        </div>
+        <div class="sd-stat-value">@Model.DeliveringCount</div>
+        <div class="sd-stat-label">Đang giao</div>
+        <span class="sd-stat-chip">In Progress</span>
+    </div>
+
+    <!-- Đã giao -->
+    <div class="sd-stat-card green">
+        <div class="sd-stat-icon-wrap">
+            <i class="bi bi-check-circle"></i>
+        </div>
+        <div class="sd-stat-value">@Model.DeliveredCount</div>
+        <div class="sd-stat-label">Đã giao thành công</div>
+        <span class="sd-stat-chip">Hoàn thành</span>
+    </div>
+
+    <!-- Giao thất bại -->
+    <div class="sd-stat-card red">
+        <div class="sd-stat-icon-wrap">
+            <i class="bi bi-x-circle"></i>
+        </div>
+        <div class="sd-stat-value">@Model.FailedCount</div>
+        <div class="sd-stat-label">Giao thất bại</div>
+        <span class="sd-stat-chip">Thất bại</span>
+    </div>
+
+</div>
+
+<!-- ── Progress Overview ── -->
+<div class="sd-progress-wrap">
+    <div class="sd-progress-ring-wrap">
+        <svg class="sd-progress-ring" width="110" height="110" viewBox="0 0 110 110">
+            <!-- bg track -->
+            <circle cx="55" cy="55" r="@r" fill="none"
+                    stroke="#f0f0f0" stroke-width="10"/>
+            <!-- delivered arc -->
+            <circle cx="55" cy="55" r="@r" fill="none"
+                    stroke="#52c41a" stroke-width="10"
+                    stroke-linecap="round"
+                    stroke-dasharray="@circ.ToString("F1")"
+                    stroke-dashoffset="@dashOffset.ToString("F1")"
+                    style="transition: stroke-dashoffset 1s ease"/>
+        </svg>
+        <div class="sd-progress-center">
+            <div class="sd-progress-pct">@deliveredPct%</div>
+            <div class="sd-progress-sub">Hoàn thành</div>
+        </div>
+    </div>
+
+    <div class="sd-progress-info">
+        <h4>Tỷ lệ giao hàng thành công</h4>
+        <p>Tổng <strong>@total</strong> đơn đã xử lý</p>
+        <div class="sd-legend">
+            <div class="sd-legend-item">
+                <div class="sd-legend-dot" style="background:#1677ff"></div>
+                Đang chờ: <strong>@Model.AssignedCount</strong>
+            </div>
+            <div class="sd-legend-item">
+                <div class="sd-legend-dot" style="background:#52c41a"></div>
+                Thành công: <strong>@Model.DeliveredCount</strong>
+            </div>
+            <div class="sd-legend-item">
+                <div class="sd-legend-dot" style="background:#ff4d4f"></div>
+                Thất bại: <strong>@Model.FailedCount</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Urgent Orders ── -->
+<div class="sd-section-title">
+    <span class="sd-urgent-dot"></span>
+    Đơn cần xử lý ngay
+    @if (Model.UrgentOrders.Count > 0)
+    {
+        <span class="badge text-bg-danger rounded-pill ms-1">@Model.UrgentOrders.Count</span>
+    }
+</div>
+
+@if (Model.UrgentOrders.Count == 0)
+{
+    <div class="sd-empty">
+        <i class="bi bi-inbox"></i>
+        <p>Không có đơn nào cần xử lý ngay. Tốt lắm! 🎉</p>
+    </div>
+}
+else
+{
+    <div class="sd-urgent-grid">
+        @foreach (var order in Model.UrgentOrders)
+        {
+            var hours = order.HoursSinceOrder;
+            var (urgencyClass, urgencyLabel) = hours switch
+            {
+                > 24 => ("critical", "⚠ Quá hạn"),
+                > 12 => ("high",     "🔥 Gấp"),
+                _    => ("normal",   "🕐 Bình thường")
+            };
+
+            <div class="sd-order-card">
+                <div class="sd-order-header">
+                    <div class="sd-order-id">
+                        Đơn hàng <span>#@order.OrderId</span>
+                    </div>
+                    <span class="sd-urgency @urgencyClass">@urgencyLabel</span>
+                </div>
+
+                <div class="sd-order-body">
+                    <div class="sd-order-row">
+                        <i class="bi bi-person"></i>
+                        <div><strong>@order.ShippingName</strong></div>
+                    </div>
+                    <div class="sd-order-row">
+                        <i class="bi bi-telephone"></i>
+                        <div>@order.ShippingPhone</div>
+                    </div>
+                    <div class="sd-order-row">
+                        <i class="bi bi-geo-alt"></i>
+                        <div>@order.ShippingAddress</div>
+                    </div>
+                    <div class="sd-order-row">
+                        <i class="bi bi-clock-history"></i>
+                        <div>
+                            Đặt lúc <strong>@order.OrderDate.ToString("HH:mm dd/MM/yyyy")</strong>
+                            <small class="text-muted">(~@((int)hours) giờ trước)</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sd-order-footer">
+                    <div>
+                        <div class="sd-order-total">
+                            <span>@order.GrandTotal.ToString("N0") ₫</span>
+                        </div>
+                        <small class="text-muted" style="font-size:.75rem">Tổng tiền COD</small>
+                    </div>
+                    <a href="#" class="sd-btn-deliver">
+                        <i class="bi bi-truck"></i> Giao ngay
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+}

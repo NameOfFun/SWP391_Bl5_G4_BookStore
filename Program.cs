@@ -34,6 +34,7 @@ namespace BookStore
             builder.Services.AddScoped<IBookService, BookService>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<IHomeSliderService, HomeSliderService>();
+            builder.Services.AddScoped<IShipperService, ShipperService>();
 
             builder.Services.AddControllersWithViews();
 
@@ -62,12 +63,16 @@ namespace BookStore
             using (var scope = app.Services.CreateScope())
             {
                 var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-                string[] roleNames = ["Customer", "Admin", "Staff", "Manager"];
+                string[] roleNames = ["Customer", "Admin", "Staff", "Manager", "Shipper"];
                 foreach (var roleName in roleNames)
                 {
                     if (!roleManager.RoleExistsAsync(roleName).GetAwaiter().GetResult())
                         roleManager.CreateAsync(new IdentityRole(roleName)).GetAwaiter().GetResult();
                 }
+
+                // ── Seed dữ liệu test Shipper Dashboard ──
+                // Xóa (hoặc comment) block này sau khi đã seed xong
+                ShipperSeeder.SeedAsync(scope.ServiceProvider).GetAwaiter().GetResult();
             }
 
             app.Run();
