@@ -37,10 +37,8 @@
 
                     @* Tác giả & Danh mục *@
                     <div class="col-md-6">
-                        <label asp-for="AuthorId" class="form-label fw-semibold">Tác giả</label>
-                        <select asp-for="AuthorId" asp-items="ViewBag.Authors" class="form-select">
-                            <option value="">-- Chọn tác giả --</option>
-                        </select>
+                        <label asp-for="AuthorName" class="form-label fw-semibold">Tác giả</label>
+                        <input asp-for="AuthorName" class="form-control" placeholder="Nhập tên tác giả..." />
                     </div>
                     <div class="col-md-6">
                         <label asp-for="CategoryId" class="form-label fw-semibold">Danh mục</label>

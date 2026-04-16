@@ -1,134 +1,524 @@
 @model IReadOnlyList<BookStore.Dtos.Common.BookDto>
 @{
-    ViewData["Title"] = "Quản lý Sách";
+    ViewData["Title"] = "Quản lý sách";
+    ViewData["BreadcrumbParent"] = "Quản lý sách";
+    ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "Book");
+    var authors = Model.Where(b => !string.IsNullOrEmpty(b.AuthorName)).Select(b => b.AuthorName!).Distinct().OrderBy(a => a).ToList();
+    var categories = Model.Where(b => !string.IsNullOrEmpty(b.CategoryName)).Select(b => b.CategoryName!).Distinct().OrderBy(c => c).ToList();
 }
 
-<div class="container-fluid mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2><i class="bi bi-book me-2"></i>Quản lý Sách</h2>
-        <a asp-action="Create" class="btn btn-primary">
-            <i class="bi bi-plus-lg me-1"></i> Thêm sách mới
-        </a>
+<style>
+    .book-management-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .book-management-header h4 {
+        font-weight: 600;
+        font-size: 1.25rem;
+        color: #1a1a2e;
+        margin: 0;
+    }
+    .filter-card {
+        background: #fff;
+        border: 1px solid #e8e8e8;
+        border-radius: 10px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+    }
+    .filter-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    .search-group {
+        display: flex;
+        flex: 1;
+        min-width: 250px;
+        gap: 0;
+    }
+    .search-group .form-control {
+        border-radius: 6px 0 0 6px;
+        border-right: none;
+        font-size: 0.875rem;
+        border-color: #d9d9d9;
+    }
+    .search-group .form-control:focus {
+        box-shadow: none;
+        border-color: #1677ff;
+    }
+    .search-group .btn-search {
+        border-radius: 0 6px 6px 0;
+        background-color: #1677ff;
+        border-color: #1677ff;
+        color: #fff;
+        font-size: 0.875rem;
+        padding: 6px 16px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+    }
+    .search-group .btn-search:hover {
+        background-color: #0958d9;
+        border-color: #0958d9;
+    }
+    .filter-select {
+        font-size: 0.875rem;
+        border-color: #d9d9d9;
+        border-radius: 6px;
+        color: #595959;
+        min-width: 140px;
+        padding: 6px 10px;
+    }
+    .filter-select:focus {
+        box-shadow: none;
+        border-color: #1677ff;
+    }
+    .book-table-card {
+        background: #fff;
+        border: 1px solid #e8e8e8;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .book-table {
+        margin: 0;
+        font-size: 0.875rem;
+    }
+    .book-table thead tr th {
+        background-color: #fafafa;
+        color: #595959;
+        font-weight: 600;
+        font-size: 0.8125rem;
+        padding: 12px 14px;
+        border-bottom: 1px solid #e8e8e8;
+        border-top: none;
+        white-space: nowrap;
+    }
+    .book-table tbody tr td {
+        padding: 12px 14px;
+        border-bottom: 1px solid #f0f0f0;
+        vertical-align: middle;
+        color: #262626;
+    }
+    .book-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+    .book-table tbody tr:hover {
+        background-color: #fafafa;
+    }
+    .book-thumb {
+        width: 44px;
+        height: 58px;
+        object-fit: cover;
+        border-radius: 4px;
+        border: 1px solid #e8e8e8;
+    }
+    .book-thumb-placeholder {
+        width: 44px;
+        height: 58px;
+        background: #f5f5f5;
+        border: 1px dashed #d9d9d9;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #bfbfbf;
+        font-size: 1.1rem;
+    }
+    .badge-active {
+        background-color: #f6ffed;
+        color: #52c41a;
+        border: 1px solid #b7eb8f;
+        font-weight: 500;
+        font-size: 0.75rem;
+        padding: 3px 10px;
+        border-radius: 20px;
+    }
+    .badge-inactive {
+        background-color: #fff2f0;
+        color: #ff4d4f;
+        border: 1px solid #ffccc7;
+        font-weight: 500;
+        font-size: 0.75rem;
+        padding: 3px 10px;
+        border-radius: 20px;
+    }
+    .stock-low {
+        color: #ff4d4f;
+        font-weight: 600;
+    }
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        border: 1px solid;
+    }
+    .btn-view {
+        color: #1677ff;
+        border-color: #91caff;
+        background: #fff;
+    }
+    .btn-view:hover { background: #e6f4ff; color: #1677ff; border-color: #1677ff; }
+    .btn-edit {
+        color: #fa8c16;
+        border-color: #ffd591;
+        background: #fff;
+    }
+    .btn-edit:hover { background: #fff7e6; color: #fa8c16; border-color: #fa8c16; }
+    .btn-deactivate {
+        color: #8c8c8c;
+        border-color: #d9d9d9;
+        background: #fff;
+    }
+    .btn-deactivate:hover { background: #f5f5f5; border-color: #8c8c8c; }
+    .btn-activate {
+        color: #52c41a;
+        border-color: #b7eb8f;
+        background: #fff;
+    }
+    .btn-activate:hover { background: #f6ffed; border-color: #52c41a; }
+    .btn-add-new {
+        background-color: #1677ff;
+        border-color: #1677ff;
+        font-size: 0.875rem;
+        padding: 7px 18px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .btn-add-new:hover { background-color: #0958d9; border-color: #0958d9; }
+    .pagination-area {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 16px;
+        border-top: 1px solid #f0f0f0;
+        font-size: 0.875rem;
+        color: #595959;
+    }
+    .pagination-info { color: #595959; }
+    .pagination-controls { display: flex; gap: 4px; align-items: center; }
+    .page-btn {
+        min-width: 32px;
+        height: 32px;
+        border: 1px solid #d9d9d9;
+        background: #fff;
+        color: #262626;
+        border-radius: 6px;
+        font-size: 0.8125rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 6px;
+        transition: all .15s;
+    }
+    .page-btn:hover:not(:disabled) { border-color: #1677ff; color: #1677ff; }
+    .page-btn.active { background: #1677ff; border-color: #1677ff; color: #fff; }
+    .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .empty-state {
+        text-align: center;
+        padding: 48px 20px;
+        color: #8c8c8c;
+    }
+    .empty-state i { font-size: 2.5rem; display: block; margin-bottom: 10px; color: #d9d9d9; }
+</style>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+        <i class="bi bi-check-circle me-1"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+        <i class="bi bi-exclamation-triangle me-1"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
 
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle me-1"></i> @TempData["Success"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-triangle me-1"></i> @TempData["Error"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
+<div class="book-management-header">
+    <h4>Quản lý sách</h4>
+    <a asp-action="Create" class="btn btn-primary btn-add-new">
+        <i class="bi bi-plus-lg"></i> Thêm mới
+    </a>
+</div>
 
-    <div class="card shadow-sm">
-        <div class="card-body p-0">
-            <table class="table table-bordered table-hover mb-0">
-                <thead class="table-dark">
-                    <tr>
-                        <th style="width:60px">#</th>
-                        <th style="width:80px">Ảnh</th>
-                        <th>Tiêu đề</th>
-                        <th>Tác giả</th>
-                        <th>Danh mục</th>
-                        <th class="text-end">Giá (đ)</th>
-                        <th class="text-center">Tồn kho</th>
-                        <th class="text-center">Trạng thái</th>
-                        <th class="text-center" style="width:160px">Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var book in Model)
-                    {
-                        <tr>
-                            <td>@book.BookId</td>
-                            <td class="text-center">
-                                @if (!string.IsNullOrEmpty(book.ImageUrl))
-                                {
-                                    <img src="@book.ImageUrl" alt="@book.Title"
-                                         class="rounded" style="width:48px;height:64px;object-fit:cover;" />
-                                }
-                                else
-                                {
-                                    <span class="text-muted"><i class="bi bi-image fs-4"></i></span>
-                                }
-                            </td>
-                            <td>
-                                <strong>@book.Title</strong>
-                                @if (!string.IsNullOrEmpty(book.Description))
-                                {
-                                    <br /><small class="text-muted">
-                                        @(book.Description.Length > 80 ? book.Description[..80] + "…" : book.Description)
-                                    </small>
-                                }
-                            </td>
-                            <td>@(book.AuthorName ?? "—")</td>
-                            <td>@(book.CategoryName ?? "—")</td>
-                            <td class="text-end">
-                                @if (book.PromotionalPrice.HasValue)
-                                {
-                                    <span class="text-decoration-line-through text-muted small">
-                                        @book.Price.ToString("N0")
-                                    </span><br />
-                                    <span class="text-danger fw-bold">@book.PromotionalPrice.Value.ToString("N0")</span>
-                                }
-                                else
-                                {
-                                    @book.Price.ToString("N0")
-                                }
-                            </td>
-                            <td class="text-center">
-                                @if (book.Stock <= 5)
-                                {
-                                    <span class="badge bg-danger">@book.Stock</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-secondary">@book.Stock</span>
-                                }
-                            </td>
-                            <td class="text-center">
-                                @if (book.IsActive)
-                                {
-                                    <span class="badge bg-success">Đang bán</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-secondary">Ẩn</span>
-                                }
-                            </td>
-                            <td class="text-center">
-                                <a asp-action="Details" asp-route-id="@book.BookId"
-                                   class="btn btn-sm btn-outline-info" title="Chi tiết">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                                <a asp-action="Edit" asp-route-id="@book.BookId"
-                                   class="btn btn-sm btn-warning" title="Sửa">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <a asp-action="Delete" asp-route-id="@book.BookId"
-                                   class="btn btn-sm btn-danger" title="Xóa">
-                                    <i class="bi bi-trash"></i>
-                                </a>
-                            </td>
-                        </tr>
-                    }
-                    @if (!Model.Any())
-                    {
-                        <tr>
-                            <td colspan="9" class="text-center text-muted py-4">
-                                <i class="bi bi-inbox fs-3 d-block mb-1"></i>
-                                Chưa có sách nào
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+<div class="filter-card">
+    <div class="filter-row">
+        <div class="search-group">
+            <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm theo tiêu đề...">
+            <button class="btn btn-search" onclick="applyFilters()">
+                <i class="bi bi-search"></i> Tìm kiếm
+            </button>
         </div>
+        <select class="form-select filter-select" id="filterPrice" onchange="applyFilters()">
+            <option value="">Filter theo giá</option>
+            <option value="0-50000">Dưới 50.000đ</option>
+            <option value="50000-100000">50.000đ – 100.000đ</option>
+            <option value="100000-200000">100.000đ – 200.000đ</option>
+            <option value="200000-999999999">Trên 200.000đ</option>
+        </select>
+        <select class="form-select filter-select" id="filterStatus" onchange="applyFilters()">
+            <option value="">Filter theo trạng thái</option>
+            <option value="active">Active</option>
+            <option value="inactive">Deactive</option>
+        </select>
+        <select class="form-select filter-select" id="filterAuthor" onchange="applyFilters()">
+            <option value="">Filter theo tác giả</option>
+            @foreach (var author in authors)
+            {
+                <option value="@author">@author</option>
+            }
+        </select>
+        <select class="form-select filter-select" id="filterCategory" onchange="applyFilters()">
+            <option value="">Filter theo danh mục</option>
+            @foreach (var cat in categories)
+            {
+                <option value="@cat">@cat</option>
+            }
+        </select>
     </div>
 </div>
+
+<div class="book-table-card">
+    <table class="table book-table" id="bookTable">
+        <thead>
+            <tr>
+                <th style="width:52px">STT</th>
+                <th style="width:70px">Ảnh đại diện</th>
+                <th>Tiêu đề</th>
+                <th style="width:160px">Tác giả</th>
+                <th style="width:140px">Danh Mục</th>
+                <th class="text-end" style="width:110px">Giá</th>
+                <th class="text-center" style="width:80px">Tồn kho</th>
+                <th class="text-center" style="width:100px">Trạng thái</th>
+                <th class="text-center" style="width:110px">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody id="bookTableBody">
+            @{int stt = 0;}
+            @foreach (var book in Model)
+            {
+                stt++;
+                var price = book.PromotionalPrice.HasValue ? book.PromotionalPrice.Value : book.Price;
+                <tr class="book-row"
+                    data-title="@book.Title.ToLower()"
+                    data-author="@(book.AuthorName ?? "")"
+                    data-category="@(book.CategoryName ?? "")"
+                    data-price="@price"
+                    data-status="@(book.IsActive ? "active" : "inactive")">
+                    <td class="row-stt">@stt</td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(book.ImageUrl))
+                        {
+                            <img src="@book.ImageUrl" alt="@book.Title" class="book-thumb" />
+                        }
+                        else
+                        {
+                            <div class="book-thumb-placeholder">
+                                <i class="bi bi-image"></i>
+                            </div>
+                        }
+                    </td>
+                    <td>
+                        <span class="fw-500">@book.Title</span>
+                        @if (!string.IsNullOrEmpty(book.Description))
+                        {
+                            <br /><small class="text-muted">
+                                @(book.Description.Length > 75 ? book.Description[..75] + "…" : book.Description)
+                            </small>
+                        }
+                    </td>
+                    <td>@(book.AuthorName ?? "—")</td>
+                    <td>@(book.CategoryName ?? "—")</td>
+                    <td class="text-end">
+                        @if (book.PromotionalPrice.HasValue)
+                        {
+                            <span class="text-decoration-line-through text-muted" style="font-size:.8rem">
+                                @book.Price.ToString("N0")đ
+                            </span><br />
+                            <span class="text-danger fw-semibold">@book.PromotionalPrice.Value.ToString("N0")đ</span>
+                        }
+                        else
+                        {
+                            <span>@book.Price.ToString("N0")đ</span>
+                        }
+                    </td>
+                    <td class="text-center">
+                        @if (book.Stock <= 5)
+                        {
+                            <span class="stock-low">@book.Stock</span>
+                        }
+                        else
+                        {
+                            <span>@book.Stock</span>
+                        }
+                    </td>
+                    <td class="text-center">
+                        @if (book.IsActive)
+                        {
+                            <span class="badge-active">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge-inactive">Deactive</span>
+                        }
+                    </td>
+                    <td class="text-center">
+                        <div class="d-flex gap-1 justify-content-center">
+                            <a asp-action="Details" asp-route-id="@book.BookId"
+                               class="btn-action btn-view" title="Chi tiết">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a asp-action="Edit" asp-route-id="@book.BookId"
+                               class="btn-action btn-edit" title="Sửa">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form asp-action="ChangeStatus" asp-route-id="@book.BookId"
+                                  method="post" class="d-inline"
+                                  onsubmit="return confirm('@(book.IsActive ? "Vô hiệu hóa sách này?" : "Kích hoạt sách này?")')">
+                                @Html.AntiForgeryToken()
+                                <button type="submit"
+                                        class="btn-action @(book.IsActive ? "btn-deactivate" : "btn-activate")"
+                                        title="@(book.IsActive ? "Deactive" : "Active")">
+                                    <i class="bi @(book.IsActive ? "bi-toggle-on" : "bi-toggle-off")"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div id="emptyState" class="empty-state" style="display:none">
+        <i class="bi bi-inbox"></i>
+        Không tìm thấy sách nào
+    </div>
+
+    <div class="pagination-area">
+        <span class="pagination-info" id="pageInfo">Hiển thị 0 bản ghi</span>
+        <div class="pagination-controls" id="paginationControls"></div>
+    </div>
+</div>
+
+<script>
+    const PAGE_SIZE = 10;
+    let currentPage = 1;
+    let filteredRows = [];
+
+    function applyFilters() {
+        const search = document.getElementById('searchInput').value.toLowerCase().trim();
+        const priceFilter = document.getElementById('filterPrice').value;
+        const statusFilter = document.getElementById('filterStatus').value;
+        const authorFilter = document.getElementById('filterAuthor').value.toLowerCase();
+        const categoryFilter = document.getElementById('filterCategory').value.toLowerCase();
+
+        const allRows = Array.from(document.querySelectorAll('.book-row'));
+
+        filteredRows = allRows.filter(row => {
+            const title = row.dataset.title || '';
+            const author = (row.dataset.author || '').toLowerCase();
+            const category = (row.dataset.category || '').toLowerCase();
+            const price = parseFloat(row.dataset.price) || 0;
+            const status = row.dataset.status || '';
+
+            if (search && !title.includes(search)) return false;
+            if (statusFilter && status !== statusFilter) return false;
+            if (authorFilter && !author.includes(authorFilter)) return false;
+            if (categoryFilter && !category.includes(categoryFilter)) return false;
+            if (priceFilter) {
+                const [min, max] = priceFilter.split('-').map(Number);
+                if (price < min || price > max) return false;
+            }
+            return true;
+        });
+
+        allRows.forEach(r => r.style.display = 'none');
+        currentPage = 1;
+        renderPage();
+    }
+
+    function renderPage() {
+        const total = filteredRows.length;
+        const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        const start = (currentPage - 1) * PAGE_SIZE;
+        const end = Math.min(start + PAGE_SIZE, total);
+
+        filteredRows.forEach((r, i) => {
+            r.style.display = (i >= start && i < end) ? '' : 'none';
+            if (i >= start && i < end) {
+                r.querySelector('.row-stt').textContent = start + (i - start) + 1;
+            }
+        });
+
+        const emptyState = document.getElementById('emptyState');
+        emptyState.style.display = total === 0 ? '' : 'none';
+
+        const info = document.getElementById('pageInfo');
+        if (total === 0) {
+            info.textContent = 'Không có bản ghi nào';
+        } else {
+            info.textContent = `Hiển thị ${start + 1}–${end} của ${total} bản ghi`;
+        }
+
+        renderPagination(totalPages);
+    }
+
+    function renderPagination(totalPages) {
+        const container = document.getElementById('paginationControls');
+        container.innerHTML = '';
+
+        const prev = document.createElement('button');
+        prev.className = 'page-btn';
+        prev.textContent = 'Trước';
+        prev.disabled = currentPage === 1;
+        prev.onclick = () => { currentPage--; renderPage(); };
+        container.appendChild(prev);
+
+        const maxVisible = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+        if (endPage - startPage < maxVisible - 1) startPage = Math.max(1, endPage - maxVisible + 1);
+
+        for (let i = startPage; i <= endPage; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'page-btn' + (i === currentPage ? ' active' : '');
+            btn.textContent = i;
+            const page = i;
+            btn.onclick = () => { currentPage = page; renderPage(); };
+            container.appendChild(btn);
+        }
+
+        const next = document.createElement('button');
+        next.className = 'page-btn';
+        next.textContent = 'Sau';
+        next.disabled = currentPage === totalPages;
+        next.onclick = () => { currentPage++; renderPage(); };
+        container.appendChild(next);
+    }
+
+    document.getElementById('searchInput').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') applyFilters();
+    });
+
+    // Init
+    document.addEventListener('DOMContentLoaded', function() {
+        filteredRows = Array.from(document.querySelectorAll('.book-row'));
+        renderPage();
+    });
+</script>

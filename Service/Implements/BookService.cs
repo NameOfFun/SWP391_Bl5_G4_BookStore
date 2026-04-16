@@ -18,7 +18,6 @@ namespace BookStore.Service.Implements
         {
             return await _context.Books
                 .AsNoTracking()
-                .Where(b => b.IsActive)
                 .Include(b => b.Category)
                 .Include(b => b.Author)
                 .OrderByDescending(b => b.CreatedAt)
@@ -32,7 +31,7 @@ namespace BookStore.Service.Implements
                 .AsNoTracking()
                 .Include(b => b.Category)
                 .Include(b => b.Author)
-                .FirstOrDefaultAsync(b => b.BookId == id && b.IsActive);
+                .FirstOrDefaultAsync(b => b.BookId == id);
 
             return entity == null ? null : ToDto(entity);
         }
@@ -42,6 +41,8 @@ namespace BookStore.Service.Implements
             var title = (dto.Title ?? string.Empty).Trim();
             if (string.IsNullOrWhiteSpace(title))
                 throw new ArgumentException("Tiêu đề không được để trống");
+
+            var authorId = await ResolveAuthorIdAsync(dto.AuthorName, userId);
 
             var entity = new Book
             {
@@ -53,7 +54,7 @@ namespace BookStore.Service.Implements
                 PromotionalEndsAt = dto.PromotionalEndsAt,
                 Stock = dto.Stock,
                 CategoryId = dto.CategoryId,
-                AuthorId = dto.AuthorId,
+                AuthorId = authorId,
                 ImageUrl = dto.ImageUrl,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow,
@@ -69,7 +70,7 @@ namespace BookStore.Service.Implements
         public async Task<BookDto> UpdateAsync(int id, BookDto dto, string userId)
         {
             var entity = await _context.Books
-                .FirstOrDefaultAsync(b => b.BookId == id && b.IsActive);
+                .FirstOrDefaultAsync(b => b.BookId == id);
 
             if (entity == null)
                 throw new InvalidOperationException($"Không tìm thấy sách có Id = {id}.");
@@ -77,6 +78,8 @@ namespace BookStore.Service.Implements
             var title = (dto.Title ?? string.Empty).Trim();
             if (string.IsNullOrWhiteSpace(title))
                 throw new ArgumentException("Tiêu đề không được để trống", nameof(dto));
+
+            var authorId = await ResolveAuthorIdAsync(dto.AuthorName, userId);
 
             entity.Title = title;
             entity.Description = dto.Description;
@@ -86,7 +89,7 @@ namespace BookStore.Service.Implements
             entity.PromotionalEndsAt = dto.PromotionalEndsAt;
             entity.Stock = dto.Stock;
             entity.CategoryId = dto.CategoryId;
-            entity.AuthorId = dto.AuthorId;
+            entity.AuthorId = authorId;
             entity.ImageUrl = dto.ImageUrl;
             entity.UpdatedByUserId = userId;
 
@@ -95,17 +98,48 @@ namespace BookStore.Service.Implements
             return ToDto(entity);
         }
 
-        // Soft delete — sets IsActive = false
-        public async Task DeleteAsync(int id)
+        public async Task<BookDto> ChangeStatusAsync(int id, string userId)
         {
             var entity = await _context.Books
-                .FirstOrDefaultAsync(b => b.BookId == id && b.IsActive);
+                .FirstOrDefaultAsync(b => b.BookId == id);
 
             if (entity == null)
                 throw new InvalidOperationException($"Không tìm thấy sách có Id = {id}.");
 
-            entity.IsActive = false;
+            entity.IsActive = !entity.IsActive;
+            entity.UpdatedByUserId = userId;
             await _context.SaveChangesAsync();
+
+            return ToDto(entity);
+        }
+
+        /// <summary>
+        /// Tìm tác giả theo tên (không phân biệt hoa thường).
+        /// Nếu chưa tồn tại thì tạo mới. Trả về null nếu tên trống.
+        /// </summary>
+        private async Task<int?> ResolveAuthorIdAsync(string? authorName, string userId)
+        {
+            var name = (authorName ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(name))
+                return null;
+
+            var existing = await _context.Authors
+                .FirstOrDefaultAsync(a => a.Name != null &&
+                    a.Name.ToLower() == name.ToLower() && a.IsActive);
+
+            if (existing != null)
+                return existing.AuthorId;
+
+            var newAuthor = new Author
+            {
+                Name = name,
+                IsActive = true,
+                UpdatedByUserId = userId
+            };
+            _context.Authors.Add(newAuthor);
+            await _context.SaveChangesAsync();
+
+            return newAuthor.AuthorId;
         }
 
         private static BookDto ToDto(Book b) => new BookDto

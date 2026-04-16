@@ -79,8 +79,8 @@
                             </span>
                         </div>
                         <div class="col-auto">
-                            <span class="badge @(Model.IsActive ? "bg-success" : "bg-secondary") px-3 py-2">
-                                @(Model.IsActive ? "Đang bán" : "Đã ẩn")
+                            <span class="badge @(Model.IsActive ? "bg-success" : "bg-danger") px-3 py-2">
+                                @(Model.IsActive ? "Active" : "Deactive")
                             </span>
                         </div>
                     </div>
@@ -98,10 +98,15 @@
             <a asp-action="Edit" asp-route-id="@Model.BookId" class="btn btn-warning">
                 <i class="bi bi-pencil me-1"></i> Chỉnh sửa
             </a>
-            <a asp-action="Delete" asp-route-id="@Model.BookId" class="btn btn-danger">
-                <i class="bi bi-trash me-1"></i> Xóa
-            </a>
-            <a asp-action="Index" class="btn btn-secondary ms-auto">
+            <form asp-action="ChangeStatus" asp-route-id="@Model.BookId" method="post" class="d-inline"
+                  onsubmit="return confirm('@(Model.IsActive ? "Vô hiệu hóa sách này?" : "Kích hoạt sách này?")')">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn @(Model.IsActive ? "btn-secondary" : "btn-success")">
+                    <i class="bi @(Model.IsActive ? "bi-toggle-on" : "bi-toggle-off") me-1"></i>
+                    @(Model.IsActive ? "Deactive" : "Active")
+                </button>
+            </form>
+            <a asp-action="Index" class="btn btn-outline-secondary ms-auto">
                 <i class="bi bi-arrow-left me-1"></i> Quay lại
             </a>
         </div>

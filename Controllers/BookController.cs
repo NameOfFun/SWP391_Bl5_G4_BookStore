@@ -78,7 +78,7 @@ namespace BookStore.Controllers
             var book = await _bookService.GetByIdAsync(id);
             if (book == null) return NotFound();
 
-            await PopulateDropdownsAsync(book.CategoryId, book.AuthorId);
+            await PopulateDropdownsAsync(book.CategoryId);
             return View(book);
         }
 
@@ -88,7 +88,7 @@ namespace BookStore.Controllers
         {
             if (!ModelState.IsValid)
             {
-                await PopulateDropdownsAsync(dto.CategoryId, dto.AuthorId);
+                await PopulateDropdownsAsync(dto.CategoryId);
                 return View(dto);
             }
 
@@ -106,47 +106,37 @@ namespace BookStore.Controllers
             catch (ArgumentException ex)
             {
                 ModelState.AddModelError(string.Empty, ex.Message);
-                await PopulateDropdownsAsync(dto.CategoryId, dto.AuthorId);
+                await PopulateDropdownsAsync(dto.CategoryId);
                 return View(dto);
             }
         }
 
-        // GET: /Book/Delete/5
-        [HttpGet]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var book = await _bookService.GetByIdAsync(id);
-            if (book == null) return NotFound();
-            return View(book);
-        }
-
-        // POST: /Book/Delete/5
-        [HttpPost, ActionName("Delete"), ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        // POST: /Book/ChangeStatus/5
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangeStatus(int id)
         {
             try
             {
-                await _bookService.DeleteAsync(id);
-                TempData["Success"] = "Xóa sách thành công";
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+                var book = await _bookService.ChangeStatusAsync(id, userId);
+                TempData["Success"] = book.IsActive
+                    ? $"Sách \"{book.Title}\" đã được kích hoạt (Active)."
+                    : $"Sách \"{book.Title}\" đã bị vô hiệu hóa (Deactive).";
             }
             catch (InvalidOperationException)
             {
-                TempData["Error"] = "Không tìm thấy sách cần xóa";
+                TempData["Error"] = "Không tìm thấy sách cần thay đổi trạng thái.";
             }
 
             return RedirectToAction(nameof(Index));
         }
 
         // ---------------------------------------------------------------
-        private async Task PopulateDropdownsAsync(int? selectedCategory = null, int? selectedAuthor = null)
+        private async Task PopulateDropdownsAsync(int? selectedCategory = null)
         {
             ViewBag.Categories = new SelectList(
                 await _context.Categories.Where(c => c.IsActive).OrderBy(c => c.Name).ToListAsync(),
                 "CategoryId", "Name", selectedCategory);
-
-            ViewBag.Authors = new SelectList(
-                await _context.Authors.Where(a => a.IsActive).OrderBy(a => a.Name).ToListAsync(),
-                "AuthorId", "Name", selectedAuthor);
         }
     }
 }

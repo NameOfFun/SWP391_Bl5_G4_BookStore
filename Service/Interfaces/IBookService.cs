@@ -8,6 +8,6 @@ namespace BookStore.Service.Interfaces
         Task<BookDto?> GetByIdAsync(int id);
         Task<BookDto> CreateAsync(BookDto dto, string userId);
         Task<BookDto> UpdateAsync(int id, BookDto dto, string userId);
-        Task DeleteAsync(int id);
+        Task<BookDto> ChangeStatusAsync(int id, string userId);
     }
 }
