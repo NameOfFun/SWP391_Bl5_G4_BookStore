@@ -33,7 +33,6 @@
 
   <ItemGroup>
     <Folder Include="Dtos\Admin\" />
-    <Folder Include="Dtos\Auth\" />
     <Folder Include="Dtos\Manager\" />
     <Folder Include="Dtos\Customer\" />
     <Folder Include="Dtos\Staff\" />

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace BookStore.Models;
 
-public partial class BookStoreDbContext : IdentityDbContext
+public partial class BookStoreDbContext : IdentityDbContext<IdentityUser>
 {
     public BookStoreDbContext()
     {
@@ -159,7 +159,7 @@ public partial class BookStoreDbContext : IdentityDbContext
             entity.ToTable("Cart");
             entity.HasKey(e => e.CartId);
             entity.HasIndex(e => e.UserId).IsUnique();
-            entity.HasOne<IdentityUser>().WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<ApplicationUser>().WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<CartItem>(entity =>
