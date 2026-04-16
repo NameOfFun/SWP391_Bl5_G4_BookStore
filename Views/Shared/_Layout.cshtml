@@ -276,11 +276,22 @@
         @if (User.IsInRole("Shipper"))
         {
             <div class="nav-item-group">
-                <a class="nav-link-item @(ctrl == "Shipper" ? "active" : "")"
-                   asp-controller="Shipper" asp-action="Dashboard">
+                <button class="nav-link-item @(ctrl == "Shipper" ? "active" : "")"
+                        onclick="toggleSubmenu('submenu-shipper', this)">
                     <i class="bi bi-truck nav-icon"></i>
-                    <span class="nav-label">Dashboard Shipper</span>
-                </a>
+                    <span class="nav-label">Shipper</span>
+                    <i class="bi bi-chevron-down nav-chevron"></i>
+                </button>
+                <div class="nav-submenu @(ctrl == "Shipper" ? "open" : "")" id="submenu-shipper">
+                    <a class="nav-link-item @(ctrl == "Shipper" && action == "Dashboard" ? "active" : "")"
+                       asp-controller="Shipper" asp-action="Dashboard">
+                        <span class="nav-label">Dashboard</span>
+                    </a>
+                    <a class="nav-link-item @(ctrl == "Shipper" && action == "AssignedOrders" ? "active" : "")"
+                       asp-controller="Shipper" asp-action="AssignedOrders">
+                        <span class="nav-label">Đơn được giao</span>
+                    </a>
+                </div>
             </div>
         }
 
