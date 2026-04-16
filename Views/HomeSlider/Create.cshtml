@@ -34,10 +34,11 @@
 
                     <div class="mb-3">
                         <label asp-for="Caption" class="form-label" style="font-size:.875rem;font-weight:500;color:#595959">
-                            Tiêu Đề
+                            Chữ trên slider (tuỳ chọn)
                         </label>
-                        <input asp-for="Caption" class="form-control" style="border-radius:6px;font-size:.875rem"
-                               placeholder="Tiêu đề hiển thị trên slider (tuỳ chọn)..." />
+                        <textarea asp-for="Caption" class="form-control" rows="4" style="border-radius:6px;font-size:.875rem"
+                                  placeholder="Nhiều dòng: dòng 1 = phụ đề nhỏ, dòng 2 = tiêu đề chính, từ dòng 3 = mô tả."></textarea>
+                        <div class="form-text" style="font-size:.78rem">Trang chủ hiển thị theo thứ tự dòng. Chỉ một dòng = chỉ tiêu đề chính.</div>
                         <span asp-validation-for="Caption" class="text-danger" style="font-size:.8rem"></span>
                     </div>
 

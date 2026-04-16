@@ -30,57 +30,48 @@ $(function () {
     var MenuObj = $("#menu");
     var mobileMenuObj = $('#mobile-menu');
 
-    bodyObj.wrapInner('<div id="wrap"></div>');
+    if (typeof Harvey !== 'undefined' && $.fn.mmenu) {
+        bodyObj.wrapInner('<div id="wrap"></div>');
 
-    var toggleMenu = {
-        elem: MenuObj,
-        mobile: function () {
-            //activate mmenu
-            mobileMenuObj.mmenu({
-                slidingSubmenus: false,
-                position: 'right',
-                zposition: 'front'
-            }, {
-                pageSelector: '#wrap'
-            });
+        var toggleMenu = {
+            elem: MenuObj,
+            mobile: function () {
+                mobileMenuObj.mmenu({
+                    slidingSubmenus: false,
+                    position: 'right',
+                    zposition: 'front'
+                }, {
+                    pageSelector: '#wrap'
+                });
 
-            //hide desktop top menu
-            this.elem.hide();
-        },
-        desktop: function () {
-            //close the menu
-            mobileMenuObj.trigger("close.mm");
+                this.elem.hide();
+            },
+            desktop: function () {
+                mobileMenuObj.trigger("close.mm");
+                this.elem.show();
+            }
+        };
 
-            //reshow desktop menu
-            this.elem.show();
-        }
-    };
+        Harvey.attach('screen and (max-width:991px)', {
+            setup: function () {
+            },
+            on: function () {
+                toggleMenu.mobile();
+            },
+            off: function () {
+            }
+        });
 
-    Harvey.attach('screen and (max-width:991px)', {
-        setup: function () {
-            //called when the query becomes valid for the first time
-        },
-        on: function () {
-            //called each time the query is activated
-            toggleMenu.mobile();
-        },
-        off: function () {
-            //called each time the query is deactivated
-        }
-    });
-
-    Harvey.attach('screen and (min-width:992px)', {
-        setup: function () {
-            //called when the query becomes valid for the first time
-        },
-        on: function () {
-            //called each time the query is activated
-            toggleMenu.desktop();
-        },
-        off: function () {
-            //called each time the query is deactivated
-        }
-    });
+        Harvey.attach('screen and (min-width:992px)', {
+            setup: function () {
+            },
+            on: function () {
+                toggleMenu.desktop();
+            },
+            off: function () {
+            }
+        });
+    }
 
     //Header Dropdown Menu
     //--------------------------------------------------------
@@ -155,15 +146,19 @@ $(function () {
     //Facts Counter
     //--------------------------------------------------------
     var counterObj = $('.fact-counter');
-    counterObj.counterUp({
-        delay: 10,
-        time: 500
-    });
+    if (counterObj.length && $.fn.counterUp) {
+        counterObj.counterUp({
+            delay: 10,
+            time: 500
+        });
+    }
 
     //Category Filter (MixItUp Plugin)
     //--------------------------------------------------------
     var folioFilterObj = $('#category-filter');
-    folioFilterObj.mixItUp();
+    if (folioFilterObj.length && $.fn.mixItUp) {
+        folioFilterObj.mixItUp();
+    }
 
     //Vertical Tabs
     //--------------------------------------------------------
@@ -181,49 +176,55 @@ $(function () {
     //Blog Tags (Tooltip)
     //--------------------------------------------------------
     var tagObj = $('[data-toggle="blog-tags"]');
-    tagObj.tooltip();
+    if (tagObj.length && $.fn.tooltip) {
+        tagObj.tooltip();
+    }
 
     //Owl Carousel
     //--------------------------------------------------------
     var owlObj = $('.owl-carousel');
-    owlObj.owlCarousel({
-        loop: false,
-        margin: 30,
-        nav: false,
-        dots: true,
-        responsiveClass: true,
-        responsive: {
-            0: {
-                items: 1
-            },
-            600: {
-                items: 1
-            },
-            1000: {
-                items: 2
+    if (owlObj.length && $.fn.owlCarousel) {
+        owlObj.owlCarousel({
+            loop: false,
+            margin: 30,
+            nav: false,
+            dots: true,
+            responsiveClass: true,
+            responsive: {
+                0: {
+                    items: 1
+                },
+                600: {
+                    items: 1
+                },
+                1000: {
+                    items: 2
+                }
             }
-        }
-    });
+        });
+    }
 
     var owlEventObj = $('.owl-carousel-event');
-    owlEventObj.owlCarousel({
-        loop: false,
-        margin: 30,
-        nav: false,
-        dots: true,
-        responsiveClass: true,
-        responsive: {
-            0: {
-                items: 1
-            },
-            768: {
-                items: 2
-            },
-            1200: {
-                items: 3
+    if (owlEventObj.length && $.fn.owlCarousel) {
+        owlEventObj.owlCarousel({
+            loop: false,
+            margin: 30,
+            nav: false,
+            dots: true,
+            responsiveClass: true,
+            responsive: {
+                0: {
+                    items: 1
+                },
+                768: {
+                    items: 2
+                },
+                1200: {
+                    items: 3
+                }
             }
-        }
-    });
+        });
+    }
 
     //Sidebar Accordion
     //--------------------------------------------------------
@@ -231,37 +232,49 @@ $(function () {
     var multipleObj = $('#multiple [data-accordion]');
     var singleObj = $('#single[data-accordion]');
 
-    secondaryObj.accordion({
-        singleOpen: true
-    });
+    if (secondaryObj.length && $.fn.accordion) {
+        secondaryObj.accordion({
+            singleOpen: true
+        });
+    }
 
-    multipleObj.accordion({
-        singleOpen: false
-    });
+    if (multipleObj.length && $.fn.accordion) {
+        multipleObj.accordion({
+            singleOpen: false
+        });
+    }
 
-    singleObj.accordion({
-        transitionEasing: 'cubic-bezier(0.455, 0.030, 0.515, 0.955)',
-        transitionSpeed: 200
-    });
+    if (singleObj.length && $.fn.accordion) {
+        singleObj.accordion({
+            transitionEasing: 'cubic-bezier(0.455, 0.030, 0.515, 0.955)',
+            transitionSpeed: 200
+        });
+    }
 
     //Responsive Tabs
     //--------------------------------------------------------
     var restabObj = $('#responsiveTabs');
-    restabObj.responsiveTabs({
-        startCollapsed: 'accordion'
-    });
+    if (restabObj.length && $.fn.responsiveTabs) {
+        restabObj.responsiveTabs({
+            startCollapsed: 'accordion'
+        });
+    }
 
     //Responsive Tables
     //--------------------------------------------------------
     var tableObj = $('.table');
     var shoptableObj = $('.shop_table');
-    tableObj.basictable({
-        breakpoint: 991
-    });
+    if (tableObj.length && $.fn.basictable) {
+        tableObj.basictable({
+            breakpoint: 991
+        });
+    }
 
-    shoptableObj.basictable({
-        breakpoint: 991
-    });
+    if (shoptableObj.length && $.fn.basictable) {
+        shoptableObj.basictable({
+            breakpoint: 991
+        });
+    }
 
     //Form Fields (Value Disappear on Focus)
     //--------------------------------------------------------
@@ -281,12 +294,14 @@ $(function () {
     //Bootstrap Carousel Swipe (Testimonials Carousel)
     //--------------------------------------------------------
     var testimonialsObj = $("#testimonials");
-    testimonialsObj.swiperight(function () {
-        $(this).carousel('prev');
-    });
-    testimonialsObj.swipeleft(function () {
-        $(this).carousel('next');
-    });
+    if (testimonialsObj.length && $.fn.swiperight && $.fn.swipeleft) {
+        testimonialsObj.swiperight(function () {
+            $(this).carousel('prev');
+        });
+        testimonialsObj.swipeleft(function () {
+            $(this).carousel('next');
+        });
+    }
 
     //Bx Carousel
     //--------------------------------------------------------
@@ -314,17 +329,19 @@ $(function () {
     }
 
     var popularItemObjD1 = $('.popular-items-detail-v1');
-    popularItemObjD1.bxSlider({
-        minSlides: 1,
-        maxSlides: popularSlidesD1,
-        slideWidth: popularWidthD1,
-        slideMargin: popularMarginD1,
-        responsive: true,
-        touchEnabled: true,
-        controls: false,
-        infiniteLoop: true,
-        shrinkItems: true
-    });
+    if (popularItemObjD1.length && $.fn.bxSlider) {
+        popularItemObjD1.bxSlider({
+            minSlides: 1,
+            maxSlides: popularSlidesD1,
+            slideWidth: popularWidthD1,
+            slideMargin: popularMarginD1,
+            responsive: true,
+            touchEnabled: true,
+            controls: false,
+            infiniteLoop: true,
+            shrinkItems: true
+        });
+    }
 
     //Popular Items Detail V2
 
@@ -349,17 +366,19 @@ $(function () {
     }
 
     var popularItemObjD2 = $('.popular-items-detail-v2');
-    popularItemObjD2.bxSlider({
-        minSlides: 1,
-        maxSlides: popularSlidesD2,
-        slideWidth: popularWidthD2,
-        slideMargin: popularMarginD2,
-        responsive: true,
-        touchEnabled: true,
-        controls: false,
-        infiniteLoop: true,
-        shrinkItems: true
-    });
+    if (popularItemObjD2.length && $.fn.bxSlider) {
+        popularItemObjD2.bxSlider({
+            minSlides: 1,
+            maxSlides: popularSlidesD2,
+            slideWidth: popularWidthD2,
+            slideMargin: popularMarginD2,
+            responsive: true,
+            touchEnabled: true,
+            controls: false,
+            infiniteLoop: true,
+            shrinkItems: true
+        });
+    }
 
     //Contact Form Submit/Validation
     //--------------------------------------------------------
@@ -374,60 +393,64 @@ $(function () {
     var successObj = $('#success');
     var errorObj = $('#error');
 
-    contactFormObj.on('click', function () {
-        var emailaddress = emailFieldObj.val();
-        function validateEmail(emailaddress) {
-            var filter = /^[\w\-\.\+]+\@[a-zA-Z0-9\.\-]+\.[a-zA-z0-9]{2,4}$/;
-            if (filter.test(emailaddress)) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-
-        var data = {
-            firstname: firstNameFieldObj.val(),
-            lastname: lastNameFieldObj.val(),
-            email: emailFieldObj.val(),
-            phone: phoneFieldObj.val(),
-            message: messageFieldObj.val()
-        };
-        if (data.firstname === '' || data.lastname === '' || data.email === '' || data.phone === '' || data.message === '') {
-            alert("All fields are mandatory");
-        } else {
-            if (validateEmail(emailaddress)) {
-                if (emailerrorvalidation === 1) {
-                    alert('Nice! your Email is valid, you can proceed now.');
+    if (contactFormObj.length) {
+        contactFormObj.on('click', function () {
+            var emailaddress = emailFieldObj.val();
+            function validateEmail(emailaddress) {
+                var filter = /^[\w\-\.\+]+\@[a-zA-Z0-9\.\-]+\.[a-zA-z0-9]{2,4}$/;
+                if (filter.test(emailaddress)) {
+                    return true;
+                } else {
+                    return false;
                 }
-                emailerrorvalidation = 0;
-                $.ajax({
-                    type: "POST",
-                    url: "contact.php",
-                    data: data,
-                    cache: false,
-                    success: function () {
-                        successObj.fadeIn(1000);
-                        formObj[0].reset();
-                    },
-                    error: function () {
-                        errorObj.fadeIn(1000);
-                    }
-                });
-            } else {
-                emailerrorvalidation = 1;
-                alert('Oops! Invalid Email Address');
             }
-        }
-        return false;
-    });
+
+            var data = {
+                firstname: firstNameFieldObj.val(),
+                lastname: lastNameFieldObj.val(),
+                email: emailFieldObj.val(),
+                phone: phoneFieldObj.val(),
+                message: messageFieldObj.val()
+            };
+            if (data.firstname === '' || data.lastname === '' || data.email === '' || data.phone === '' || data.message === '') {
+                alert("All fields are mandatory");
+            } else {
+                if (validateEmail(emailaddress)) {
+                    if (emailerrorvalidation === 1) {
+                        alert('Nice! your Email is valid, you can proceed now.');
+                    }
+                    emailerrorvalidation = 0;
+                    $.ajax({
+                        type: "POST",
+                        url: "contact.php",
+                        data: data,
+                        cache: false,
+                        success: function () {
+                            successObj.fadeIn(1000);
+                            formObj[0].reset();
+                        },
+                        error: function () {
+                            errorObj.fadeIn(1000);
+                        }
+                    });
+                } else {
+                    emailerrorvalidation = 1;
+                    alert('Oops! Invalid Email Address');
+                }
+            }
+            return false;
+        });
+    }
 });
 
 $( window ).load(function() {
     //Masonry
     //--------------------------------------------------------
     var girdFieldObj = $('.grid');
-    girdFieldObj.masonry({
-        itemSelector: '.grid-item',
-        percentPosition: true
-    });
+    if (girdFieldObj.length && $.fn.masonry) {
+        girdFieldObj.masonry({
+            itemSelector: '.grid-item',
+            percentPosition: true
+        });
+    }
 });

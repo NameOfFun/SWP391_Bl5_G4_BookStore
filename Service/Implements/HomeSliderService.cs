@@ -14,6 +14,16 @@ namespace BookStore.Service.Implements
             _context = context;
         }
 
+        public async Task<IReadOnlyList<HomeSliderDto>> GetActiveForHomeAsync()
+        {
+            return await _context.HomeSliders.AsNoTracking()
+                .Where(s => s.IsActive)
+                .OrderBy(s => s.DisplayOrder)
+                .ThenBy(s => s.HomeSliderId)
+                .Select(s => ToDto(s))
+                .ToListAsync();
+        }
+
         public async Task<IReadOnlyList<HomeSliderDto>> GetAllAsync()
         {
             return await _context.HomeSliders.AsNoTracking()

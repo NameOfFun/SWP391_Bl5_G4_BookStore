@@ -1,0 +1,61 @@
+/*
+ * Bộ chữ hiệu sách: Lora (thân bài/UI) + Cormorant Garamond (tiêu đề).
+ * Load sau style.css để ghi đè Open Sans / Lato của template LIBRARIA.
+ */
+
+body,
+button,
+input,
+select,
+textarea,
+p,
+pre,
+code,
+kbd,
+tt,
+var,
+.navbar-nav > li > a,
+.dropdown-menu > li > a,
+.topbar-info,
+.topbar-links,
+.header-topbar a,
+.widget_text,
+.widget_nav_menu,
+.menu a,
+.textwidget,
+#twitter-feed,
+.timming-text-widget,
+.timming-text-widget time,
+.category-item .info-block,
+.category-item .info-block p,
+.category-item .author,
+.filter-box h3,
+.social-network .lead,
+.sub-footer ul a,
+.footer-text {
+  font-family: "Lora", Georgia, "Times New Roman", serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.section-title,
+.footer-widget-title,
+.filter-buttons .filter,
+.carousel-caption h2,
+.carousel-caption h3,
+.mobile-title h4 {
+  font-family: "Cormorant Garamond", "Times New Roman", Georgia, serif;
+  letter-spacing: 0.02em;
+}
+
+.carousel-caption h2 {
+  letter-spacing: 0.04em;
+}
+
+.section-title {
+  letter-spacing: 0.03em;
+}

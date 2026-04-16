@@ -10,7 +10,7 @@ namespace BookStore.Dtos.Common
         [MaxLength(500, ErrorMessage = "URL hình ảnh không được vượt quá 500 ký tự")]
         public string ImageUrl { get; set; } = null!;
 
-        [MaxLength(200, ErrorMessage = "Tiêu đề không được vượt quá 200 ký tự")]
+        [MaxLength(2000, ErrorMessage = "Nội dung chữ trên slider không được vượt quá 2000 ký tự")]
         public string? Caption { get; set; }
 
         [MaxLength(500, ErrorMessage = "Đường dẫn không được vượt quá 500 ký tự")]
