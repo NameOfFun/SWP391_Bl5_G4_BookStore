@@ -1,0 +1,132 @@
+@model IReadOnlyList<BookStore.Dtos.Common.HomeSliderDto>
+@{
+    ViewData["Title"] = "Quản Lý Home Slider";
+    ViewData["BreadcrumbParent"] = "Trang Chủ";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h4 class="mb-0 fw-600" style="font-size:1.15rem;color:#262626">Home Slider</h4>
+        <p class="text-muted mb-0" style="font-size:.85rem">Quản lý các banner hiển thị trên trang chủ</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary btn-sm" style="border-radius:6px;font-size:.875rem;padding:7px 16px">
+        <i class="bi bi-plus-lg me-1"></i>Thêm Slider
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert" style="border-radius:8px;font-size:.875rem">
+        <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert" style="border-radius:8px;font-size:.875rem">
+        <i class="bi bi-exclamation-circle-fill me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card border-0 shadow-sm" style="border-radius:10px">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" style="font-size:.875rem">
+                <thead style="background:#fafafa;border-bottom:1px solid #f0f0f0">
+                    <tr>
+                        <th class="px-4 py-3 text-muted fw-500" style="width:50px">#</th>
+                        <th class="py-3 text-muted fw-500" style="width:110px">Hình ảnh</th>
+                        <th class="py-3 text-muted fw-500">Tiêu đề</th>
+                        <th class="py-3 text-muted fw-500">Đường dẫn</th>
+                        <th class="py-3 text-muted fw-500 text-center" style="width:90px">Thứ tự</th>
+                        <th class="py-3 text-muted fw-500 text-center" style="width:120px">Trạng thái</th>
+                        <th class="py-3 text-muted fw-500 text-end pe-4" style="width:160px">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="bi bi-images" style="font-size:2rem;display:block;margin-bottom:8px"></i>
+                                Chưa có slider nào
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var (item, idx) in Model.Select((x, i) => (x, i + 1)))
+                    {
+                        <tr>
+                            <td class="px-4 text-muted">@idx</td>
+                            <td>
+                                <img src="@item.ImageUrl" alt="@item.Caption"
+                                     style="width:90px;height:52px;object-fit:cover;border-radius:6px;border:1px solid #f0f0f0"
+                                     onerror="this.src='';this.style.background='#f5f5f5';this.style.display='inline-block'" />
+                            </td>
+                            <td class="fw-500" style="color:#262626">@(item.Caption ?? "—")</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(item.LinkUrl))
+                                {
+                                    <a href="@item.LinkUrl" target="_blank" class="text-primary" style="font-size:.8rem">
+                                        <i class="bi bi-box-arrow-up-right me-1"></i>@item.LinkUrl
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <span class="badge rounded-pill bg-light text-secondary border" style="font-size:.78rem">
+                                    @item.DisplayOrder
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                @if (item.IsActive)
+                                {
+                                    <span class="badge rounded-pill" style="background:#f6ffed;color:#52c41a;border:1px solid #b7eb8f;font-size:.78rem;font-weight:500;padding:4px 10px">
+                                        <i class="bi bi-circle-fill me-1" style="font-size:.5rem"></i>Hoạt động
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge rounded-pill" style="background:#fff2f0;color:#ff4d4f;border:1px solid #ffccc7;font-size:.78rem;font-weight:500;padding:4px 10px">
+                                        <i class="bi bi-circle-fill me-1" style="font-size:.5rem"></i>Vô hiệu
+                                    </span>
+                                }
+                            </td>
+                            <td class="text-end pe-4">
+                                <a asp-action="Edit" asp-route-id="@item.HomeSliderId"
+                                   class="btn btn-sm btn-outline-primary me-1" style="border-radius:6px;font-size:.8rem;padding:4px 10px" title="Sửa">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form asp-action="ToggleStatus" asp-route-id="@item.HomeSliderId"
+                                      method="post" class="d-inline"
+                                      onsubmit="return confirm('@(item.IsActive ? "Vô hiệu hóa slider này?" : "Kích hoạt slider này?")')">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit"
+                                            class="btn btn-sm @(item.IsActive ? "btn-outline-warning" : "btn-outline-success") me-1"
+                                            style="border-radius:6px;font-size:.8rem;padding:4px 10px"
+                                            title="@(item.IsActive ? "Vô hiệu hóa" : "Kích hoạt")">
+                                        <i class="bi @(item.IsActive ? "bi-toggle-on" : "bi-toggle-off")"></i>
+                                    </button>
+                                </form>
+                                <form asp-action="Delete" asp-route-id="@item.HomeSliderId"
+                                      method="post" class="d-inline"
+                                      onsubmit="return confirm('Xoá slider này? Hành động không thể hoàn tác.')">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger"
+                                            style="border-radius:6px;font-size:.8rem;padding:4px 10px"
+                                            title="Xoá">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
