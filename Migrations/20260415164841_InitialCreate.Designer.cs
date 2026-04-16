@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BookStore.Migrations
 {
     [DbContext(typeof(BookStoreDbContext))]
-    [Migration("20260413145604_AboutPolicyConstraints")]
-    partial class AboutPolicyConstraints
+    [Migration("20260415164841_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -77,12 +77,22 @@ namespace BookStore.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
                     b.Property<string>("Name")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("UpdatedByUserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("AuthorId")
                         .HasName("PK__Author__70DAFC34FFED1BE6");
+
+                    b.HasIndex("UpdatedByUserId");
 
                     b.ToTable("Author", (string)null);
                 });
@@ -113,8 +123,32 @@ namespace BookStore.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<DateTime?>("LastPricingChangeAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("LastPricingChangeByUserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<decimal?>("Price")
                         .HasColumnType("decimal(10, 2)");
+
+                    b.Property<string>("PricingNote")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("PromotionalEndsAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<decimal?>("PromotionalPrice")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<DateTime?>("PromotionalStartsAt")
+                        .HasColumnType("datetime");
 
                     b.Property<int?>("Stock")
                         .HasColumnType("int");
@@ -123,12 +157,19 @@ namespace BookStore.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<string>("UpdatedByUserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("BookId")
                         .HasName("PK__Book__3DE0C20785DAE3CC");
 
                     b.HasIndex("AuthorId");
 
                     b.HasIndex("CategoryId");
+
+                    b.HasIndex("LastPricingChangeByUserId");
+
+                    b.HasIndex("UpdatedByUserId");
 
                     b.ToTable("Book", (string)null);
                 });
@@ -152,8 +193,22 @@ namespace BookStore.Migrations
                         .HasColumnType("datetime")
                         .HasDefaultValueSql("(getdate())");
 
+                    b.Property<DateTime?>("HiddenAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("HiddenByUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("IsHidden")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
                     b.Property<byte>("Stars")
                         .HasColumnType("tinyint");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -162,6 +217,8 @@ namespace BookStore.Migrations
                     b.HasKey("BookRatingId");
 
                     b.HasIndex("BookId");
+
+                    b.HasIndex("HiddenByUserId");
 
                     b.HasIndex("UserId", "BookId")
                         .IsUnique();
@@ -177,12 +234,22 @@ namespace BookStore.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TagId"));
 
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
                     b.Property<string>("Name")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("UpdatedByUserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("TagId")
                         .HasName("PK__BookTag__657CF9AC0D8A39E4");
+
+                    b.HasIndex("UpdatedByUserId");
 
                     b.ToTable("BookTag", (string)null);
                 });
@@ -246,12 +313,22 @@ namespace BookStore.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
                     b.Property<string>("Name")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("UpdatedByUserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("CategoryId")
                         .HasName("PK__Category__19093A0B7D56E1D0");
+
+                    b.HasIndex("UpdatedByUserId");
 
                     b.ToTable("Category", (string)null);
                 });
@@ -271,10 +348,29 @@ namespace BookStore.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ContactPhone")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime")
                         .HasDefaultValueSql("(getdate())");
+
+                    b.Property<int?>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RequestType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ResolutionNotes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ResolvedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("ResolvedByUserId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -290,12 +386,15 @@ namespace BookStore.Migrations
                         .HasColumnType("datetime");
 
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("CustomerRequestId");
 
                     b.HasIndex("AssignedToUserId");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("ResolvedByUserId");
 
                     b.HasIndex("UserId");
 
@@ -434,6 +533,115 @@ namespace BookStore.Migrations
                     b.ToTable("OrderDetail", (string)null);
                 });
 
+            modelBuilder.Entity("BookStore.Models.Payment", b =>
+                {
+                    b.Property<int>("PaymentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PaymentId"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(12,2)");
+
+                    b.Property<int>("Channel")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ClientIp")
+                        .HasMaxLength(45)
+                        .HasColumnType("nvarchar(45)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("(getdate())");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nchar(3)")
+                        .IsFixedLength();
+
+                    b.Property<string>("FailureCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("FailureMessage")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("GatewayRawResponse")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("PaidAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("Provider")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ProviderOrderRef")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("ProviderTransactionId")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.HasKey("PaymentId");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("ProviderTransactionId")
+                        .IsUnique()
+                        .HasFilter("[ProviderTransactionId] IS NOT NULL");
+
+                    b.ToTable("Payment", (string)null);
+                });
+
+            modelBuilder.Entity("BookStore.Models.PaymentRefund", b =>
+                {
+                    b.Property<int>("PaymentRefundId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PaymentRefundId"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(12,2)");
+
+                    b.Property<string>("ExternalRefundId")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<int>("PaymentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("RefundedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("(getdate())");
+
+                    b.HasKey("PaymentRefundId");
+
+                    b.HasIndex("PaymentId");
+
+                    b.ToTable("PaymentRefund", (string)null);
+                });
+
             modelBuilder.Entity("BookStore.Models.Policy", b =>
                 {
                     b.Property<int>("PolicyId")
@@ -487,6 +695,11 @@ namespace BookStore.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("(getdate())");
+
                     b.Property<string>("Description")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
@@ -503,11 +716,17 @@ namespace BookStore.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<string>("LastManagedByUserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<decimal?>("MinOrderAmount")
                         .HasColumnType("decimal(10,2)");
 
                     b.Property<int>("TimesUsed")
                         .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime");
 
                     b.Property<int?>("UsageLimit")
                         .HasColumnType("int");
@@ -522,6 +741,8 @@ namespace BookStore.Migrations
 
                     b.HasIndex("Code")
                         .IsUnique();
+
+                    b.HasIndex("LastManagedByUserId");
 
                     b.ToTable("Voucher", (string)null);
                 });
@@ -777,6 +998,16 @@ namespace BookStore.Migrations
                     b.Navigation("UpdatedBy");
                 });
 
+            modelBuilder.Entity("BookStore.Models.Author", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "UpdatedBy")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("UpdatedBy");
+                });
+
             modelBuilder.Entity("BookStore.Models.Book", b =>
                 {
                     b.HasOne("BookStore.Models.Author", "Author")
@@ -789,9 +1020,23 @@ namespace BookStore.Migrations
                         .HasForeignKey("CategoryId")
                         .HasConstraintName("FK__Book__CategoryId__29572725");
 
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "LastPricingChangeBy")
+                        .WithMany()
+                        .HasForeignKey("LastPricingChangeByUserId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "UpdatedBy")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("Author");
 
                     b.Navigation("Category");
+
+                    b.Navigation("LastPricingChangeBy");
+
+                    b.Navigation("UpdatedBy");
                 });
 
             modelBuilder.Entity("BookStore.Models.BookRating", b =>
@@ -802,6 +1047,11 @@ namespace BookStore.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "HiddenBy")
+                        .WithMany()
+                        .HasForeignKey("HiddenByUserId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -809,6 +1059,18 @@ namespace BookStore.Migrations
                         .IsRequired();
 
                     b.Navigation("Book");
+
+                    b.Navigation("HiddenBy");
+                });
+
+            modelBuilder.Entity("BookStore.Models.BookTag", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "UpdatedBy")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("UpdatedBy");
                 });
 
             modelBuilder.Entity("BookStore.Models.Cart", b =>
@@ -839,6 +1101,16 @@ namespace BookStore.Migrations
                     b.Navigation("Cart");
                 });
 
+            modelBuilder.Entity("BookStore.Models.Category", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "UpdatedBy")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("UpdatedBy");
+                });
+
             modelBuilder.Entity("BookStore.Models.CustomerRequest", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
@@ -846,11 +1118,24 @@ namespace BookStore.Migrations
                         .HasForeignKey("AssignedToUserId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("BookStore.Models.Order", "Order")
+                        .WithMany("CustomerRequests")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "ResolvedBy")
+                        .WithMany()
+                        .HasForeignKey("ResolvedByUserId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Order");
+
+                    b.Navigation("ResolvedBy");
                 });
 
             modelBuilder.Entity("BookStore.Models.HomeSlider", b =>
@@ -905,6 +1190,28 @@ namespace BookStore.Migrations
                     b.Navigation("Order");
                 });
 
+            modelBuilder.Entity("BookStore.Models.Payment", b =>
+                {
+                    b.HasOne("BookStore.Models.Order", "Order")
+                        .WithMany("Payments")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("BookStore.Models.PaymentRefund", b =>
+                {
+                    b.HasOne("BookStore.Models.Payment", "Payment")
+                        .WithMany("Refunds")
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Payment");
+                });
+
             modelBuilder.Entity("BookStore.Models.Policy", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", "Role")
@@ -920,6 +1227,16 @@ namespace BookStore.Migrations
                     b.Navigation("Role");
 
                     b.Navigation("UpdatedBy");
+                });
+
+            modelBuilder.Entity("BookStore.Models.Voucher", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "LastManagedBy")
+                        .WithMany()
+                        .HasForeignKey("LastManagedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("LastManagedBy");
                 });
 
             modelBuilder.Entity("BookStore.Models.Wishlist", b =>
@@ -1033,7 +1350,16 @@ namespace BookStore.Migrations
 
             modelBuilder.Entity("BookStore.Models.Order", b =>
                 {
+                    b.Navigation("CustomerRequests");
+
                     b.Navigation("Details");
+
+                    b.Navigation("Payments");
+                });
+
+            modelBuilder.Entity("BookStore.Models.Payment", b =>
+                {
+                    b.Navigation("Refunds");
                 });
 
             modelBuilder.Entity("BookStore.Models.Voucher", b =>

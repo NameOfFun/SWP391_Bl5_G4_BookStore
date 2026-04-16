@@ -1,0 +1,114 @@
+@model BookStore.Dtos.Common.BookDto
+@{
+    ViewData["Title"] = Model.Title;
+
+    var effectivePrice = Model.PromotionalPrice.HasValue
+        && Model.PromotionalStartsAt <= DateTime.UtcNow
+        && (!Model.PromotionalEndsAt.HasValue || Model.PromotionalEndsAt >= DateTime.UtcNow)
+        ? Model.PromotionalPrice.Value : Model.Price;
+}
+
+<div class="container mt-4" style="max-width:900px">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Quản lý Sách</a></li>
+            <li class="breadcrumb-item active">Chi tiết</li>
+        </ol>
+    </nav>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="row g-4">
+                @* Ảnh bìa *@
+                <div class="col-md-3 text-center">
+                    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                    {
+                        <img src="@Model.ImageUrl" alt="@Model.Title"
+                             class="img-fluid rounded shadow-sm" style="max-height:260px;object-fit:cover;" />
+                    }
+                    else
+                    {
+                        <div class="bg-light rounded d-flex align-items-center justify-content-center"
+                             style="height:200px;">
+                            <i class="bi bi-image text-muted" style="font-size:3rem;"></i>
+                        </div>
+                    }
+                </div>
+
+                @* Thông tin *@
+                <div class="col-md-9">
+                    <h3 class="mb-1">@Model.Title</h3>
+                    <p class="text-muted mb-3">
+                        <i class="bi bi-person me-1"></i> @(Model.AuthorName ?? "Không rõ tác giả")
+                        &nbsp;|&nbsp;
+                        <i class="bi bi-tag me-1"></i> @(Model.CategoryName ?? "Chưa phân loại")
+                    </p>
+
+                    @if (!string.IsNullOrEmpty(Model.Description))
+                    {
+                        <p class="mb-3">@Model.Description</p>
+                    }
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-auto">
+                            <span class="badge bg-light text-dark border fs-6 px-3 py-2">
+                                <i class="bi bi-currency-exchange me-1"></i>
+                                <strong class="text-danger">@effectivePrice.ToString("N0") đ</strong>
+                            </span>
+                        </div>
+                        @if (Model.PromotionalPrice.HasValue)
+                        {
+                            <div class="col-auto">
+                                <span class="badge bg-warning text-dark px-3 py-2">
+                                    <i class="bi bi-percent me-1"></i>
+                                    KM: @Model.PromotionalPrice.Value.ToString("N0") đ
+                                    @if (Model.PromotionalStartsAt.HasValue || Model.PromotionalEndsAt.HasValue)
+                                    {
+                                        <span>
+                                            (@(Model.PromotionalStartsAt?.ToLocalTime().ToString("dd/MM/yyyy") ?? "?")
+                                            –
+                                            @(Model.PromotionalEndsAt?.ToLocalTime().ToString("dd/MM/yyyy") ?? "?"))
+                                        </span>
+                                    }
+                                </span>
+                            </div>
+                        }
+                        <div class="col-auto">
+                            <span class="badge @(Model.Stock > 5 ? "bg-success" : "bg-danger") px-3 py-2">
+                                <i class="bi bi-box me-1"></i> Tồn kho: @Model.Stock
+                            </span>
+                        </div>
+                        <div class="col-auto">
+                            <span class="badge @(Model.IsActive ? "bg-success" : "bg-danger") px-3 py-2">
+                                @(Model.IsActive ? "Active" : "Deactive")
+                            </span>
+                        </div>
+                    </div>
+
+                    <dl class="row small text-muted mb-0">
+                        <dt class="col-sm-3">Ngày tạo</dt>
+                        <dd class="col-sm-9">
+                            @(Model.CreatedAt.HasValue ? Model.CreatedAt.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm") : "—")
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer bg-transparent d-flex gap-2">
+            <a asp-action="Edit" asp-route-id="@Model.BookId" class="btn btn-warning">
+                <i class="bi bi-pencil me-1"></i> Chỉnh sửa
+            </a>
+            <form asp-action="ChangeStatus" asp-route-id="@Model.BookId" method="post" class="d-inline"
+                  onsubmit="return confirm('@(Model.IsActive ? "Vô hiệu hóa sách này?" : "Kích hoạt sách này?")')">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn @(Model.IsActive ? "btn-secondary" : "btn-success")">
+                    <i class="bi @(Model.IsActive ? "bi-toggle-on" : "bi-toggle-off") me-1"></i>
+                    @(Model.IsActive ? "Deactive" : "Active")
+                </button>
+            </form>
+            <a asp-action="Index" class="btn btn-outline-secondary ms-auto">
+                <i class="bi bi-arrow-left me-1"></i> Quay lại
+            </a>
+        </div>
+    </div>
+</div>

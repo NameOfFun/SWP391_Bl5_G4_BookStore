@@ -31,6 +31,7 @@ namespace BookStore
             // DI Services
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IAboutService, AboutService>();
+            builder.Services.AddScoped<IBookService, BookService>();
 
             builder.Services.AddControllersWithViews();
 
