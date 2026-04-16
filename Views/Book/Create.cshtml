@@ -1,0 +1,117 @@
+@model BookStore.Dtos.Common.BookDto
+@{
+    ViewData["Title"] = "Thêm sách mới";
+}
+
+<div class="container mt-4" style="max-width:860px">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Quản lý Sách</a></li>
+            <li class="breadcrumb-item active">Thêm mới</li>
+        </ol>
+    </nav>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Thêm sách mới</h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3"></div>
+
+                <div class="row g-3">
+                    @* Tiêu đề *@
+                    <div class="col-12">
+                        <label asp-for="Title" class="form-label fw-semibold">Tiêu đề <span class="text-danger">*</span></label>
+                        <input asp-for="Title" class="form-control" placeholder="Nhập tiêu đề sách..." />
+                        <span asp-validation-for="Title" class="text-danger small"></span>
+                    </div>
+
+                    @* Mô tả *@
+                    <div class="col-12">
+                        <label asp-for="Description" class="form-label fw-semibold">Mô tả</label>
+                        <textarea asp-for="Description" class="form-control" rows="4"
+                                  placeholder="Nhập mô tả ngắn về sách..."></textarea>
+                    </div>
+
+                    @* Tác giả & Danh mục *@
+                    <div class="col-md-6">
+                        <label asp-for="AuthorId" class="form-label fw-semibold">Tác giả</label>
+                        <select asp-for="AuthorId" asp-items="ViewBag.Authors" class="form-select">
+                            <option value="">-- Chọn tác giả --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="CategoryId" class="form-label fw-semibold">Danh mục</label>
+                        <select asp-for="CategoryId" asp-items="ViewBag.Categories" class="form-select">
+                            <option value="">-- Chọn danh mục --</option>
+                        </select>
+                    </div>
+
+                    @* Giá & Tồn kho *@
+                    <div class="col-md-4">
+                        <label asp-for="Price" class="form-label fw-semibold">Giá bán (đ) <span class="text-danger">*</span></label>
+                        <input asp-for="Price" class="form-control" type="number" min="0" step="1000" placeholder="0" />
+                        <span asp-validation-for="Price" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="PromotionalPrice" class="form-label fw-semibold">Giá khuyến mãi (đ)</label>
+                        <input asp-for="PromotionalPrice" class="form-control" type="number" min="0" step="1000" placeholder="Để trống nếu không có" />
+                        <span asp-validation-for="PromotionalPrice" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="Stock" class="form-label fw-semibold">Tồn kho</label>
+                        <input asp-for="Stock" class="form-control" type="number" min="0" placeholder="0" />
+                        <span asp-validation-for="Stock" class="text-danger small"></span>
+                    </div>
+
+                    @* Ngày khuyến mãi *@
+                    <div class="col-md-6">
+                        <label asp-for="PromotionalStartsAt" class="form-label fw-semibold">KM từ ngày</label>
+                        <input asp-for="PromotionalStartsAt" class="form-control" type="datetime-local" />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="PromotionalEndsAt" class="form-label fw-semibold">KM đến ngày</label>
+                        <input asp-for="PromotionalEndsAt" class="form-control" type="datetime-local" />
+                    </div>
+
+                    @* URL ảnh *@
+                    <div class="col-12">
+                        <label asp-for="ImageUrl" class="form-label fw-semibold">URL ảnh bìa</label>
+                        <input asp-for="ImageUrl" class="form-control" placeholder="https://..." id="imageUrlInput" />
+                        <div id="imagePreview" class="mt-2 d-none">
+                            <img id="previewImg" src="" alt="Preview" class="rounded border"
+                                 style="max-height:180px;object-fit:contain;" />
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-floppy me-1"></i> Lưu
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script>
+        document.getElementById('imageUrlInput').addEventListener('input', function () {
+            var url = this.value.trim();
+            var preview = document.getElementById('imagePreview');
+            var img = document.getElementById('previewImg');
+            if (url) {
+                img.src = url;
+                preview.classList.remove('d-none');
+            } else {
+                preview.classList.add('d-none');
+            }
+        });
+    </script>
+}

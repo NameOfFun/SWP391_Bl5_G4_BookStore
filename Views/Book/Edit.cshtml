@@ -1,0 +1,114 @@
+@model BookStore.Dtos.Common.BookDto
+@{
+    ViewData["Title"] = "Chỉnh sửa sách";
+}
+
+<div class="container mt-4" style="max-width:860px">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Quản lý Sách</a></li>
+            <li class="breadcrumb-item active">Chỉnh sửa</li>
+        </ol>
+    </nav>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-warning">
+            <h5 class="mb-0"><i class="bi bi-pencil-square me-2"></i>Chỉnh sửa sách</h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="Edit" asp-route-id="@Model.BookId" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="BookId" />
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3"></div>
+
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label asp-for="Title" class="form-label fw-semibold">Tiêu đề <span class="text-danger">*</span></label>
+                        <input asp-for="Title" class="form-control" />
+                        <span asp-validation-for="Title" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12">
+                        <label asp-for="Description" class="form-label fw-semibold">Mô tả</label>
+                        <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="AuthorId" class="form-label fw-semibold">Tác giả</label>
+                        <select asp-for="AuthorId" asp-items="ViewBag.Authors" class="form-select">
+                            <option value="">-- Chọn tác giả --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="CategoryId" class="form-label fw-semibold">Danh mục</label>
+                        <select asp-for="CategoryId" asp-items="ViewBag.Categories" class="form-select">
+                            <option value="">-- Chọn danh mục --</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="Price" class="form-label fw-semibold">Giá bán (đ) <span class="text-danger">*</span></label>
+                        <input asp-for="Price" class="form-control" type="number" min="0" step="1000" />
+                        <span asp-validation-for="Price" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="PromotionalPrice" class="form-label fw-semibold">Giá khuyến mãi (đ)</label>
+                        <input asp-for="PromotionalPrice" class="form-control" type="number" min="0" step="1000" placeholder="Để trống nếu không có" />
+                        <span asp-validation-for="PromotionalPrice" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="Stock" class="form-label fw-semibold">Tồn kho</label>
+                        <input asp-for="Stock" class="form-control" type="number" min="0" />
+                        <span asp-validation-for="Stock" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="PromotionalStartsAt" class="form-label fw-semibold">KM từ ngày</label>
+                        <input asp-for="PromotionalStartsAt" class="form-control" type="datetime-local" />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="PromotionalEndsAt" class="form-label fw-semibold">KM đến ngày</label>
+                        <input asp-for="PromotionalEndsAt" class="form-control" type="datetime-local" />
+                    </div>
+
+                    <div class="col-12">
+                        <label asp-for="ImageUrl" class="form-label fw-semibold">URL ảnh bìa</label>
+                        <input asp-for="ImageUrl" class="form-control" id="imageUrlInput" />
+                        <div id="imagePreview" class="mt-2 @(string.IsNullOrEmpty(Model.ImageUrl) ? "d-none" : "")">
+                            <img id="previewImg" src="@Model.ImageUrl" alt="Preview" class="rounded border"
+                                 style="max-height:180px;object-fit:contain;" />
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-warning px-4">
+                        <i class="bi bi-floppy me-1"></i> Cập nhật
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+                    <a asp-action="Details" asp-route-id="@Model.BookId" class="btn btn-outline-info ms-auto">
+                        <i class="bi bi-eye me-1"></i> Xem chi tiết
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script>
+        document.getElementById('imageUrlInput').addEventListener('input', function () {
+            var url = this.value.trim();
+            var preview = document.getElementById('imagePreview');
+            var img = document.getElementById('previewImg');
+            if (url) {
+                img.src = url;
+                preview.classList.remove('d-none');
+            } else {
+                preview.classList.add('d-none');
+            }
+        });
+    </script>
+}
