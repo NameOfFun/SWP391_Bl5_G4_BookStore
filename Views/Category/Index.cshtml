@@ -2,6 +2,51 @@
 @{
     ViewData["Title"] = "Danh Mục Sách";
     ViewData["BreadcrumbParent"] = "Quản Lý";
+}
+
+<style>
+    .pagination-area {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 16px;
+        border-top: 1px solid #f0f0f0;
+        font-size: 0.875rem;
+        color: #595959;
+    }
+    .pagination-info { color: #595959; }
+    .pagination-controls { display: flex; gap: 4px; align-items: center; }
+    .page-btn {
+        min-width: 32px;
+        height: 32px;
+        border: 1px solid #d9d9d9;
+        background: #fff;
+        color: #262626;
+        border-radius: 6px;
+        font-size: 0.8125rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 8px;
+        transition: all .15s;
+        text-decoration: none;
+    }
+    .page-btn:hover:not(.disabled) { border-color: #1677ff; color: #1677ff; }
+    .page-btn.active { background: #1677ff; border-color: #1677ff; color: #fff; }
+    .page-btn.disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+    .page-btn-ellipsis {
+        min-width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8125rem;
+        color: #8c8c8c;
+    }
+</style>
+
+@{
 
     int page       = (int)(ViewData["Page"] ?? 1);
     int totalPages = (int)(ViewData["TotalPages"] ?? 1);
@@ -141,74 +186,63 @@
             </table>
         </div>
 
-        <div class="d-flex align-items-center justify-content-between px-4 py-3"
-             style="border-top:1px solid #f0f0f0">
-            <span class="text-muted" style="font-size:.8rem">
-                Hiển thị @((page - 1) * pageSize + 1)–@(Math.Min(page * pageSize, totalCount))
-                của @totalCount bản ghi
+        <div class="pagination-area">
+            <span class="pagination-info">
+                @if (totalCount == 0)
+                {
+                    <text>Không có bản ghi nào</text>
+                }
+                else
+                {
+                    <text>Hiển thị @((page - 1) * pageSize + 1)–@(Math.Min(page * pageSize, totalCount)) của @totalCount bản ghi</text>
+                }
             </span>
 
-            <nav>
-                <ul class="pagination pagination-sm mb-0" style="gap:2px">
-                    <li class="page-item @(page <= 1 ? "disabled" : "")">
-                        <a class="page-link px-3" style="border-radius:6px;font-size:.8rem"
-                           asp-action="Index" asp-route-page="@(page - 1)"
-                           asp-route-search="@search" asp-route-status="@status">Trước</a>
-                    </li>
+            <div class="pagination-controls">
+                @{
+                    int startPage = Math.Max(1, page - 2);
+                    int endPage   = Math.Min(totalPages, startPage + 4);
+                    if (endPage - startPage < 4)
+                        startPage = Math.Max(1, endPage - 4);
+                }
 
-                    @{
-                        int startPage = Math.Max(1, page - 2);
-                        int endPage   = Math.Min(totalPages, startPage + 4);
-                        if (endPage - startPage < 4)
-                            startPage = Math.Max(1, endPage - 4);
-                    }
+                <a class="page-btn @(page <= 1 ? "disabled" : "")"
+                   asp-action="Index" asp-route-page="@(page - 1)"
+                   asp-route-search="@search" asp-route-status="@status">Trước</a>
 
-                    @if (startPage > 1)
+                @if (startPage > 1)
+                {
+                    <a class="page-btn"
+                       asp-action="Index" asp-route-page="1"
+                       asp-route-search="@search" asp-route-status="@status">1</a>
+                    @if (startPage > 2)
                     {
-                        <li class="page-item">
-                            <a class="page-link" style="border-radius:6px;font-size:.8rem"
-                               asp-action="Index" asp-route-page="1"
-                               asp-route-search="@search" asp-route-status="@status">1</a>
-                        </li>
-                        @if (startPage > 2)
-                        {
-                            <li class="page-item disabled">
-                                <span class="page-link" style="border-radius:6px;font-size:.8rem">…</span>
-                            </li>
-                        }
+                        <span class="page-btn-ellipsis">…</span>
                     }
+                }
 
-                    @for (int p = startPage; p <= endPage; p++)
+                @for (int p = startPage; p <= endPage; p++)
+                {
+                    <a class="page-btn @(p == page ? "active" : "")"
+                       asp-action="Index" asp-route-page="@p"
+                       asp-route-search="@search" asp-route-status="@status">@p</a>
+                }
+
+                @if (endPage < totalPages)
+                {
+                    @if (endPage < totalPages - 1)
                     {
-                        <li class="page-item @(p == page ? "active" : "")">
-                            <a class="page-link" style="border-radius:6px;font-size:.8rem"
-                               asp-action="Index" asp-route-page="@p"
-                               asp-route-search="@search" asp-route-status="@status">@p</a>
-                        </li>
+                        <span class="page-btn-ellipsis">…</span>
                     }
+                    <a class="page-btn"
+                       asp-action="Index" asp-route-page="@totalPages"
+                       asp-route-search="@search" asp-route-status="@status">@totalPages</a>
+                }
 
-                    @if (endPage < totalPages)
-                    {
-                        @if (endPage < totalPages - 1)
-                        {
-                            <li class="page-item disabled">
-                                <span class="page-link" style="border-radius:6px;font-size:.8rem">…</span>
-                            </li>
-                        }
-                        <li class="page-item">
-                            <a class="page-link" style="border-radius:6px;font-size:.8rem"
-                               asp-action="Index" asp-route-page="@totalPages"
-                               asp-route-search="@search" asp-route-status="@status">@totalPages</a>
-                        </li>
-                    }
-
-                    <li class="page-item @(page >= totalPages ? "disabled" : "")">
-                        <a class="page-link px-3" style="border-radius:6px;font-size:.8rem"
-                           asp-action="Index" asp-route-page="@(page + 1)"
-                           asp-route-search="@search" asp-route-status="@status">Sau</a>
-                    </li>
-                </ul>
-            </nav>
+                <a class="page-btn @(page >= totalPages ? "disabled" : "")"
+                   asp-action="Index" asp-route-page="@(page + 1)"
+                   asp-route-search="@search" asp-route-status="@status">Sau</a>
+            </div>
         </div>
     </div>
 </div>
