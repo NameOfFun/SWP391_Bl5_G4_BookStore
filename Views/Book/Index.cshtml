@@ -255,40 +255,67 @@
     </a>
 </div>
 
-<div class="filter-card">
-    <div class="filter-row">
-        <div class="search-group">
-            <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm theo tiêu đề...">
-            <button class="btn btn-search" onclick="applyFilters()">
-                <i class="bi bi-search"></i> Tìm kiếm
-            </button>
+<div class="card border-0 shadow-sm mb-3" style="border-radius:10px">
+    <div class="card-body py-3 px-4">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label mb-1" style="font-size:.8rem;font-weight:500;color:#595959">Tìm kiếm theo tiêu đề</label>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white border-end-0" style="border-radius:6px 0 0 6px">
+                        <i class="bi bi-search text-muted" style="font-size:.85rem"></i>
+                    </span>
+                    <input type="text" id="searchInput" class="form-control border-start-0"
+                           style="border-radius:0 6px 6px 0;font-size:.875rem"
+                           placeholder="Nhập tiêu đề sách..." />
+                </div>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label mb-1" style="font-size:.8rem;font-weight:500;color:#595959">Giá</label>
+                <select id="filterPrice" class="form-select form-select-sm" style="border-radius:6px;font-size:.875rem" onchange="applyFilters()">
+                    <option value="">Tất cả</option>
+                    <option value="0-50000">Dưới 50.000đ</option>
+                    <option value="50000-100000">50.000đ – 100.000đ</option>
+                    <option value="100000-200000">100.000đ – 200.000đ</option>
+                    <option value="200000-999999999">Trên 200.000đ</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label mb-1" style="font-size:.8rem;font-weight:500;color:#595959">Trạng thái</label>
+                <select id="filterStatus" class="form-select form-select-sm" style="border-radius:6px;font-size:.875rem" onchange="applyFilters()">
+                    <option value="">Tất cả</option>
+                    <option value="active">Hoạt động</option>
+                    <option value="inactive">Vô hiệu</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label mb-1" style="font-size:.8rem;font-weight:500;color:#595959">Tác giả</label>
+                <select id="filterAuthor" class="form-select form-select-sm" style="border-radius:6px;font-size:.875rem" onchange="applyFilters()">
+                    <option value="">Tất cả</option>
+                    @foreach (var author in authors)
+                    {
+                        <option value="@author">@author</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label mb-1" style="font-size:.8rem;font-weight:500;color:#595959">Danh mục</label>
+                <select id="filterCategory" class="form-select form-select-sm" style="border-radius:6px;font-size:.875rem" onchange="applyFilters()">
+                    <option value="">Tất cả</option>
+                    @foreach (var cat in categories)
+                    {
+                        <option value="@cat">@cat</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-auto">
+                <button class="btn btn-primary btn-sm" onclick="applyFilters()" style="border-radius:6px;font-size:.875rem;padding:6px 16px">
+                    <i class="bi bi-funnel me-1"></i>Lọc
+                </button>
+                <button class="btn btn-outline-secondary btn-sm ms-1" onclick="resetFilters()" style="border-radius:6px;font-size:.875rem;padding:6px 14px">
+                    <i class="bi bi-x-lg me-1"></i>Xóa lọc
+                </button>
+            </div>
         </div>
-        <select class="form-select filter-select" id="filterPrice" onchange="applyFilters()">
-            <option value="">Filter theo giá</option>
-            <option value="0-50000">Dưới 50.000đ</option>
-            <option value="50000-100000">50.000đ – 100.000đ</option>
-            <option value="100000-200000">100.000đ – 200.000đ</option>
-            <option value="200000-999999999">Trên 200.000đ</option>
-        </select>
-        <select class="form-select filter-select" id="filterStatus" onchange="applyFilters()">
-            <option value="">Filter theo trạng thái</option>
-            <option value="active">Active</option>
-            <option value="inactive">Deactive</option>
-        </select>
-        <select class="form-select filter-select" id="filterAuthor" onchange="applyFilters()">
-            <option value="">Filter theo tác giả</option>
-            @foreach (var author in authors)
-            {
-                <option value="@author">@author</option>
-            }
-        </select>
-        <select class="form-select filter-select" id="filterCategory" onchange="applyFilters()">
-            <option value="">Filter theo danh mục</option>
-            @foreach (var cat in categories)
-            {
-                <option value="@cat">@cat</option>
-            }
-        </select>
     </div>
 </div>
 
@@ -510,6 +537,15 @@
         next.disabled = currentPage === totalPages;
         next.onclick = () => { currentPage++; renderPage(); };
         container.appendChild(next);
+    }
+
+    function resetFilters() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('filterPrice').value = '';
+        document.getElementById('filterStatus').value = '';
+        document.getElementById('filterAuthor').value = '';
+        document.getElementById('filterCategory').value = '';
+        applyFilters();
     }
 
     document.getElementById('searchInput').addEventListener('keydown', function(e) {

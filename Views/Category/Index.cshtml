@@ -1,0 +1,214 @@
+@model IReadOnlyList<BookStore.Dtos.Common.CategoryDto>
+@{
+    ViewData["Title"] = "Danh Mục Sách";
+    ViewData["BreadcrumbParent"] = "Quản Lý";
+
+    int page       = (int)(ViewData["Page"] ?? 1);
+    int totalPages = (int)(ViewData["TotalPages"] ?? 1);
+    int totalCount = (int)(ViewData["TotalCount"] ?? 0);
+    int pageSize   = (int)(ViewData["PageSize"] ?? 10);
+    string? search = ViewData["Search"]?.ToString();
+    string? status = ViewData["Status"]?.ToString();
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h4 class="mb-0 fw-600" style="font-size:1.15rem;color:#262626">Danh Mục Sách</h4>
+        <p class="text-muted mb-0" style="font-size:.85rem">Quản lý danh mục sản phẩm trong hệ thống</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary btn-sm" style="border-radius:6px;font-size:.875rem;padding:7px 16px">
+        <i class="bi bi-plus-lg me-1"></i>Thêm Danh Mục
+    </a>
+</div>
+
+<!-- Bộ lọc -->
+<div class="card border-0 shadow-sm mb-3" style="border-radius:10px">
+    <div class="card-body py-3 px-4">
+        <form method="get" asp-action="Index" class="row g-2 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label mb-1" style="font-size:.8rem;font-weight:500;color:#595959">Tìm kiếm theo tên</label>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white border-end-0" style="border-radius:6px 0 0 6px">
+                        <i class="bi bi-search text-muted" style="font-size:.85rem"></i>
+                    </span>
+                    <input type="text" name="search" value="@ViewData["Search"]"
+                           class="form-control border-start-0" style="border-radius:0 6px 6px 0;font-size:.875rem"
+                           placeholder="Nhập tên danh mục..." />
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label mb-1" style="font-size:.8rem;font-weight:500;color:#595959">Trạng thái</label>
+                <select name="status" class="form-select form-select-sm" style="border-radius:6px;font-size:.875rem">
+                    <option value="" selected="@(ViewData["Status"] == null || ViewData["Status"]!.ToString() == "")">Tất cả</option>
+                    <option value="active" selected="@(ViewData["Status"]?.ToString() == "active")">Hoạt động</option>
+                    <option value="inactive" selected="@(ViewData["Status"]?.ToString() == "inactive")">Vô hiệu</option>
+                </select>
+            </div>
+            <div class="col-md-auto">
+                <button type="submit" class="btn btn-primary btn-sm" style="border-radius:6px;font-size:.875rem;padding:6px 16px">
+                    <i class="bi bi-funnel me-1"></i>Lọc
+                </button>
+                @if (!string.IsNullOrEmpty(ViewData["Search"]?.ToString()) || !string.IsNullOrEmpty(ViewData["Status"]?.ToString()))
+                {
+                    <a asp-action="Index" class="btn btn-outline-secondary btn-sm ms-1" style="border-radius:6px;font-size:.875rem;padding:6px 14px">
+                        <i class="bi bi-x-lg me-1"></i>Xóa lọc
+                    </a>
+                }
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert" style="border-radius:8px;font-size:.875rem">
+        <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert" style="border-radius:8px;font-size:.875rem">
+        <i class="bi bi-exclamation-circle-fill me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card border-0 shadow-sm" style="border-radius:10px">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" style="font-size:.875rem">
+                <thead style="background:#fafafa;border-bottom:1px solid #f0f0f0">
+                    <tr>
+                        <th class="px-4 py-3 text-muted fw-500" style="width:60px">#</th>
+                        <th class="py-3 text-muted fw-500">Tên Danh Mục</th>
+                        <th class="py-3 text-muted fw-500">Mô Tả</th>
+                        <th class="py-3 text-muted fw-500" style="width:120px">Trạng Thái</th>
+                        <th class="py-3 text-muted fw-500 text-end pe-4" style="width:150px">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox" style="font-size:2rem;display:block;margin-bottom:8px"></i>
+                                Chưa có danh mục nào
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var (item, idx) in Model.Select((x, i) => (x, (page - 1) * pageSize + i + 1)))
+                    {
+                        <tr>
+                            <td class="px-4 text-muted">@idx</td>
+                            <td class="fw-500" style="color:#262626">@item.Name</td>
+                            <td class="text-muted">@(item.Description ?? "—")</td>
+                            <td>
+                                @if (item.IsActive)
+                                {
+                                    <span class="badge rounded-pill" style="background:#f6ffed;color:#52c41a;border:1px solid #b7eb8f;font-size:.78rem;font-weight:500;padding:4px 10px">
+                                        <i class="bi bi-circle-fill me-1" style="font-size:.5rem"></i>Hoạt động
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge rounded-pill" style="background:#fff2f0;color:#ff4d4f;border:1px solid #ffccc7;font-size:.78rem;font-weight:500;padding:4px 10px">
+                                        <i class="bi bi-circle-fill me-1" style="font-size:.5rem"></i>Vô hiệu
+                                    </span>
+                                }
+                            </td>
+                            <td class="text-end pe-4">
+                                <a asp-action="Edit" asp-route-id="@item.CategoryId"
+                                   class="btn btn-sm btn-outline-primary me-1" style="border-radius:6px;font-size:.8rem;padding:4px 10px" title="Sửa">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form asp-action="ToggleStatus" asp-route-id="@item.CategoryId"
+                                      method="post" class="d-inline"
+                                      onsubmit="return confirm('@(item.IsActive ? "Vô hiệu hóa danh mục này?" : "Kích hoạt danh mục này?")')">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit"
+                                            class="btn btn-sm @(item.IsActive ? "btn-outline-warning" : "btn-outline-success")"
+                                            style="border-radius:6px;font-size:.8rem;padding:4px 10px"
+                                            title="@(item.IsActive ? "Vô hiệu hóa" : "Kích hoạt")">
+                                        <i class="bi @(item.IsActive ? "bi-toggle-on" : "bi-toggle-off")"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex align-items-center justify-content-between px-4 py-3"
+             style="border-top:1px solid #f0f0f0">
+            <span class="text-muted" style="font-size:.8rem">
+                Hiển thị @((page - 1) * pageSize + 1)–@(Math.Min(page * pageSize, totalCount))
+                của @totalCount bản ghi
+            </span>
+
+            <nav>
+                <ul class="pagination pagination-sm mb-0" style="gap:2px">
+                    <li class="page-item @(page <= 1 ? "disabled" : "")">
+                        <a class="page-link px-3" style="border-radius:6px;font-size:.8rem"
+                           asp-action="Index" asp-route-page="@(page - 1)"
+                           asp-route-search="@search" asp-route-status="@status">Trước</a>
+                    </li>
+
+                    @{
+                        int startPage = Math.Max(1, page - 2);
+                        int endPage   = Math.Min(totalPages, startPage + 4);
+                        if (endPage - startPage < 4)
+                            startPage = Math.Max(1, endPage - 4);
+                    }
+
+                    @if (startPage > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" style="border-radius:6px;font-size:.8rem"
+                               asp-action="Index" asp-route-page="1"
+                               asp-route-search="@search" asp-route-status="@status">1</a>
+                        </li>
+                        @if (startPage > 2)
+                        {
+                            <li class="page-item disabled">
+                                <span class="page-link" style="border-radius:6px;font-size:.8rem">…</span>
+                            </li>
+                        }
+                    }
+
+                    @for (int p = startPage; p <= endPage; p++)
+                    {
+                        <li class="page-item @(p == page ? "active" : "")">
+                            <a class="page-link" style="border-radius:6px;font-size:.8rem"
+                               asp-action="Index" asp-route-page="@p"
+                               asp-route-search="@search" asp-route-status="@status">@p</a>
+                        </li>
+                    }
+
+                    @if (endPage < totalPages)
+                    {
+                        @if (endPage < totalPages - 1)
+                        {
+                            <li class="page-item disabled">
+                                <span class="page-link" style="border-radius:6px;font-size:.8rem">…</span>
+                            </li>
+                        }
+                        <li class="page-item">
+                            <a class="page-link" style="border-radius:6px;font-size:.8rem"
+                               asp-action="Index" asp-route-page="@totalPages"
+                               asp-route-search="@search" asp-route-status="@status">@totalPages</a>
+                        </li>
+                    }
+
+                    <li class="page-item @(page >= totalPages ? "disabled" : "")">
+                        <a class="page-link px-3" style="border-radius:6px;font-size:.8rem"
+                           asp-action="Index" asp-route-page="@(page + 1)"
+                           asp-route-search="@search" asp-route-status="@status">Sau</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
