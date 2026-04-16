@@ -22,8 +22,7 @@ namespace BookStore.Controllers
         [HttpGet]
         public async Task<IActionResult> Index(string? search, string? status, int page = 1)
         {
-            ViewData["Title"] = "Danh Mục Sách";
-            ViewData["BreadcrumbParent"] = "Quản Lý";
+            
             ViewData["Search"] = search;
             ViewData["Status"] = status;
 
@@ -53,9 +52,6 @@ namespace BookStore.Controllers
         [HttpGet]
         public IActionResult Create()
         {
-            ViewData["Title"] = "Thêm Danh Mục";
-            ViewData["BreadcrumbParent"] = "Danh Mục Sách";
-            ViewData["BreadcrumbParentUrl"] = Url.Action("Index");
             return View(new CategoryDto());
         }
 
@@ -81,10 +77,6 @@ namespace BookStore.Controllers
         {
             var category = await _categoryService.GetByIdAsync(id);
             if (category == null) return NotFound();
-
-            ViewData["Title"] = "Sửa Danh Mục";
-            ViewData["BreadcrumbParent"] = "Danh Mục Sách";
-            ViewData["BreadcrumbParentUrl"] = Url.Action("Index");
             return View(category);
         }
 
@@ -93,9 +85,6 @@ namespace BookStore.Controllers
         {
             if (!ModelState.IsValid)
             {
-                ViewData["Title"] = "Sửa Danh Mục";
-                ViewData["BreadcrumbParent"] = "Danh Mục Sách";
-                ViewData["BreadcrumbParentUrl"] = Url.Action("Index");
                 return View(dto);
             }
 
