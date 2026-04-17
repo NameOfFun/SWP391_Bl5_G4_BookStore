@@ -467,9 +467,6 @@ namespace BookStore.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("ShipperId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<string>("ShippingAddress")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
@@ -496,8 +493,6 @@ namespace BookStore.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("OrderId");
-
-                    b.HasIndex("ShipperId");
 
                     b.HasIndex("UserId");
 
@@ -1159,11 +1154,6 @@ namespace BookStore.Migrations
 
             modelBuilder.Entity("BookStore.Models.Order", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Shipper")
-                        .WithMany()
-                        .HasForeignKey("ShipperId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -1174,8 +1164,6 @@ namespace BookStore.Migrations
                         .WithMany("Orders")
                         .HasForeignKey("VoucherId")
                         .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Shipper");
 
                     b.Navigation("Voucher");
                 });

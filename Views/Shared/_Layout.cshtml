@@ -272,18 +272,6 @@
             </div>
         </div>
 
-        <!-- Shipper Dashboard (chỉ hiện với Shipper) -->
-        @if (User.IsInRole("Shipper"))
-        {
-            <div class="nav-item-group">
-                <a class="nav-link-item @(ctrl == "Shipper" ? "active" : "")"
-                   asp-controller="Shipper" asp-action="Dashboard">
-                    <i class="bi bi-truck nav-icon"></i>
-                    <span class="nav-label">Dashboard Shipper</span>
-                </a>
-            </div>
-        }
-
         <!-- Cấu Hình Chung -->
         <div class="nav-item-group">
             <a class="nav-link-item" href="#">
@@ -340,7 +328,6 @@
                         "Manager" => "Quản lý",
                         "Staff" => "Nhân viên",
                         "Customer" => "Khách hàng",
-                        "Shipper" => "Shipper",
                         _ => roleLabel
                     };
                 <div class="dropdown">
