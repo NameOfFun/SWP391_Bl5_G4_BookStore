@@ -1,0 +1,140 @@
+@model BookStore.Dtos.Auth.EditProfileDto
+@{
+    ViewData["Title"] = "Chỉnh sửa hồ sơ";
+    Layout = "~/Views/Shared/_LayoutAuth.cshtml";
+}
+
+<!-- Start: Page Banner -->
+<section class="page-banner services-banner">
+    <div class="container">
+        <div class="banner-header">
+            <h2>Chỉnh sửa hồ sơ</h2>
+            <span class="underline center"></span>
+            <p class="lead">Cập nhật thông tin cá nhân của bạn</p>
+        </div>
+        <div class="breadcrumb">
+            <ul>
+                <li><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                <li><a asp-controller="Account" asp-action="Profile">Tài khoản</a></li>
+                <li>Chỉnh sửa</li>
+            </ul>
+        </div>
+    </div>
+</section>
+<!-- End: Page Banner -->
+
+<!-- Start: Edit Profile Section -->
+<div class="signin-main">
+    <div class="container">
+        <div class="woocommerce">
+            <!-- Success Message -->
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="woocommerce-message">
+                    <i class="fa fa-check"></i> @TempData["SuccessMessage"]
+                </div>
+            }
+
+            <!-- Error Messages -->
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="woocommerce-error">
+                    <i class="fa fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+                </div>
+            }
+
+            <div class="woocommerce-login">
+                <div class="company-info signin-register">
+                    <!-- Edit Form -->
+                    <div class="col-md-6 col-md-offset-3 border-dark-left">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="company-detail bg-dark margin-left">
+                                    <div class="signin-head">
+                                        <h2><i class="fa fa-edit"></i> Cập nhật thông tin</h2>
+                                        <span class="underline left"></span>
+                                    </div>
+                                    
+                                    <!-- Avatar Upload Section -->
+                                    <div class="avatar-upload-section text-center" style="margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #3a3a3a;">
+                                        <h4 style="color: #c7c3c3; margin-bottom: 15px;"><i class="fa fa-camera"></i> Ảnh đại diện</h4>
+                                        <div class="avatar-preview" style="margin-bottom: 15px;">
+                                            @{
+                                                var currentAvatar = ViewBag.CurrentAvatar as string;
+                                            }
+                                            @if (!string.IsNullOrEmpty(currentAvatar))
+                                            {
+                                                <img src="@currentAvatar" alt="Avatar" style="width: 100px; height: 100px; border-radius: 50%; border: 3px solid #c7c3c3; object-fit: cover;" />
+                                            }
+                                            else
+                                            {
+                                                <div style="width: 100px; height: 100px; border-radius: 50%; border: 3px solid #c7c3c3; background: #3a3a3a; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                                    <i class="fa fa-user" style="font-size: 40px; color: #c7c3c3;"></i>
+                                                </div>
+                                            }
+                                        </div>
+                                        <form asp-action="UploadAvatar" method="post" enctype="multipart/form-data" style="display: inline-block;">
+                                            @Html.AntiForgeryToken()
+                                            <div class="file-input-wrapper" style="display: inline-block;">
+                                                <input type="file" name="avatarFile" id="avatarFile" accept="image/*" style="display: none;" onchange="this.form.submit();" />
+                                                <label for="avatarFile" class="button btn btn-default btn-sm" style="cursor: pointer;">
+                                                    <i class="fa fa-upload"></i> Chọn ảnh
+                                                </label>
+                                            </div>
+                                        </form>
+                                        <p style="color: #888; font-size: 12px; margin-top: 8px;">Định dạng: JPG, PNG, GIF, WebP (tối đa 5MB)</p>
+                                    </div>
+                                    
+                                    <form class="login" asp-action="EditProfile" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                                        
+                                        <p class="form-row form-row-wide">
+                                            <label for="Name"><i class="fa fa-user"></i> Tên:</label>
+                                            <input type="text" asp-for="Name" id="Name" class="input-text" placeholder="Nhập tên của bạn" />
+                                            <span asp-validation-for="Name" class="text-danger"></span>
+                                        </p>
+                                        
+                                        <p class="form-row form-row-wide">
+                                            <label for="PhoneNumber"><i class="fa fa-phone"></i> Số điện thoại:</label>
+                                            <input type="tel" asp-for="PhoneNumber" id="PhoneNumber" class="input-text" placeholder="Nhập số điện thoại" />
+                                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                                        </p>
+                                        
+                                        <p class="form-row form-row-wide">
+                                            <label for="Address"><i class="fa fa-map-marker"></i> Địa chỉ:</label>
+                                            <input type="text" asp-for="Address" id="Address" class="input-text" placeholder="Nhập địa chỉ của bạn" />
+                                            <span asp-validation-for="Address" class="text-danger"></span>
+                                        </p>
+                                        
+                                        <div class="clear"></div>
+                                        
+                                        <div class="form-actions text-center">
+                                            <input type="submit" value="Lưu thay đổi" class="button btn btn-default">
+                                            <a asp-action="Profile" class="button btn btn-default">
+                                                <i class="fa fa-arrow-left"></i> Quay lại
+                                            </a>
+                                        </div>
+                                    </form>
+                                </div>
+                                
+                                <div class="company-detail new-account bg-light margin-left mt-20">
+                                    <p class="text-center">
+                                        <a asp-action="ChangePassword">
+                                            <i class="fa fa-lock"></i> Bạn muốn đổi mật khẩu?
+                                        </a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End: Edit Profile Section -->
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

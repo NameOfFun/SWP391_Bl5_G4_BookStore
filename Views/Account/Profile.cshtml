@@ -1,0 +1,159 @@
+@model BookStore.Dtos.Auth.ProfileDto
+@{
+    ViewData["Title"] = "Hồ sơ cá nhân";
+    Layout = "~/Views/Shared/_LayoutAuth.cshtml";
+}
+
+<!-- Start: Page Banner -->
+<section class="page-banner services-banner">
+    <div class="container">
+        <div class="banner-header">
+            <h2>Hồ sơ cá nhân</h2>
+            <span class="underline center"></span>
+            <p class="lead">Quản lý thông tin tài khoản của bạn</p>
+        </div>
+        <div class="breadcrumb">
+            <ul>
+                <li><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                <li><a asp-controller="Account" asp-action="Profile">Tài khoản</a></li>
+                <li>Hồ sơ</li>
+            </ul>
+        </div>
+    </div>
+</section>
+<!-- End: Page Banner -->
+
+<!-- Start: Profile Section -->
+<div class="signin-main">
+    <div class="container">
+        <div class="woocommerce">
+            <!-- Success Message -->
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="woocommerce-message">
+                    <i class="fa fa-check"></i> @TempData["SuccessMessage"]
+                </div>
+            }
+
+            <div class="woocommerce-login">
+                <div class="company-info signin-register">
+                    <!-- Profile Info -->
+                    <div class="col-md-8 col-md-offset-2 border-dark-left">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="company-detail bg-dark margin-left">
+                                    <div class="signin-head">
+                                        <h2><i class="fa fa-user-circle"></i> Thông tin tài khoản</h2>
+                                        <span class="underline left"></span>
+                                    </div>
+                                    
+                                    <div class="profile-content">
+                                        <div class="profile-avatar text-center">
+                                            @if (!string.IsNullOrEmpty(Model.Avatar))
+                                            {
+                                                <img src="@Model.Avatar" alt="Avatar" style="width: 80px; height: 80px; border-radius: 50%;" />
+                                            }
+                                            else
+                                            {
+                                                <i class="fa fa-user-circle" style="font-size: 80px; color: #c7c3c3;"></i>
+                                            }
+                                            <h4>@(string.IsNullOrEmpty(Model.Name) ? User.Identity?.Name : Model.Name)</h4>
+                                        </div>
+                                        
+                                        <div class="profile-info">
+                                            <div class="info-row">
+                                                <label><i class="fa fa-user"></i> Tên:</label>
+                                                <span>@(string.IsNullOrEmpty(Model.Name) ? "Chưa cập nhật" : Model.Name)</span>
+                                            </div>
+                                            
+                                            <div class="info-row">
+                                                <label><i class="fa fa-envelope"></i> Email:</label>
+                                                <span>@Model.Email</span>
+                                            </div>
+                                            
+                                            <div class="info-row">
+                                                <label><i class="fa fa-phone"></i> Số điện thoại:</label>
+                                                <span>@(string.IsNullOrEmpty(Model.PhoneNumber) ? "Chưa cập nhật" : Model.PhoneNumber)</span>
+                                            </div>
+                                            
+                                            <div class="info-row">
+                                                <label><i class="fa fa-map-marker"></i> Địa chỉ:</label>
+                                                <span>@(string.IsNullOrEmpty(Model.Address) ? "Chưa cập nhật" : Model.Address)</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="clear"></div>
+                                        
+                                        <div class="profile-actions text-center">
+                                            <a asp-action="EditProfile" class="button btn btn-default">
+                                                <i class="fa fa-edit"></i> Chỉnh sửa thông tin
+                                            </a>
+                                            <a asp-action="ChangePassword" class="button btn btn-default">
+                                                <i class="fa fa-lock"></i> Đổi mật khẩu
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End: Profile Section -->
+
+<style>
+    .profile-content {
+        padding: 20px 0;
+    }
+    .profile-avatar {
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #3a3a3a;
+    }
+    .profile-avatar h4 {
+        margin-top: 10px;
+        color: #fff;
+    }
+    .profile-info {
+        margin-bottom: 30px;
+    }
+    .info-row {
+        display: flex;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #3a3a3a;
+    }
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    .info-row label {
+        color: #a8a8a8;
+        min-width: 160px;
+        margin: 0;
+        font-weight: normal;
+    }
+    .info-row label i {
+        margin-right: 10px;
+        color: #c7c3c3;
+    }
+    .info-row span {
+        color: #fff;
+        font-size: 15px;
+    }
+    .profile-actions {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #3a3a3a;
+    }
+    .profile-actions .button {
+        margin: 0 10px;
+        padding: 12px 25px;
+    }
+    .bg-dark .woocommerce-message {
+        background-color: #5cb85c;
+        border-color: #4cae4c;
+    }
+</style>

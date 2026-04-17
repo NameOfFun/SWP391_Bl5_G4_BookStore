@@ -1,0 +1,55 @@
+@model BookStore.Dtos.Common.CategoryDto
+@{
+    ViewData["Title"] = "Thêm Danh Mục";
+    ViewData["BreadcrumbParent"] = "Danh Mục Sách";
+    ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "Category");
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+        <div class="card border-0 shadow-sm" style="border-radius:10px">
+            <div class="card-header bg-white border-0 px-4 pt-4 pb-0">
+                <h5 class="mb-0 fw-600" style="font-size:1rem;color:#262626">
+                    <i class="bi bi-tag me-2 text-primary"></i>Thêm Danh Mục Mới
+                </h5>
+            </div>
+            <div class="card-body px-4 py-4">
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label" style="font-size:.875rem;font-weight:500;color:#595959">
+                            Tên Danh Mục <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="Name" class="form-control" style="border-radius:6px;font-size:.875rem"
+                               placeholder="Nhập tên danh mục..." />
+                        <span asp-validation-for="Name" class="text-danger" style="font-size:.8rem"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Description" class="form-label" style="font-size:.875rem;font-weight:500;color:#595959">
+                            Mô Tả
+                        </label>
+                        <textarea asp-for="Description" class="form-control" rows="3"
+                                  style="border-radius:6px;font-size:.875rem;resize:none"
+                                  placeholder="Mô tả ngắn về danh mục (tuỳ chọn)..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger" style="font-size:.8rem"></span>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary" style="border-radius:6px;font-size:.875rem;padding:8px 20px">
+                            <i class="bi bi-plus-lg me-1"></i>Thêm Danh Mục
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary" style="border-radius:6px;font-size:.875rem;padding:8px 20px">
+                            Hủy
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

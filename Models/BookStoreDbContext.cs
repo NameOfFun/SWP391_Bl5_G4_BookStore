@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace BookStore.Models;
 
-public partial class BookStoreDbContext : IdentityDbContext<ApplicationUser>
+public partial class BookStoreDbContext : IdentityDbContext<IdentityUser>
 {
     public BookStoreDbContext()
     {
@@ -347,7 +347,7 @@ public partial class BookStoreDbContext : IdentityDbContext<ApplicationUser>
             entity.ToTable("HomeSlider");
             entity.HasKey(e => e.HomeSliderId);
             entity.Property(e => e.ImageUrl).HasMaxLength(500);
-            entity.Property(e => e.Caption).HasMaxLength(200);
+            entity.Property(e => e.Caption).HasMaxLength(2000);
             entity.Property(e => e.LinkUrl).HasMaxLength(500);
             entity.HasOne(e => e.CreatedBy)
                 .WithMany()

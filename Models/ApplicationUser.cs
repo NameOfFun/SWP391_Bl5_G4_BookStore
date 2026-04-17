@@ -1,10 +1,16 @@
 using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
 
-namespace BookStore.Models;
-
-public class ApplicationUser : IdentityUser
+namespace BookStore.Models
 {
-    public string Name { get; set; } = string.Empty;
-
-    public bool IsActive { get; set; } = true;
+    public class ApplicationUser : IdentityUser
+    {
+        [MaxLength(100)]
+        public string? Name { get; set; }
+        [MaxLength(500)]
+        public string? Address { get; set; }
+        public string? Avatar { get; set; }  
+        public DateTime? CreatedAt { get; set; }
+        public bool IsActive { get; set; } = true;
+    }
 }

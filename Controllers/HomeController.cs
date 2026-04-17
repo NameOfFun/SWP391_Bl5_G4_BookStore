@@ -1,4 +1,6 @@
+using BookStore.Dtos.Common;
 using BookStore.Models;
+using BookStore.Service.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
@@ -7,15 +9,18 @@ namespace BookStore.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly IHomeSliderService _homeSliderService;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, IHomeSliderService homeSliderService)
         {
             _logger = logger;
+            _homeSliderService = homeSliderService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            IReadOnlyList<HomeSliderDto> sliders = await _homeSliderService.GetActiveForHomeAsync();
+            return View(sliders);
         }
 
         public IActionResult Privacy()

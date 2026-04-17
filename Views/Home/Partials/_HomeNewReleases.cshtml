@@ -1,0 +1,72 @@
+@{
+    var releaseTiles = new (string FilterClass, string ImageFile)[]
+    {
+        ("adults", "category-filter-img-01.jpg"),
+        ("kids-teens", "category-filter-img-02.jpg"),
+        ("video", "category-filter-img-03.jpg"),
+        ("audio", "category-filter-img-04.jpg"),
+        ("books", "category-filter-img-05.jpg"),
+        ("magazines", "category-filter-img-06.jpg"),
+        ("adults", "category-filter-img-07.jpg"),
+        ("kids-teens", "category-filter-img-08.jpg"),
+    };
+}
+<!-- Start: Category Filter / New Releases (template: wwwroot/index.html) -->
+<section class="category-filter section-padding">
+    <div class="container">
+        <div class="center-content">
+            <div class="row">
+                <div class="col-md-6 col-md-offset-3">
+                    <h2 class="section-title">Sách mới phát hành</h2>
+                    <span class="underline center"></span>
+                    <p class="lead">Khám phá các tựa sách và ấn phẩm mới được cập nhật thường xuyên tại BookStore.</p>
+                </div>
+            </div>
+        </div>
+        <div class="filter-buttons">
+            <div class="filter btn" data-filter="all">Tất cả</div>
+            <div class="filter btn" data-filter=".adults">Người lớn</div>
+            <div class="filter btn" data-filter=".kids-teens">Thiếu nhi &amp; teen</div>
+            <div class="filter btn" data-filter=".video">Video</div>
+            <div class="filter btn" data-filter=".audio">Âm thanh</div>
+            <div class="filter btn" data-filter=".books">Sách</div>
+            <div class="filter btn" data-filter=".magazines">Tạp chí</div>
+        </div>
+    </div>
+    <div id="category-filter">
+        <ul class="category-list">
+            @foreach (var tile in releaseTiles)
+            {
+                <li class="category-item @tile.FilterClass">
+                    <figure>
+                        <img src="~/images/category-filter/home-v1/@tile.ImageFile" alt="Sách mới" />
+                        <figcaption class="bg-orange">
+                            <div class="info-block">
+                                <h4>Đại dương âm thanh</h4>
+                                <span class="author"><strong>Tác giả:</strong> Joel Beckerman</span>
+                                <span class="author"><strong>ISBN:</strong> 9781581573268</span>
+                                <div class="rating">
+                                    <span>☆</span><span>☆</span><span>☆</span><span>☆</span><span>☆</span>
+                                </div>
+                                <p>Giới thiệu ngắn về nội dung sách — phù hợp độc giả yêu thích khám phá và học hỏi.</p>
+                                <a asp-controller="Book" asp-action="Details" asp-route-id="1">Xem thêm <i class="fa fa-long-arrow-right"></i></a>
+                                <ol>
+                                    <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
+                                    <li><a href="#"><i class="fa fa-heart"></i></a></li>
+                                    <li><a href="#"><i class="fa fa-envelope"></i></a></li>
+                                    <li><a href="#"><i class="fa fa-share-alt"></i></a></li>
+                                    <li><a href="#"><i class="fa fa-search"></i></a></li>
+                                </ol>
+                            </div>
+                        </figcaption>
+                    </figure>
+                </li>
+            }
+        </ul>
+        <div class="center-content">
+            <a asp-controller="Book" asp-action="Index" class="btn btn-primary">Xem thêm</a>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+</section>
+<!-- End: Category Filter -->

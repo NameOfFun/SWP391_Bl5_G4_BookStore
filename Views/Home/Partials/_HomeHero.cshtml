@@ -1,0 +1,132 @@
+@using System.Linq
+@model IReadOnlyList<BookStore.Dtos.Common.HomeSliderDto>
+@{
+    string SliderImageSrc(string? imageUrl)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl))
+            return Url.Content("~/images/header-slider/home-v1/header-slide.jpg");
+        var u = imageUrl.Trim();
+        if (u.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || u.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            return u;
+        if (u.StartsWith("~/", StringComparison.Ordinal))
+            return Url.Content(u);
+        if (u.StartsWith('/'))
+            return u;
+        return Url.Content("~/" + u.TrimStart('/'));
+    }
+
+    string SliderLinkHref(string? linkUrl)
+    {
+        if (string.IsNullOrWhiteSpace(linkUrl))
+            return "#";
+        var u = linkUrl.Trim();
+        if (u.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || u.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            return u;
+        if (u.StartsWith("~/", StringComparison.Ordinal))
+            return Url.Content(u);
+        if (u.StartsWith('/'))
+            return u;
+        return Url.Content("~/" + u.TrimStart('/'));
+    }
+
+    void SplitCaption(string? caption, out string h3, out string h2, out string p)
+    {
+        h3 = "";
+        h2 = "Khám phá tri thức";
+        p = "Chào mừng đến với BookStore — nơi bạn tìm thấy những cuốn sách được chọn lọc.";
+        if (string.IsNullOrWhiteSpace(caption))
+            return;
+
+        var lines = caption
+            .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(l => l.Trim())
+            .Where(l => l.Length > 0)
+            .ToList();
+
+        if (lines.Count >= 3)
+        {
+            h3 = lines[0];
+            h2 = lines[1];
+            p = string.Join(" ", lines.Skip(2));
+        }
+        else if (lines.Count == 2)
+        {
+            h2 = lines[0];
+            p = lines[1];
+        }
+        else if (lines.Count == 1)
+        {
+            h2 = lines[0];
+            p = "";
+        }
+    }
+
+    var slides = Model?.Where(s => !string.IsNullOrWhiteSpace(s.ImageUrl)).ToList() ?? new List<BookStore.Dtos.Common.HomeSliderDto>();
+    var useFallback = slides.Count == 0;
+}
+<!-- Start: Slider — dữ liệu từ CRUD HomeSlider -->
+<div data-ride="carousel" class="carousel slide" id="home-v1-header-carousel">
+    <div class="carousel-inner">
+        @if (useFallback)
+        {
+            <div class="item active">
+                <figure>
+                    <img alt="Trang chủ" src="@Url.Content("~/images/header-slider/home-v1/header-slide.jpg")" />
+                </figure>
+                <div class="container">
+                    <div class="carousel-caption">
+                        <h3>Học trực tuyến mọi lúc, mọi nơi!</h3>
+                        <h2>Khám phá tri thức</h2>
+                        <p>Chưa có slider nào được kích hoạt. Hãy thêm slide tại quản trị <strong>Home Slider</strong>.</p>
+                        <div class="slide-buttons hidden-sm hidden-xs">
+                            <a asp-controller="Book" asp-action="Index" class="btn btn-primary">Mua sắm</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            var idx = 0;
+            foreach (var slide in slides)
+            {
+                SplitCaption(slide.Caption, out var capH3, out var capH2, out var capP);
+                var imgSrc = SliderImageSrc(slide.ImageUrl);
+                var primaryHref = SliderLinkHref(slide.LinkUrl);
+                var alt = string.IsNullOrWhiteSpace(capH2) ? "Trang chủ" : capH2;
+                <div class="item @(idx == 0 ? "active" : "")">
+                    <figure>
+                        <img alt="@alt" src="@imgSrc" />
+                    </figure>
+                    <div class="container">
+                        <div class="carousel-caption">
+                            @if (!string.IsNullOrEmpty(capH3))
+                            {
+                                <h3>@capH3</h3>
+                            }
+                            <h2>@capH2</h2>
+                            @if (!string.IsNullOrEmpty(capP))
+                            {
+                                <p>@capP</p>
+                            }
+                            <div class="slide-buttons hidden-sm hidden-xs">
+                                @if (!string.IsNullOrWhiteSpace(slide.LinkUrl))
+                                {
+                                    <a href="@primaryHref" class="btn btn-primary">Xem thêm</a>
+                                }
+                                <a asp-controller="Book" asp-action="Index" class="btn btn-default">Mua sắm</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                idx++;
+            }
+        }
+    </div>
+    @if (!useFallback && slides.Count > 1)
+    {
+        <a class="left carousel-control" href="#home-v1-header-carousel" data-slide="prev"></a>
+        <a class="right carousel-control" href="#home-v1-header-carousel" data-slide="next"></a>
+    }
+</div>
+<!-- End: Slider Section -->
