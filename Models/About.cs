@@ -17,7 +17,7 @@ public class About
 
     public string? RoleId { get; set; }
 
-    public virtual IdentityUser? UpdatedBy { get; set; }
+    public virtual ApplicationUser? UpdatedBy { get; set; }
 
     public virtual IdentityRole? Role { get; set; }
 }

@@ -8,11 +8,11 @@ namespace BookStore.Service.Implements;
 
 public class AuthService : IAuthService
 {
-    private readonly UserManager<IdentityUser> _userManager;
-    private readonly SignInManager<IdentityUser> _signInManager;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly SignInManager<ApplicationUser> _signInManager;
     public AuthService(
-        UserManager<IdentityUser> userManager,
-        SignInManager<IdentityUser> signInManager)
+        UserManager<ApplicationUser> userManager,
+        SignInManager<ApplicationUser> signInManager)
     {
         _userManager = userManager;
         _signInManager = signInManager;
@@ -82,11 +82,13 @@ public class AuthService : IAuthService
             };
         }
 
-        var user = new IdentityUser
+        var user = new ApplicationUser
         {
             UserName = model.Email,
             Email = model.Email,
-            PhoneNumber = model.PhoneNumber
+            PhoneNumber = model.PhoneNumber,
+            FullName = model.FullName,
+            IsActive = true
         };
 
         var result = await _userManager.CreateAsync(user, model.Password);

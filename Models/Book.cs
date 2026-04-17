@@ -27,7 +27,7 @@ public partial class Book
 
     public string? LastPricingChangeByUserId { get; set; }
 
-    public virtual IdentityUser? LastPricingChangeBy { get; set; }
+    public virtual ApplicationUser? LastPricingChangeBy { get; set; }
 
     public int? Stock { get; set; }
 
@@ -43,7 +43,7 @@ public partial class Book
 
     public bool IsActive { get; set; } = true;
 
-    public virtual IdentityUser? UpdatedBy { get; set; }
+    public virtual ApplicationUser? UpdatedBy { get; set; }
 
     public virtual Author? Author { get; set; }
 

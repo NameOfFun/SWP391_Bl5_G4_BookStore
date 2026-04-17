@@ -38,5 +38,5 @@ public class CustomerRequest
 
     public virtual Order? Order { get; set; }
 
-    public virtual IdentityUser? ResolvedBy { get; set; }
+    public virtual ApplicationUser? ResolvedBy { get; set; }
 }

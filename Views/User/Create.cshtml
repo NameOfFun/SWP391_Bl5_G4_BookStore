@@ -1,0 +1,97 @@
+@model BookStore.Dtos.Admin.CreateUserDto
+@{
+    ViewData["Title"] = "Thêm người dùng mới";
+}
+
+<div class="container mt-4" style="max-width:700px">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Quản lý Người dùng</a></li>
+            <li class="breadcrumb-item active">Thêm mới</li>
+        </ol>
+    </nav>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-person-plus me-2"></i>Thêm người dùng mới</h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3"></div>
+
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label asp-for="FullName" class="form-label fw-semibold">
+                            Họ và tên <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="FullName" class="form-control" placeholder="Nhập họ và tên..." />
+                        <span asp-validation-for="FullName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Email" class="form-label fw-semibold">
+                            Email <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="Email" class="form-control" placeholder="example@email.com" />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="PhoneNumber" class="form-label fw-semibold">Số điện thoại</label>
+                        <input asp-for="PhoneNumber" class="form-control" placeholder="0xxxxxxxxx" />
+                        <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Password" class="form-label fw-semibold">
+                            Mật khẩu <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="Password" type="password" class="form-control" placeholder="Tối thiểu 6 ký tự" />
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="ConfirmPassword" class="form-label fw-semibold">
+                            Xác nhận mật khẩu <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Nhập lại mật khẩu" />
+                        <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">
+                            Vai trò <span class="text-danger">*</span>
+                        </label>
+                        <div class="d-flex flex-wrap gap-3 mt-1">
+                            @for (int i = 0; i < Model.AvailableRoles.Count; i++)
+                            {
+                                var role = Model.AvailableRoles[i];
+                                var isChecked = Model.SelectedRoles.Contains(role.Value);
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox"
+                                           name="SelectedRoles" value="@role.Value"
+                                           id="role_@i" @(isChecked ? "checked" : "") />
+                                    <label class="form-check-label" for="role_@i">@role.Text</label>
+                                </div>
+                            }
+                        </div>
+                        <span asp-validation-for="SelectedRoles" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-floppy me-1"></i> Lưu
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

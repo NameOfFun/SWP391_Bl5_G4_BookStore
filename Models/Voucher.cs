@@ -36,7 +36,7 @@ public class Voucher
 
     public string? LastManagedByUserId { get; set; }
 
-    public virtual IdentityUser? LastManagedBy { get; set; }
+    public virtual ApplicationUser? LastManagedBy { get; set; }
 
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 }

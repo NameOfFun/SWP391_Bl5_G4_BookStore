@@ -16,7 +16,7 @@ public partial class Category
 
     public bool IsActive { get; set; } = true;
 
-    public virtual IdentityUser? UpdatedBy { get; set; }
+    public virtual ApplicationUser? UpdatedBy { get; set; }
 
     public virtual ICollection<Book> Books { get; set; } = new List<Book>();
 }

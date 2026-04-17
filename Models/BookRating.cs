@@ -27,5 +27,5 @@ public class BookRating
 
     public virtual Book Book { get; set; } = null!;
 
-    public virtual IdentityUser? HiddenBy { get; set; }
+    public virtual ApplicationUser? HiddenBy { get; set; }
 }
