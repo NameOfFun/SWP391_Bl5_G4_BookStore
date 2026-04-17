@@ -341,7 +341,7 @@
             @if (SignInManager.IsSignedIn(User))
             {
                 var currentUser = await UserManager.GetUserAsync(User);
-                    var displayName = currentUser?.FullName is { Length: > 0 } fn ? fn : (currentUser?.UserName ?? User.Identity?.Name ?? "User");
+                    var displayName = currentUser?.FullName is { Length: } fn ? fn : (currentUser?.UserName ?? User.Identity?.Name ?? "User");
                     var initials = displayName.Length >= 2
                         ? (displayName[0].ToString() + displayName[1].ToString()).ToUpper()
                         : displayName[..1].ToUpper();

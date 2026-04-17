@@ -20,7 +20,7 @@ public class UserService : IUserService
 
     public async Task<IReadOnlyList<UserListDto>> GetAllUsersAsync()
     {
-        var users = await _userManager.Users.OrderBy(u => u.FullName).ToListAsync();
+        var users = await _userManager.Users.OrderBy(u => u.Name).ToListAsync();
         var result = new List<UserListDto>(users.Count);
         foreach (var user in users)
         {
@@ -28,7 +28,7 @@ public class UserService : IUserService
             result.Add(new UserListDto
             {
                 Id = user.Id,
-                FullName = user.FullName,
+                FullName = user.Name,
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber,
                 IsActive = user.IsActive,
@@ -52,7 +52,7 @@ public class UserService : IUserService
         return new EditUserDto
         {
             Id = user.Id,
-            FullName = user.FullName,
+            FullName = user.Name,
             Email = user.Email ?? string.Empty,
             PhoneNumber = user.PhoneNumber,
             IsActive = user.IsActive,
@@ -88,7 +88,7 @@ public class UserService : IUserService
             UserName = dto.Email,
             Email = dto.Email,
             PhoneNumber = dto.PhoneNumber,
-            FullName = dto.FullName,
+            Name = dto.FullName,
             IsActive = true,
             LockoutEnabled = true
         };
@@ -125,7 +125,7 @@ public class UserService : IUserService
                 throw new ArgumentException("Email này đã được sử dụng bởi tài khoản khác.");
         }
 
-        user.FullName = dto.FullName;
+        user.Name = dto.FullName;
         user.Email = dto.Email;
         user.NormalizedEmail = dto.Email.ToUpperInvariant();
         user.UserName = dto.Email;
@@ -177,6 +177,6 @@ public class UserService : IUserService
         }
 
         await _userManager.UpdateAsync(user);
-        return (user.IsActive, user.FullName);
+        return (user.IsActive, user.Name);
     }
 }

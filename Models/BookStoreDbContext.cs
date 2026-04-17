@@ -361,7 +361,7 @@ public partial class BookStoreDbContext : IdentityDbContext<ApplicationUser>
 
         modelBuilder.Entity<ApplicationUser>(entity =>
         {
-            entity.Property(e => e.FullName).HasMaxLength(100);
+            entity.Property(e => e.Name).HasMaxLength(100);
             entity.Property(e => e.IsActive).HasDefaultValue(true);
         });
 

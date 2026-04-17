@@ -87,7 +87,7 @@ public class AuthService : IAuthService
             UserName = model.Email,
             Email = model.Email,
             PhoneNumber = model.PhoneNumber,
-            FullName = model.FullName,
+            Name = model.FullName,
             IsActive = true
         };
 
