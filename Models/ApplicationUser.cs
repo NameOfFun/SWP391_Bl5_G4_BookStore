@@ -11,6 +11,6 @@ namespace BookStore.Models
         public string? Address { get; set; }
         public string? Avatar { get; set; }  
         public DateTime? CreatedAt { get; set; }
-        public bool IsActive { get; set; } = true;
+        public bool Status { get; set; } = true;
     }
 }

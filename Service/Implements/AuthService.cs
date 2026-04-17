@@ -75,7 +75,7 @@ public class AuthService : IAuthService
             PhoneNumber = model.PhoneNumber,
             Name = model.FullName,
             Address = model.Address,
-            IsActive = true
+            Status = true
         };
 
         //Tao User + HashPassWord

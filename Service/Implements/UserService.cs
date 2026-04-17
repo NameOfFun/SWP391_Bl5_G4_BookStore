@@ -31,7 +31,7 @@ public class UserService : IUserService
                 FullName = user.Name,
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber,
-                IsActive = user.IsActive,
+                IsActive = user.Status,
                 IsLockedOut = user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow,
                 Roles = roles
             });
@@ -55,7 +55,7 @@ public class UserService : IUserService
             FullName = user.Name,
             Email = user.Email ?? string.Empty,
             PhoneNumber = user.PhoneNumber,
-            IsActive = user.IsActive,
+            IsActive = user.Status,
             SelectedRoles = currentRoles.ToList(),
             AvailableRoles = availableRoles
         };
@@ -89,7 +89,7 @@ public class UserService : IUserService
             Email = dto.Email,
             PhoneNumber = dto.PhoneNumber,
             Name = dto.FullName,
-            IsActive = true,
+            Status = true,
             LockoutEnabled = true
         };
 
@@ -131,7 +131,7 @@ public class UserService : IUserService
         user.UserName = dto.Email;
         user.NormalizedUserName = dto.Email.ToUpperInvariant();
         user.PhoneNumber = dto.PhoneNumber;
-        user.IsActive = dto.IsActive;
+        user.Status = dto.IsActive;
 
         if (!dto.IsActive)
         {
@@ -164,19 +164,19 @@ public class UserService : IUserService
         var user = await _userManager.FindByIdAsync(id)
             ?? throw new InvalidOperationException("Không tìm thấy người dùng.");
 
-        if (user.IsActive)
+        if (user.Status)
         {
-            user.IsActive = false;
+            user.Status = false;
             user.LockoutEnabled = true;
             user.LockoutEnd = DateTimeOffset.MaxValue;
         }
         else
         {
-            user.IsActive = true;
+            user.Status = true;
             user.LockoutEnd = null;
         }
 
         await _userManager.UpdateAsync(user);
-        return (user.IsActive, user.Name);
+        return (user.Status, user.Name);
     }
 }
