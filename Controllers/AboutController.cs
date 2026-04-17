@@ -6,6 +6,10 @@ using System.Security.Claims;
 
 namespace BookStore.Controllers
 {
+<<<<<<< HEAD
+=======
+    [Authorize(Roles = "Staff")]
+>>>>>>> 5b3246b (update role)
     public class AboutController : Controller
     {
         private readonly IAboutService _aboutService;
