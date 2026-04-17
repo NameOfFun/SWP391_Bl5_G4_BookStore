@@ -16,7 +16,6 @@ namespace BookStore.Dtos.Common
         [MaxLength(500, ErrorMessage = "Đường dẫn không được vượt quá 500 ký tự")]
         public string? LinkUrl { get; set; }
 
-        [Range(0, 9999, ErrorMessage = "Thứ tự hiển thị phải từ 0 đến 9999")]
         public int DisplayOrder { get; set; }
 
         public bool IsActive { get; set; } = true;

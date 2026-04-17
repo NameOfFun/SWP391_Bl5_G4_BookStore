@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 
@@ -9,11 +8,6 @@ public class Order
     public int OrderId { get; set; }
 
     public string UserId { get; set; } = null!;
-
-    /// <summary>
-    /// ID của shipper được gán để giao đơn hàng này (nullable).
-    /// </summary>
-    public string? ShipperId { get; set; }
 
     public DateTime OrderDate { get; set; }
 

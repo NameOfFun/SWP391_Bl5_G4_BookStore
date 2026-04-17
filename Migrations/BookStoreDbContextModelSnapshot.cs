@@ -467,9 +467,6 @@ namespace BookStore.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("ShipperId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<string>("ShippingAddress")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
@@ -496,8 +493,6 @@ namespace BookStore.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("OrderId");
-
-                    b.HasIndex("ShipperId");
 
                     b.HasIndex("UserId");
 
@@ -849,6 +844,11 @@ namespace BookStore.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(21)
+                        .HasColumnType("nvarchar(21)");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -900,6 +900,10 @@ namespace BookStore.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("IdentityUser");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
@@ -983,6 +987,32 @@ namespace BookStore.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("BookStore.Models.ApplicationUser", b =>
+                {
+                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUser");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Avatar")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("Status")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.HasDiscriminator().HasValue("ApplicationUser");
+                });
+
             modelBuilder.Entity("BookStore.Models.About", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", "Role")
@@ -990,7 +1020,7 @@ namespace BookStore.Migrations
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "UpdatedBy")
+                    b.HasOne("BookStore.Models.ApplicationUser", "UpdatedBy")
                         .WithMany()
                         .HasForeignKey("UpdatedByUserId")
                         .OnDelete(DeleteBehavior.SetNull);
@@ -1002,7 +1032,7 @@ namespace BookStore.Migrations
 
             modelBuilder.Entity("BookStore.Models.Author", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "UpdatedBy")
+                    b.HasOne("BookStore.Models.ApplicationUser", "UpdatedBy")
                         .WithMany()
                         .HasForeignKey("UpdatedByUserId")
                         .OnDelete(DeleteBehavior.SetNull);
@@ -1022,12 +1052,12 @@ namespace BookStore.Migrations
                         .HasForeignKey("CategoryId")
                         .HasConstraintName("FK__Book__CategoryId__29572725");
 
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "LastPricingChangeBy")
+                    b.HasOne("BookStore.Models.ApplicationUser", "LastPricingChangeBy")
                         .WithMany()
                         .HasForeignKey("LastPricingChangeByUserId")
                         .OnDelete(DeleteBehavior.NoAction);
 
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "UpdatedBy")
+                    b.HasOne("BookStore.Models.ApplicationUser", "UpdatedBy")
                         .WithMany()
                         .HasForeignKey("UpdatedByUserId")
                         .OnDelete(DeleteBehavior.SetNull);
@@ -1049,12 +1079,12 @@ namespace BookStore.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "HiddenBy")
+                    b.HasOne("BookStore.Models.ApplicationUser", "HiddenBy")
                         .WithMany()
                         .HasForeignKey("HiddenByUserId")
                         .OnDelete(DeleteBehavior.NoAction);
 
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                    b.HasOne("BookStore.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1067,7 +1097,7 @@ namespace BookStore.Migrations
 
             modelBuilder.Entity("BookStore.Models.BookTag", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "UpdatedBy")
+                    b.HasOne("BookStore.Models.ApplicationUser", "UpdatedBy")
                         .WithMany()
                         .HasForeignKey("UpdatedByUserId")
                         .OnDelete(DeleteBehavior.SetNull);
@@ -1077,7 +1107,7 @@ namespace BookStore.Migrations
 
             modelBuilder.Entity("BookStore.Models.Cart", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                    b.HasOne("BookStore.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1105,7 +1135,7 @@ namespace BookStore.Migrations
 
             modelBuilder.Entity("BookStore.Models.Category", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "UpdatedBy")
+                    b.HasOne("BookStore.Models.ApplicationUser", "UpdatedBy")
                         .WithMany()
                         .HasForeignKey("UpdatedByUserId")
                         .OnDelete(DeleteBehavior.SetNull);
@@ -1115,7 +1145,7 @@ namespace BookStore.Migrations
 
             modelBuilder.Entity("BookStore.Models.CustomerRequest", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                    b.HasOne("BookStore.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("AssignedToUserId")
                         .OnDelete(DeleteBehavior.SetNull);
@@ -1125,12 +1155,12 @@ namespace BookStore.Migrations
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "ResolvedBy")
+                    b.HasOne("BookStore.Models.ApplicationUser", "ResolvedBy")
                         .WithMany()
                         .HasForeignKey("ResolvedByUserId")
                         .OnDelete(DeleteBehavior.NoAction);
 
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                    b.HasOne("BookStore.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.NoAction);
@@ -1142,7 +1172,7 @@ namespace BookStore.Migrations
 
             modelBuilder.Entity("BookStore.Models.HomeSlider", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "CreatedBy")
+                    b.HasOne("BookStore.Models.ApplicationUser", "CreatedBy")
                         .WithMany()
                         .HasForeignKey("CreatedByUserId")
                         .OnDelete(DeleteBehavior.SetNull);
@@ -1159,12 +1189,7 @@ namespace BookStore.Migrations
 
             modelBuilder.Entity("BookStore.Models.Order", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Shipper")
-                        .WithMany()
-                        .HasForeignKey("ShipperId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                    b.HasOne("BookStore.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1174,8 +1199,6 @@ namespace BookStore.Migrations
                         .WithMany("Orders")
                         .HasForeignKey("VoucherId")
                         .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Shipper");
 
                     b.Navigation("Voucher");
                 });
@@ -1228,7 +1251,7 @@ namespace BookStore.Migrations
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "UpdatedBy")
+                    b.HasOne("BookStore.Models.ApplicationUser", "UpdatedBy")
                         .WithMany()
                         .HasForeignKey("UpdatedByUserId")
                         .OnDelete(DeleteBehavior.SetNull);
@@ -1240,7 +1263,7 @@ namespace BookStore.Migrations
 
             modelBuilder.Entity("BookStore.Models.Voucher", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "LastManagedBy")
+                    b.HasOne("BookStore.Models.ApplicationUser", "LastManagedBy")
                         .WithMany()
                         .HasForeignKey("LastManagedByUserId")
                         .OnDelete(DeleteBehavior.SetNull);
@@ -1256,7 +1279,7 @@ namespace BookStore.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                    b.HasOne("BookStore.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)

@@ -17,7 +17,7 @@ namespace BookStore
             builder.Services.AddDbContext<BookStoreDbContext>(opt =>
                 opt.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
 
-            builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
                 {
                     options.Password.RequireDigit = true;
                     options.Password.RequireLowercase = true;
@@ -34,7 +34,9 @@ namespace BookStore
             builder.Services.AddScoped<IBookService, BookService>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<IHomeSliderService, HomeSliderService>();
-            builder.Services.AddScoped<IShipperService, ShipperService>();
+
+            builder.Services.AddScoped<IBookTagService, BookTagService>();
+
 
             builder.Services.AddControllersWithViews();
 
@@ -62,20 +64,116 @@ namespace BookStore
 
             using (var scope = app.Services.CreateScope())
             {
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
                 var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-                string[] roleNames = ["Customer", "Admin", "Staff", "Manager", "Shipper"];
+                string[] roleNames = ["Customer", "Admin", "Staff", "Manager"];
                 foreach (var roleName in roleNames)
                 {
                     if (!roleManager.RoleExistsAsync(roleName).GetAwaiter().GetResult())
                         roleManager.CreateAsync(new IdentityRole(roleName)).GetAwaiter().GetResult();
                 }
 
-                // ── Seed dữ liệu test Shipper Dashboard ──
-                // Xóa (hoặc comment) block này sau khi đã seed xong
-                ShipperSeeder.SeedAsync(scope.ServiceProvider).GetAwaiter().GetResult();
+                SeedUsers(userManager, roleManager);
             }
 
             app.Run();
+        }
+
+        private static void SeedUsers(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
+        {
+            // Admin
+            var adminEmail = "admin@test.com";
+            var adminPassword = "Admin@123";
+            // Manager
+            var managerEmail = "manager@bookstore.com";
+            var managerPassword = "Manager@123";
+            // Staff
+            var staffEmail = "staff@bookstore.com";
+            var staffPassword = "Staff@123";
+            // Customer
+            var customerEmail = "customer@bookstore.com";
+            var customerPassword = "Customer@123";
+
+            if (userManager.FindByEmailAsync(adminEmail).GetAwaiter().GetResult() == null)
+            {
+                var adminUser = new ApplicationUser
+                {
+                    UserName = "admin",
+                    Email = adminEmail,
+                    EmailConfirmed = true,
+                    LockoutEnabled = false,
+                    Name = "Administrator",
+                    Status = true,
+                    CreatedAt = DateTime.Now
+                };
+
+                var result = userManager.CreateAsync(adminUser, adminPassword).GetAwaiter().GetResult();
+                if (result.Succeeded)
+                {
+                    userManager.AddToRoleAsync(adminUser, "Admin").GetAwaiter().GetResult();
+                }
+            }
+
+            if (userManager.FindByEmailAsync(managerEmail).GetAwaiter().GetResult() == null)
+            {
+                var managerUser = new ApplicationUser
+                {
+                    UserName = "manager",
+                    Email = managerEmail,
+                    EmailConfirmed = true,
+                    LockoutEnabled = false,
+                    Name = "Manager",
+                    Status = true,
+                    CreatedAt = DateTime.Now
+                };
+
+                var result = userManager.CreateAsync(managerUser, managerPassword).GetAwaiter().GetResult();
+                if (result.Succeeded)
+                {
+                    userManager.AddToRoleAsync(managerUser, "Manager").GetAwaiter().GetResult();
+                }
+            }
+
+            if (userManager.FindByEmailAsync(staffEmail).GetAwaiter().GetResult() == null)
+            {
+                var staffUser = new ApplicationUser
+                {
+                    UserName = "staff",
+                    Email = staffEmail,
+                    EmailConfirmed = true,
+                    LockoutEnabled = false,
+                    Name = "Staff",
+                    Status = true,
+                    CreatedAt = DateTime.Now
+                };
+
+                var result = userManager.CreateAsync(staffUser, staffPassword).GetAwaiter().GetResult();
+                if (result.Succeeded)
+                {
+                    userManager.AddToRoleAsync(staffUser, "Staff").GetAwaiter().GetResult();
+                }
+            }
+
+            if (userManager.FindByEmailAsync(customerEmail).GetAwaiter().GetResult() == null)
+            {
+                var customerUser = new ApplicationUser
+                {
+                    UserName = "customer",
+                    Email = customerEmail,
+                    EmailConfirmed = true,
+                    LockoutEnabled = false,
+                    Name = "Customer",
+                    Status = true,
+                    CreatedAt = DateTime.Now
+                };
+
+                var result = userManager.CreateAsync(customerUser, customerPassword).GetAwaiter().GetResult();
+                if (result.Succeeded)
+                {
+                    userManager.AddToRoleAsync(customerUser, "Customer").GetAwaiter().GetResult();
+                }
+            }
+
         }
     }
 }
