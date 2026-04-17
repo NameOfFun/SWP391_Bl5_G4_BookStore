@@ -202,7 +202,7 @@ public partial class BookStoreDbContext : IdentityDbContext<IdentityUser>
             entity.Property(e => e.ShippingAddress).HasMaxLength(500);
             entity.Property(e => e.PaymentMethod).HasMaxLength(50);
             entity.Property(e => e.PaymentStatus).HasMaxLength(50);
-            entity.HasOne<IdentityUser>().WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne<ApplicationUser>().WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Restrict);
             entity.HasOne(e => e.Voucher).WithMany(v => v.Orders).HasForeignKey(e => e.VoucherId).OnDelete(DeleteBehavior.SetNull);
         });
 
@@ -255,7 +255,7 @@ public partial class BookStoreDbContext : IdentityDbContext<IdentityUser>
             entity.ToTable("Wishlist");
             entity.HasKey(e => new { e.UserId, e.BookId });
             entity.Property(e => e.CreatedAt).HasColumnType("datetime").HasDefaultValueSql("(getdate())");
-            entity.HasOne<IdentityUser>().WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<ApplicationUser>().WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
             entity.HasOne(e => e.Book).WithMany(b => b.Wishlists).HasForeignKey(e => e.BookId).OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -269,7 +269,7 @@ public partial class BookStoreDbContext : IdentityDbContext<IdentityUser>
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
             entity.Property(e => e.IsHidden).HasDefaultValue(false);
             entity.Property(e => e.HiddenAt).HasColumnType("datetime");
-            entity.HasOne<IdentityUser>().WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<ApplicationUser>().WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
             entity.HasOne(e => e.Book).WithMany(b => b.BookRatings).HasForeignKey(e => e.BookId).OnDelete(DeleteBehavior.Cascade);
             entity.HasOne(e => e.HiddenBy)
                 .WithMany()
@@ -290,8 +290,8 @@ public partial class BookStoreDbContext : IdentityDbContext<IdentityUser>
             entity.Property(e => e.CreatedAt).HasColumnType("datetime").HasDefaultValueSql("(getdate())");
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
             entity.HasIndex(e => e.OrderId);
-            entity.HasOne<IdentityUser>().WithMany().HasForeignKey(e => e.UserId).IsRequired(false).OnDelete(DeleteBehavior.NoAction);
-            entity.HasOne<IdentityUser>().WithMany().HasForeignKey(e => e.AssignedToUserId).OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne<ApplicationUser>().WithMany().HasForeignKey(e => e.UserId).IsRequired(false).OnDelete(DeleteBehavior.NoAction);
+            entity.HasOne<ApplicationUser>().WithMany().HasForeignKey(e => e.AssignedToUserId).OnDelete(DeleteBehavior.SetNull);
             entity.HasOne(e => e.ResolvedBy)
                 .WithMany()
                 .HasForeignKey(e => e.ResolvedByUserId)
@@ -357,6 +357,12 @@ public partial class BookStoreDbContext : IdentityDbContext<IdentityUser>
                 .WithMany()
                 .HasForeignKey(e => e.RoleId)
                 .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<ApplicationUser>(entity =>
+        {
+            entity.Property(e => e.Name).HasMaxLength(100);
+            entity.Property(e => e.Status).HasDefaultValue(true);
         });
 
         OnModelCreatingPartial(modelBuilder);

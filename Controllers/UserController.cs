@@ -1,0 +1,161 @@
+using BookStore.Dtos.Admin;
+using BookStore.Service.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+
+namespace BookStore.Controllers;
+
+[Authorize(Roles = "Admin,Manager")]
+public class UserController : Controller
+{
+    private readonly IUserService _userService;
+    private readonly ILogger<UserController> _logger;
+
+    public UserController(IUserService userService, ILogger<UserController> logger)
+    {
+        _userService = userService;
+        _logger = logger;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Index()
+    {
+        try
+        {
+            var users = await _userService.GetAllUsersAsync();
+            ViewData["Title"] = "Quản lý người dùng";
+            ViewData["BreadcrumbParent"] = "Quản lý người dùng";
+            ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "User");
+            return View(users);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading user list");
+            TempData["Error"] = "Đã xảy ra lỗi khi tải danh sách người dùng.";
+            return RedirectToAction("Index", "Home");
+        }
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Create()
+    {
+        var dto = new CreateUserDto
+        {
+            AvailableRoles = await _userService.GetAvailableRolesAsync()
+        };
+        ViewData["Title"] = "Thêm người dùng mới";
+        ViewData["BreadcrumbParent"] = "Quản lý người dùng";
+        ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "User");
+        return View(dto);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(CreateUserDto dto)
+    {
+        if (!ModelState.IsValid)
+        {
+            dto.AvailableRoles = await _userService.GetAvailableRolesAsync();
+            ViewData["Title"] = "Thêm người dùng mới";
+            ViewData["BreadcrumbParent"] = "Quản lý người dùng";
+            ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "User");
+            return View(dto);
+        }
+
+        try
+        {
+            await _userService.CreateUserAsync(dto);
+            _logger.LogInformation("Admin created user {Email}", dto.Email);
+            TempData["Success"] = $"Tạo tài khoản \"{dto.FullName}\" thành công.";
+            return RedirectToAction(nameof(Index));
+        }
+        catch (ArgumentException ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            dto.AvailableRoles = await _userService.GetAvailableRolesAsync();
+            ViewData["Title"] = "Thêm người dùng mới";
+            ViewData["BreadcrumbParent"] = "Quản lý người dùng";
+            ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "User");
+            return View(dto);
+        }
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Edit(string id)
+    {
+        try
+        {
+            var dto = await _userService.GetUserForEditAsync(id);
+            ViewData["Title"] = "Chỉnh sửa người dùng";
+            ViewData["BreadcrumbParent"] = "Quản lý người dùng";
+            ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "User");
+            return View(dto);
+        }
+        catch (InvalidOperationException)
+        {
+            return NotFound();
+        }
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(EditUserDto dto)
+    {
+        if (!ModelState.IsValid)
+        {
+            dto.AvailableRoles = await _userService.GetAvailableRolesAsync();
+            ViewData["Title"] = "Chỉnh sửa người dùng";
+            ViewData["BreadcrumbParent"] = "Quản lý người dùng";
+            ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "User");
+            return View(dto);
+        }
+
+        try
+        {
+            await _userService.UpdateUserAsync(dto);
+            _logger.LogInformation("Admin updated user {Id}", dto.Id);
+            TempData["Success"] = $"Cập nhật tài khoản \"{dto.FullName}\" thành công.";
+            return RedirectToAction(nameof(Index));
+        }
+        catch (InvalidOperationException)
+        {
+            return NotFound();
+        }
+        catch (ArgumentException ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            dto.AvailableRoles = await _userService.GetAvailableRolesAsync();
+            ViewData["Title"] = "Chỉnh sửa người dùng";
+            ViewData["BreadcrumbParent"] = "Quản lý người dùng";
+            ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "User");
+            return View(dto);
+        }
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ToggleActive(string id)
+    {
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (id == currentUserId)
+        {
+            TempData["Error"] = "Không thể vô hiệu hóa tài khoản đang đăng nhập.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        try
+        {
+            var (isNowActive, fullName) = await _userService.ToggleUserActiveAsync(id);
+            TempData["Success"] = isNowActive
+                ? $"Tài khoản \"{fullName}\" đã được kích hoạt."
+                : $"Tài khoản \"{fullName}\" đã bị vô hiệu hóa.";
+        }
+        catch (InvalidOperationException)
+        {
+            TempData["Error"] = "Không tìm thấy người dùng.";
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
+}

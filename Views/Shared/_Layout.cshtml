@@ -1,4 +1,5 @@
 @using Microsoft.AspNetCore.Identity
+@using BookStore.Models
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 
@@ -271,6 +272,29 @@
                 </a>
             </div>
         </div>
+
+        <!-- Quản Lý Người Dùng -->
+        @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+        {
+            <div class="nav-item-group">
+                <button class="nav-link-item @(ctrl == "User" ? "active" : "")"
+                        onclick="toggleSubmenu('submenu-user', this)">
+                    <i class="bi bi-people nav-icon"></i>
+                    <span class="nav-label">Quản Lý Người Dùng</span>
+                    <i class="bi bi-chevron-down nav-chevron"></i>
+                </button>
+                <div class="nav-submenu @(ctrl == "User" ? "open" : "")" id="submenu-user">
+                    <a class="nav-link-item @(ctrl == "User" && action == "Index" ? "active" : "")"
+                       asp-controller="User" asp-action="Index">
+                        <span class="nav-label">Danh sách người dùng</span>
+                    </a>
+                    <a class="nav-link-item @(ctrl == "User" && action == "Create" ? "active" : "")"
+                       asp-controller="User" asp-action="Create">
+                        <span class="nav-label">Thêm người dùng</span>
+                    </a>
+                </div>
+            </div>
+        }
 
         <!-- Cấu Hình Chung -->
         <div class="nav-item-group">

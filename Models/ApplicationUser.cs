@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 
 namespace BookStore.Models
@@ -11,5 +11,6 @@ namespace BookStore.Models
         public string? Address { get; set; }
         public string? Avatar { get; set; }  
         public DateTime? CreatedAt { get; set; }
+        public bool Status { get; set; } = true;
     }
 }

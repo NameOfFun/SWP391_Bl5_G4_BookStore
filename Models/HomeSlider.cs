@@ -22,7 +22,7 @@ public class HomeSlider
     /// <summary>Optional role link (audience or CMS scope).</summary>
     public string? RoleId { get; set; }
 
-    public virtual IdentityUser? CreatedBy { get; set; }
+    public virtual ApplicationUser? CreatedBy { get; set; }
 
     public virtual IdentityRole? Role { get; set; }
 }
