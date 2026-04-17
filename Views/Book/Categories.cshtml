@@ -1,0 +1,82 @@
+@model List<BookStore.ViewModels.CategoryBooksGroup>
+@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment Env
+@{
+    Layout = "~/Views/Shared/_LayoutAuth.cshtml";
+    ViewData["Title"] = "Sách theo danh mục";
+    var idx = 0;
+}
+<link href="~/css/bookshop.css" rel="stylesheet" asp-append-version="true" />
+
+<section class="page-banner services-banner">
+    <div class="container">
+        <div class="banner-header">
+            <h2>Danh mục sách</h2>
+            <span class="underline center"></span>
+            <p class="lead">Danh sách gợi ý theo từng nhóm — bấm vào tên sách để xem chi tiết hoặc mở <a asp-action="Shop" style="color:#ffb380">cửa hàng</a>.</p>
+        </div>
+        <div class="breadcrumb">
+            <ul>
+                <li><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                <li>Sách theo danh mục</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<div class="container" style="margin-bottom:48px">
+    @{
+        var icons = new[] { "💡", "📖", "🎓", "💻" };
+    }
+    @foreach (var g in Model)
+    {
+        idx++;
+        var icon = icons[(idx - 1) % icons.Length];
+        <section class="book-category-dark">
+            <h3>@icon @g.CategoryName <span style="font-size:0.85em;opacity:0.85">(@g.Books.Count cuốn)</span></h3>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:52px">#</th>
+                            <th>Ảnh bìa</th>
+                            <th>Tên sách</th>
+                            <th>Tác giả</th>
+                            <th class="text-end">Giá tham khảo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{ var r = 0; }
+                        @foreach (var b in g.Books)
+                        {
+                            r++;
+                            var cover = BookCoverHelper.ResolveCoverPath(Env, b.BookId, b.ImageUrl);
+                            var price = b.PromotionalPrice ?? b.Price;
+                            <tr>
+                                <td>@r</td>
+                                <td style="width:72px">
+                                    <a asp-action="Details" asp-route-id="@b.BookId">
+                                        <img src="@cover" alt="" style="width:56px;height:80px;object-fit:cover;border-radius:4px;border:1px solid rgba(255,255,255,0.1)" />
+                                    </a>
+                                </td>
+                                <td><a asp-action="Details" asp-route-id="@b.BookId">@b.Title</a></td>
+                                <td>@(b.AuthorName ?? "—")</td>
+                                <td class="text-end">@price.ToString("N0") đ</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    }
+
+    @if (!Model.Any())
+    {
+        <p class="text-center text-muted" style="padding:40px">Chưa có sách được phân loại. <a asp-action="Shop">Xem cửa hàng</a></p>
+    }
+
+    <div class="text-center" style="margin-top:28px">
+        <a asp-action="Shop" class="btn btn-primary btn-lg" style="background:#ff7236;border-color:#ff7236">
+            <i class="fa fa-th-list"></i> Danh sách sách đầy đủ
+        </a>
+    </div>
+</div>

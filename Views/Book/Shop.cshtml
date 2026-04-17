@@ -1,0 +1,171 @@
+@model IReadOnlyList<BookStore.Dtos.Common.BookDto>
+@using System.Collections.Generic
+@using BookStore.Models
+@{
+    Layout = "~/Views/Shared/_LayoutAuth.cshtml";
+    var categories = ViewBag.Categories as List<Category> ?? new List<Category>();
+    var categoryCounts = ViewBag.CategoryCounts as Dictionary<int, int> ?? new Dictionary<int, int>();
+    var totalActive = ViewBag.TotalActiveCount as int? ?? 0;
+    var categoryId = ViewBag.CategoryId as int?;
+    var search = ViewBag.Search as string;
+    var viewMode = ViewBag.ViewMode as string ?? "list";
+    var order = ViewBag.Order as string ?? "newest";
+    var total = ViewBag.TotalCount as int? ?? Model.Count;
+}
+
+<link href="~/css/bookshop.css" rel="stylesheet" asp-append-version="true" />
+
+<!-- Start: Page Banner -->
+<section class="page-banner services-banner">
+    <div class="container">
+        <div class="banner-header">
+            <h2>Sách &amp; Danh mục</h2>
+            <span class="underline center"></span>
+            <p class="lead">Tìm và xem sách theo danh mục — giao diện hiển thị dạng danh sách hoặc lưới.</p>
+        </div>
+        <div class="breadcrumb">
+            <ul>
+                <li><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                <li>Danh sách sách</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<div id="content" class="site-content">
+    <div id="primary" class="content-area">
+        <main id="main" class="site-main">
+            <div class="books-media-list">
+                <div class="container">
+                    <div class="row">
+                        <section class="search-filters">
+                            <div class="container">
+                                <div class="filter-box">
+                                    <h3>Bạn đang tìm cuốn sách nào?</h3>
+                                    <form asp-action="Shop" method="get" id="shopFilterForm">
+                                        <input type="hidden" name="view" value="@viewMode" />
+                                        <div class="col-md-4 col-sm-6">
+                                            <div class="form-group">
+                                                <label class="sr-only" for="shop-q">Từ khóa</label>
+                                                <input class="form-control" placeholder="Tìm theo tên sách" id="shop-q" name="q" type="text" value="@search" />
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 col-sm-6">
+                                            <div class="form-group">
+                                                <label class="sr-only" for="shop-order">Sắp xếp</label>
+                                                <select name="order" id="shop-order" class="form-control" onchange="document.getElementById('shopFilterForm').submit();">
+                                                    @if (order == "newest") { <option value="newest" selected="selected">Mới nhất</option> } else { <option value="newest">Mới nhất</option> }
+                                                    @if (order == "title") { <option value="title" selected="selected">Theo tên A–Z</option> } else { <option value="title">Theo tên A–Z</option> }
+                                                    @if (order == "price_asc") { <option value="price_asc" selected="selected">Giá tăng dần</option> } else { <option value="price_asc">Giá tăng dần</option> }
+                                                    @if (order == "price_desc") { <option value="price_desc" selected="selected">Giá giảm dần</option> } else { <option value="price_desc">Giá giảm dần</option> }
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 col-sm-6">
+                                            <div class="form-group">
+                                                <label class="sr-only" for="shop-cat">Danh mục</label>
+                                                <select name="categoryId" id="shop-cat" class="form-control" onchange="document.getElementById('shopFilterForm').submit();">
+                                                    @if (!categoryId.HasValue) { <option value="" selected="selected">Tất cả danh mục</option> } else { <option value="">Tất cả danh mục</option> }
+                                                    @foreach (var c in categories)
+                                                    {
+                                                        if (categoryId == c.CategoryId)
+                                                        { <option value="@c.CategoryId" selected="selected">@c.Name</option> }
+                                                        else
+                                                        { <option value="@c.CategoryId">@c.Name</option> }
+                                                    }
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2 col-sm-6">
+                                            <div class="form-group">
+                                                <input class="form-control" type="submit" value="Tìm kiếm" style="background:#ff7236;border-color:#ff7236;color:#fff" />
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-9 col-md-push-3">
+                            <div class="filter-options margin-list">
+                                <div class="row">
+                                    <div class="col-md-4 col-sm-4">
+                                        <div class="filter-result" style="padding-top:8px">
+                                            Hiển thị <strong>@total</strong> cuốn sách
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 col-sm-4">
+                                        <div class="filter-result text-muted" style="padding-top:8px;font-size:13px">
+                                            @(string.IsNullOrEmpty(search) ? "" : "Từ khóa: \"" + search + "\"")
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 col-sm-3 pull-right">
+                                        <div class="filter-toggle">
+                                            <a asp-action="Shop" asp-route-q="@search" asp-route-categoryId="@categoryId" asp-route-order="@order" asp-route-view="grid" class="@(viewMode == "grid" ? "active" : null)"><i class="glyphicon glyphicon-th-large"></i></a>
+                                            <a asp-action="Shop" asp-route-q="@search" asp-route-categoryId="@categoryId" asp-route-order="@order" asp-route-view="list" class="@(viewMode == "list" ? "active" : null)"><i class="glyphicon glyphicon-th-list"></i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if (viewMode == "grid")
+                            {
+                                <div class="books-gird">
+                                    <ul>
+                                        @foreach (var book in Model)
+                                        {
+                                            @await Html.PartialAsync("_ShopBookGridItem", book)
+                                        }
+                                    </ul>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="books-list">
+                                    @foreach (var book in Model)
+                                    {
+                                        @await Html.PartialAsync("_ShopBookListItem", book)
+                                    }
+                                </div>
+                            }
+
+                            @if (!Model.Any())
+                            {
+                                <p class="text-center text-muted" style="padding:40px 0">Không có sách phù hợp. Hãy thử bỏ bộ lọc hoặc từ khóa khác.</p>
+                            }
+                        </div>
+
+                        <div class="col-md-3 col-md-pull-9">
+                            <aside id="secondary" class="sidebar widget-area">
+                                <div class="widget widget_related_search open">
+                                    <h4 class="widget-title">Danh mục</h4>
+                                    <div>
+                                        <div class="widget_categories">
+                                            <ul>
+                                                <li><a asp-action="Shop">Tất cả <span>(@totalActive)</span></a></li>
+                                                @foreach (var c in categories)
+                                                {
+                                                    var cnt = categoryCounts.TryGetValue(c.CategoryId, out var n) ? n : 0;
+                                                    <li><a asp-action="Shop" asp-route-categoryId="@c.CategoryId">@c.Name <span>(@cnt)</span></a></li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="widget">
+                                    <h4 class="widget-title">Xem thêm</h4>
+                                    <ul class="list-unstyled">
+                                        <li><a asp-action="Categories"><i class="fa fa-th-large"></i> Sách theo nhóm danh mục</a></li>
+                                        <li><a asp-controller="Home" asp-action="Index"><i class="fa fa-home"></i> Trang chủ</a></li>
+                                    </ul>
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>

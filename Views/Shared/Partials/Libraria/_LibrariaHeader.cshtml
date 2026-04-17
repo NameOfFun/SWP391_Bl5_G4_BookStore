@@ -71,10 +71,14 @@
                                     <a data-toggle="dropdown" class="dropdown-toggle disabled" asp-controller="Home" asp-action="Index">Trang chủ</a>
                                 </li>
                                 <li class="dropdown">
-                                    <a data-toggle="dropdown" class="dropdown-toggle disabled" asp-controller="Book" asp-action="Index">Sách</a>
+                                    <a data-toggle="dropdown" class="dropdown-toggle disabled" asp-controller="Book" asp-action="Shop">Sách</a>
                                     <ul class="dropdown-menu">
-                                        <li><a asp-controller="Book" asp-action="List">Danh sách sách</a></li>
-                                        <li><a asp-controller="Book" asp-action="Grid">Lưới sách</a></li>
+                                        <li><a asp-controller="Book" asp-action="Categories">Theo danh mục (bảng)</a></li>
+                                        <li><a asp-controller="Book" asp-action="Shop">Danh sách sách</a></li>
+                                        @if (User.IsInRole("Admin") || User.IsInRole("Manager") || User.IsInRole("Staff"))
+                                        {
+                                            <li><a asp-controller="Book" asp-action="Index">Manage Book</a></li>
+                                        }
                                     </ul>
                                 </li>
                                 <li class="dropdown">
@@ -103,27 +107,29 @@
                     <div id="mobile-menu">
                         <ul>
                             <li class="mobile-title">
-                                <h4>Navigation</h4>
-                                <a href="#" class="close"></a>
+                                <h4>Điều hướng</h4>
+                                <a href="#" class="close" aria-label="Đóng menu"></a>
                             </li>
-                            <li><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
-                            <li><a asp-controller="Book" asp-action="Index">Sách</a></li>
-                            <li><a href="#">Tin tức</a></li>
-                            <li><a asp-controller="Cart" asp-action="Index">Giỏ hàng</a></li>
-                            <li><a href="#">Liên hệ</a></li>
+                            <li><a asp-controller="Home" asp-action="Index"><i class="fa fa-home" aria-hidden="true"></i><span>Trang chủ</span></a></li>
+                            <li><a asp-controller="Book" asp-action="Shop"><i class="fa fa-book" aria-hidden="true"></i><span>Sách</span></a></li>
+                            <li><a href="#"><i class="fa fa-newspaper-o" aria-hidden="true"></i><span>Tin tức</span></a></li>
+                            <li><a asp-controller="Cart" asp-action="Index"><i class="fa fa-shopping-cart" aria-hidden="true"></i><span>Giỏ hàng</span></a></li>
+                            <li><a href="#"><i class="fa fa-envelope-o" aria-hidden="true"></i><span>Liên hệ</span></a></li>
                             @if (User.Identity?.IsAuthenticated == true)
                             {
-                                <li><a asp-controller="Account" asp-action="Profile">Tài khoản</a></li>
+                                <li><a asp-controller="Account" asp-action="Profile"><i class="fa fa-user" aria-hidden="true"></i><span>Tài khoản</span></a></li>
                                 <li>
-                                    <form asp-controller="Account" asp-action="Logout" method="post">
-                                        <button type="submit" style="background:none;border:none;padding:0;">Đăng xuất</button>
+                                    <form asp-controller="Account" asp-action="Logout" method="post" class="mobile-nav-logout-form">
+                                        <button type="submit" class="mobile-nav-logout-btn">
+                                            <i class="fa fa-sign-out" aria-hidden="true"></i><span>Đăng xuất</span>
+                                        </button>
                                     </form>
                                 </li>
                             }
                             else
                             {
-                                <li><a asp-controller="Account" asp-action="Login">Đăng nhập</a></li>
-                                <li><a asp-controller="Account" asp-action="Register">Đăng ký</a></li>
+                                <li><a asp-controller="Account" asp-action="Login"><i class="fa fa-lock" aria-hidden="true"></i><span>Đăng nhập</span></a></li>
+                                <li><a asp-controller="Account" asp-action="Register"><i class="fa fa-user-plus" aria-hidden="true"></i><span>Đăng ký</span></a></li>
                             }
                         </ul>
                     </div>

@@ -1,0 +1,66 @@
+/*
+ * Trang chủ — hero/slider: giới hạn chiều cao, cắt ảnh (object-fit: cover).
+ * Mặc định ~2/3 viewport; đổi 66.67vh → 33.33vh bên dưới nếu chỉ muốn 1/3.
+ */
+:root {
+  --home-hero-height: min(66.67vh, 760px);
+  --home-hero-height-min: 260px;
+}
+
+#home-v1-header-carousel {
+  overflow: hidden;
+}
+
+#home-v1-header-carousel .carousel-inner {
+  height: var(--home-hero-height);
+  min-height: var(--home-hero-height-min);
+}
+
+#home-v1-header-carousel .carousel-inner > .item {
+  height: 100%;
+  min-height: 0;
+}
+
+/* Ảnh phủ toàn vùng hero, không kéo dài theo pixel gốc của file */
+#home-v1-header-carousel .carousel-inner > .item > figure {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+#home-v1-header-carousel figure img {
+  width: 100%;
+  height: 100%;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+/* Caption nằm trên ảnh; container không chiếm thêm chiều cao luồng tài liệu */
+#home-v1-header-carousel .carousel-inner > .item > .container {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  height: 100%;
+  pointer-events: none;
+}
+
+#home-v1-header-carousel .carousel-inner > .item > .container .carousel-caption,
+#home-v1-header-carousel .carousel-inner > .item > .container .slide-buttons,
+#home-v1-header-carousel .carousel-inner > .item > .container a,
+#home-v1-header-carousel .carousel-inner > .item > .container button {
+  pointer-events: auto;
+}
+
+@media (max-width: 767px) {
+  :root {
+    --home-hero-height: min(66.67vh, 520px);
+    --home-hero-height-min: 220px;
+  }
+}
