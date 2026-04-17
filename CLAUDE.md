@@ -55,6 +55,32 @@ Migrations/           → EF Core migrations
 
 **Pagination (server-side)** — `CategoryController` uses `const int PageSize = 10`, applies `.Skip().Take()` after filtering, and passes `Page`, `TotalPages`, `TotalCount`, `PageSize` through `ViewData`. Views read these variables at the top of the file.
 
+**Pagination style (standard)** — All pagination UI must use the custom style from `Views/Book/Index.cshtml`, not Bootstrap's `<ul class="pagination">`. Required elements:
+
+```html
+<div class="pagination-area">
+    <span class="pagination-info">Hiển thị X–Y của Z bản ghi</span>
+    <div class="pagination-controls">
+        <a class="page-btn [disabled]" ...>Trước</a>
+        <!-- optional: page 1 + ellipsis if startPage > 1 -->
+        <a class="page-btn [active]" ...>N</a>
+        <!-- optional: ellipsis + last page if endPage < totalPages -->
+        <a class="page-btn [disabled]" ...>Sau</a>
+    </div>
+</div>
+```
+
+Required CSS classes (copy from `Book/Index.cshtml` `<style>` block):
+- `.pagination-area` — flex row, space-between, `padding:14px 16px`, `border-top:1px solid #f0f0f0`
+- `.pagination-info` — `color:#595959`
+- `.pagination-controls` — flex row, `gap:4px`
+- `.page-btn` — `min-width:32px; height:32px; border:1px solid #d9d9d9; border-radius:6px; background:#fff; color:#262626`
+- `.page-btn.active` — `background:#1677ff; border-color:#1677ff; color:#fff`
+- `.page-btn.disabled` — `opacity:0.4; pointer-events:none`
+- `.page-btn-ellipsis` — non-clickable spacer for `…`
+
+For server-side views (e.g. Category), page buttons are `<a>` tags with `asp-route-page`. For client-side views (e.g. Book), page buttons are `<button>` elements driven by JS `renderPagination()`. Info text shows "Không có bản ghi nào" when `totalCount == 0`.
+
 **Auditing** — Most entities have `UpdatedByUserId` (FK → `IdentityUser`). Always capture the current user id with `User.FindFirstValue(ClaimTypes.NameIdentifier)` in the controller and pass it to the service.
 
 **Soft delete** — Use `IsActive = false` rather than deleting rows. For status toggling, services expose `ToggleStatusAsync` / `ChangeStatusAsync` which flip the boolean and update `UpdatedByUserId`.
