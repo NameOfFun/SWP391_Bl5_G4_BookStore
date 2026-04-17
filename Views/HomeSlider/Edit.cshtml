@@ -52,23 +52,12 @@
                         <span asp-validation-for="LinkUrl" class="text-danger" style="font-size:.8rem"></span>
                     </div>
 
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <label asp-for="DisplayOrder" class="form-label" style="font-size:.875rem;font-weight:500;color:#595959">
-                                Thứ Tự Hiển Thị
+                    <div class="mb-4">
+                        <div class="form-check form-switch">
+                            <input asp-for="IsActive" class="form-check-input" type="checkbox" role="switch" />
+                            <label asp-for="IsActive" class="form-check-label" style="font-size:.875rem;font-weight:500;color:#595959">
+                                Kích hoạt
                             </label>
-                            <input asp-for="DisplayOrder" type="number" min="0" class="form-control"
-                                   style="border-radius:6px;font-size:.875rem" />
-                            <div class="form-text" style="font-size:.78rem">Số nhỏ hơn hiển thị trước.</div>
-                            <span asp-validation-for="DisplayOrder" class="text-danger" style="font-size:.8rem"></span>
-                        </div>
-                        <div class="col-md-6 d-flex align-items-end pb-1">
-                            <div class="form-check form-switch">
-                                <input asp-for="IsActive" class="form-check-input" type="checkbox" role="switch" />
-                                <label asp-for="IsActive" class="form-check-label" style="font-size:.875rem;font-weight:500;color:#595959">
-                                    Kích hoạt
-                                </label>
-                            </div>
                         </div>
                     </div>
 
