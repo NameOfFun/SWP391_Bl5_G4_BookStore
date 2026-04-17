@@ -75,3 +75,51 @@ public class AssignedOrderItemDto
 
     public double HoursSinceOrder => (DateTime.Now - OrderDate).TotalHours;
 }
+
+// ─────────────────────────────────────────────
+//  Delivery Detail ViewModel
+// ─────────────────────────────────────────────
+public class DeliveryDetailViewModel
+{
+    // ── Thông tin đơn ──────────────────────────
+    public int OrderId { get; set; }
+    public DateTime OrderDate { get; set; }
+    public OrderStatus Status { get; set; }
+
+    // ── Người nhận ─────────────────────────────
+    public string RecipientName { get; set; } = string.Empty;
+    public string RecipientPhone { get; set; } = string.Empty;
+    public string RecipientAddress { get; set; } = string.Empty;
+    public string? DeliveryNote { get; set; }
+
+    // ── Sản phẩm ───────────────────────────────
+    public List<DeliveryItemDto> Items { get; set; } = [];
+
+    // ── Thanh toán ─────────────────────────────
+    public string? PaymentMethod { get; set; }
+    public string? PaymentStatus { get; set; }
+    public decimal SubTotal { get; set; }
+    public decimal DiscountAmount { get; set; }
+    public decimal GrandTotal { get; set; }
+    public int? VoucherId { get; set; }
+
+    public bool IsPrepaid => PaymentStatus?.ToLower() == "paid";
+    public bool IsCod => string.IsNullOrWhiteSpace(PaymentMethod) ||
+                         PaymentMethod.Equals("COD", StringComparison.OrdinalIgnoreCase);
+
+    // ── Navigation ─────────────────────────────
+    /// <summary>Cho phép Accept/Reject nếu đang Shipped</summary>
+    public bool CanAccept  => Status == OrderStatus.Shipped;
+    /// <summary>Cho phép đánh dấu Delivered nếu đang Delivering</summary>
+    public bool CanDeliver => Status == OrderStatus.Delivering;
+}
+
+public class DeliveryItemDto
+{
+    public string BookTitle { get; set; } = string.Empty;
+    public string? ImageUrl { get; set; }
+    public string? AuthorName { get; set; }
+    public int Quantity { get; set; }
+    public decimal UnitPrice { get; set; }
+    public decimal LineTotal => UnitPrice * Quantity;
+}

@@ -1,0 +1,599 @@
+@model BookStore.Dtos.DeliveryDetailViewModel
+@using BookStore.Models
+
+@{
+    ViewData["Title"] = $"Chi tiết đơn #{Model.OrderId}";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    :root {
+        --dd-blue:   #1677ff;
+        --dd-green:  #52c41a;
+        --dd-orange: #fa8c16;
+        --dd-red:    #ff4d4f;
+        --dd-radius: 14px;
+        --dd-shadow: 0 2px 14px rgba(0,0,0,.07);
+    }
+
+    /* ── Layout ── */
+    .dd-grid {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 20px;
+        align-items: start;
+    }
+    @@media (max-width: 960px) { .dd-grid { grid-template-columns: 1fr; } }
+
+    /* ── Cards ── */
+    .dd-card {
+        background: #fff;
+        border-radius: var(--dd-radius);
+        box-shadow: var(--dd-shadow);
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+    .dd-card-header {
+        display: flex; align-items: center; gap: 10px;
+        padding: 18px 24px 14px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .dd-card-header-icon {
+        width: 36px; height: 36px;
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1rem; flex-shrink: 0;
+    }
+    .dd-card-header-icon.blue   { background: #e6f4ff; color: var(--dd-blue); }
+    .dd-card-header-icon.green  { background: #f6ffed; color: var(--dd-green); }
+    .dd-card-header-icon.orange { background: #fff7e6; color: var(--dd-orange); }
+    .dd-card-header-icon.purple { background: #f9f0ff; color: #722ed1; }
+
+    .dd-card-title {
+        font-size: .9rem; font-weight: 700; color: #1a1a2e; margin: 0;
+    }
+    .dd-card-body { padding: 20px 24px; }
+
+    /* ── Page header ── */
+    .dd-page-header {
+        display: flex; align-items: flex-start;
+        justify-content: space-between; flex-wrap: wrap;
+        gap: 14px; margin-bottom: 24px;
+    }
+    .dd-page-title {
+        font-size: 1.35rem; font-weight: 700;
+        color: #1a1a2e; margin: 0;
+        display: flex; align-items: center; gap: 10px;
+    }
+    .dd-page-title i { color: var(--dd-blue); }
+    .dd-page-sub { color: #8c8c8c; font-size: .875rem; margin-top: 4px; }
+
+    /* ── Status badge ── */
+    .dd-status-badge {
+        display: inline-flex; align-items: center; gap: 7px;
+        font-size: .85rem; font-weight: 700; padding: 7px 16px;
+        border-radius: 20px;
+    }
+    .dd-status-badge.shipped    { background: #e6f4ff; color: #1677ff; }
+    .dd-status-badge.delivering { background: #fff7e6; color: #fa8c16; }
+    .dd-status-badge.delivered  { background: #f6ffed; color: #52c41a; }
+    .dd-status-badge.cancelled  { background: #fff1f0; color: #ff4d4f; }
+
+    /* ── Info rows ── */
+    .dd-info-row {
+        display: flex; gap: 14px;
+        padding: 11px 0; border-bottom: 1px solid #f5f5f5;
+        font-size: .875rem;
+    }
+    .dd-info-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .dd-info-icon {
+        width: 32px; height: 32px; border-radius: 8px;
+        background: #f5f5f5; color: #8c8c8c;
+        display: flex; align-items: center; justify-content: center;
+        font-size: .9rem; flex-shrink: 0;
+    }
+    .dd-info-label { font-size: .75rem; color: #8c8c8c; margin-bottom: 2px; }
+    .dd-info-value { font-weight: 600; color: #1a1a2e; word-break: break-word; }
+    .dd-info-value.note {
+        font-weight: 400; color: #595959; font-style: italic;
+        background: #fffbe6; border-left: 3px solid #ffc53d;
+        padding: 6px 10px; border-radius: 0 6px 6px 0;
+        margin-top: 6px;
+    }
+
+    /* ── Product table ── */
+    .dd-product-table { width: 100%; border-collapse: collapse; }
+    .dd-product-table th {
+        background: #fafafa; padding: 10px 14px;
+        font-size: .75rem; font-weight: 600; color: #8c8c8c;
+        text-transform: uppercase; letter-spacing: .4px;
+        border-bottom: 1px solid #f0f0f0; text-align: left;
+    }
+    .dd-product-table td {
+        padding: 14px; border-bottom: 1px solid #f5f5f5;
+        vertical-align: middle; font-size: .875rem;
+    }
+    .dd-product-table tbody tr:last-child td { border-bottom: none; }
+
+    .dd-book-cover {
+        width: 44px; height: 60px; border-radius: 6px;
+        object-fit: cover; background: #f5f5f5;
+        display: flex; align-items: center; justify-content: center;
+        color: #bfbfbf; font-size: 1.2rem; flex-shrink: 0;
+        border: 1px solid #f0f0f0;
+    }
+    .dd-book-cover img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
+
+    .dd-book-title { font-weight: 600; color: #1a1a2e; margin-bottom: 2px; }
+    .dd-book-author { font-size: .78rem; color: #8c8c8c; }
+    .dd-qty-badge {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 32px; height: 32px; border-radius: 8px;
+        background: #f0f7ff; color: var(--dd-blue);
+        font-weight: 700; font-size: .9rem;
+    }
+    .dd-line-price { font-weight: 700; color: #1a1a2e; }
+
+    /* ── Payment summary card ── */
+    .dd-pay-row {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 10px 0; border-bottom: 1px solid #f5f5f5;
+        font-size: .875rem;
+    }
+    .dd-pay-row:last-child { border-bottom: none; }
+    .dd-pay-label { color: #595959; }
+    .dd-pay-value { font-weight: 600; color: #1a1a2e; }
+    .dd-pay-row.total {
+        margin-top: 6px; padding-top: 14px;
+        border-top: 2px solid #f0f0f0; border-bottom: none;
+    }
+    .dd-pay-row.total .dd-pay-label { font-weight: 700; color: #1a1a2e; font-size: .95rem; }
+    .dd-pay-row.total .dd-pay-value { font-size: 1.2rem; color: var(--dd-green); font-weight: 800; }
+
+    .dd-pay-badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        font-size: .8rem; font-weight: 700; padding: 5px 14px;
+        border-radius: 20px; margin-bottom: 16px;
+    }
+    .dd-pay-badge.cod  { background: #fff7e6; color: #d46b08; }
+    .dd-pay-badge.paid { background: #f6ffed; color: #389e0d; }
+    .dd-pay-badge.online { background: #f0f7ff; color: var(--dd-blue); }
+
+    /* ── Action buttons ── */
+    .dd-actions { display: flex; flex-direction: column; gap: 10px; }
+    .dd-btn {
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        padding: 12px 20px; border-radius: 10px;
+        font-size: .875rem; font-weight: 700; cursor: pointer;
+        border: none; transition: opacity .15s, transform .12s;
+        text-decoration: none; width: 100%;
+    }
+    .dd-btn:hover { opacity: .88; transform: translateY(-1px); }
+    .dd-btn.delivered { background: linear-gradient(135deg,#52c41a,#73d13d); color: #fff; }
+    .dd-btn.accept    { background: linear-gradient(135deg,#1677ff,#4096ff); color: #fff; }
+    .dd-btn.reject    { background: #fff1f0; color: var(--dd-red); border: 1px solid #ffa39e; }
+    .dd-btn.back      { background: #f5f5f5; color: #595959; }
+
+    /* ── Order meta bar ── */
+    .dd-meta-bar {
+        display: flex; align-items: center; gap: 16px;
+        flex-wrap: wrap; margin-bottom: 8px;
+    }
+    .dd-meta-chip {
+        display: flex; align-items: center; gap: 6px;
+        font-size: .8rem; color: #8c8c8c;
+    }
+    .dd-meta-chip strong { color: #1a1a2e; }
+
+    /* ── Urgency banner ── */
+    .dd-urgency-banner {
+        display: flex; align-items: center; gap: 10px;
+        padding: 12px 20px; border-radius: 10px;
+        font-size: .875rem; font-weight: 500; margin-bottom: 20px;
+        animation: fadeIn .3s ease;
+    }
+    .dd-urgency-banner.critical { background: #fff1f0; color: #cf1322; border: 1px solid #ffa39e; }
+    .dd-urgency-banner.high     { background: #fff7e6; color: #d46b08; border: 1px solid #ffd591; }
+    @@keyframes fadeIn { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:none} }
+
+    /* ── Toast ── */
+    .dd-toast { padding: 12px 18px; border-radius: 10px; margin-bottom: 16px;
+                 display: flex; align-items: center; gap: 10px; font-size: .875rem; }
+    .dd-toast.success { background:#f6ffed; border:1px solid #b7eb8f; color:#389e0d; }
+    .dd-toast.error   { background:#fff1f0; border:1px solid #ffa39e; color:#cf1322; }
+</style>
+
+<!-- ── Page Header ── -->
+@{
+    var hours = (DateTime.Now - Model.OrderDate).TotalHours;
+    var statusClass = Model.Status switch {
+        OrderStatus.Shipped    => "shipped",
+        OrderStatus.Delivering => "delivering",
+        OrderStatus.Delivered  => "delivered",
+        OrderStatus.Cancelled  => "cancelled",
+        _ => "shipped"
+    };
+    var statusLabel = Model.Status switch {
+        OrderStatus.Shipped    => "Chờ nhận",
+        OrderStatus.Delivering => "Đang giao",
+        OrderStatus.Delivered  => "Đã giao ✓",
+        OrderStatus.Cancelled  => "Đã hủy",
+        _ => Model.Status.ToString()
+    };
+    var statusIcon = Model.Status switch {
+        OrderStatus.Shipped    => "bi-hourglass-split",
+        OrderStatus.Delivering => "bi-truck",
+        OrderStatus.Delivered  => "bi-check-circle-fill",
+        OrderStatus.Cancelled  => "bi-x-circle-fill",
+        _ => "bi-circle"
+    };
+}
+
+<div class="dd-page-header">
+    <div>
+        <h1 class="dd-page-title">
+            <i class="bi bi-file-earmark-text"></i>
+            Chi Tiết Đơn Hàng #@Model.OrderId
+        </h1>
+        <div class="dd-meta-bar mt-2">
+            <span class="dd-meta-chip">
+                <i class="bi bi-calendar3"></i>
+                <strong>@Model.OrderDate.ToString("HH:mm — dd/MM/yyyy")</strong>
+            </span>
+            <span class="dd-meta-chip">
+                <i class="bi bi-clock-history"></i>
+                ~@((int)hours) giờ trước
+            </span>
+            <span class="dd-status-badge @statusClass">
+                <i class="bi @statusIcon"></i> @statusLabel
+            </span>
+        </div>
+    </div>
+    <a asp-controller="Shipper" asp-action="AssignedOrders"
+       class="dd-btn back" style="width:auto;padding:9px 18px">
+        <i class="bi bi-arrow-left"></i> Quay lại
+    </a>
+</div>
+
+<!-- ── Toast (TempData) ── -->
+@if (TempData["Success"] is string ok)
+{
+    <div class="dd-toast success"><i class="bi bi-check-circle-fill"></i> @ok</div>
+}
+@if (TempData["Error"] is string err)
+{
+    <div class="dd-toast error"><i class="bi bi-exclamation-circle-fill"></i> @err</div>
+}
+
+<!-- ── Urgency Banner ── -->
+@if (Model.Status == OrderStatus.Shipped && hours > 24)
+{
+    <div class="dd-urgency-banner critical">
+        <i class="bi bi-alarm-fill"></i>
+        <strong>Quá hạn!</strong> Đơn này đã chờ hơn @((int)hours) giờ. Vui lòng nhận và giao ngay!
+    </div>
+}
+else if (Model.Status == OrderStatus.Shipped && hours > 12)
+{
+    <div class="dd-urgency-banner high">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        Đơn đã chờ hơn @((int)hours) giờ — nên xử lý sớm.
+    </div>
+}
+
+<!-- ── Two-column Grid ── -->
+<div class="dd-grid">
+
+    <!-- ═══ LEFT COLUMN ═══ -->
+    <div>
+
+        <!-- ① Thông tin đơn hàng -->
+        <div class="dd-card">
+            <div class="dd-card-header">
+                <div class="dd-card-header-icon blue"><i class="bi bi-receipt"></i></div>
+                <h2 class="dd-card-title">Thông tin đơn hàng</h2>
+            </div>
+            <div class="dd-card-body">
+                <div class="dd-info-row">
+                    <div class="dd-info-icon"><i class="bi bi-hash"></i></div>
+                    <div>
+                        <div class="dd-info-label">Order ID</div>
+                        <div class="dd-info-value">#@Model.OrderId</div>
+                    </div>
+                </div>
+                <div class="dd-info-row">
+                    <div class="dd-info-icon"><i class="bi bi-calendar-event"></i></div>
+                    <div>
+                        <div class="dd-info-label">Ngày tạo đơn</div>
+                        <div class="dd-info-value">@Model.OrderDate.ToString("HH:mm:ss — dddd, dd/MM/yyyy")</div>
+                    </div>
+                </div>
+                <div class="dd-info-row">
+                    <div class="dd-info-icon"><i class="bi bi-activity"></i></div>
+                    <div>
+                        <div class="dd-info-label">Trạng thái</div>
+                        <div class="dd-info-value">
+                            <span class="dd-status-badge @statusClass" style="font-size:.8rem;padding:4px 12px">
+                                <i class="bi @statusIcon"></i> @statusLabel
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ② Thông tin người nhận -->
+        <div class="dd-card">
+            <div class="dd-card-header">
+                <div class="dd-card-header-icon green"><i class="bi bi-person-fill"></i></div>
+                <h2 class="dd-card-title">Người nhận</h2>
+            </div>
+            <div class="dd-card-body">
+                <div class="dd-info-row">
+                    <div class="dd-info-icon"><i class="bi bi-person"></i></div>
+                    <div>
+                        <div class="dd-info-label">Tên người nhận</div>
+                        <div class="dd-info-value">@Model.RecipientName</div>
+                    </div>
+                </div>
+                <div class="dd-info-row">
+                    <div class="dd-info-icon"><i class="bi bi-telephone-fill"></i></div>
+                    <div>
+                        <div class="dd-info-label">Số điện thoại</div>
+                        <div class="dd-info-value">
+                            <a href="tel:@Model.RecipientPhone" style="color:var(--dd-blue);text-decoration:none">
+                                @Model.RecipientPhone
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="dd-info-row">
+                    <div class="dd-info-icon"><i class="bi bi-geo-alt-fill"></i></div>
+                    <div>
+                        <div class="dd-info-label">Địa chỉ giao hàng</div>
+                        <div class="dd-info-value">@Model.RecipientAddress</div>
+                    </div>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(Model.DeliveryNote))
+                {
+                    <div class="dd-info-row">
+                        <div class="dd-info-icon" style="background:#fffbe6;color:#d48806">
+                            <i class="bi bi-sticky"></i>
+                        </div>
+                        <div style="flex:1">
+                            <div class="dd-info-label">Ghi chú giao hàng</div>
+                            <div class="dd-info-value note">@Model.DeliveryNote</div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="dd-info-row">
+                        <div class="dd-info-icon"><i class="bi bi-sticky"></i></div>
+                        <div>
+                            <div class="dd-info-label">Ghi chú giao hàng</div>
+                            <div class="dd-info-value" style="color:#bfbfbf;font-weight:400">Không có ghi chú</div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- ③ Danh sách sản phẩm -->
+        <div class="dd-card">
+            <div class="dd-card-header">
+                <div class="dd-card-header-icon orange"><i class="bi bi-book-fill"></i></div>
+                <h2 class="dd-card-title">Sản phẩm</h2>
+                <span style="margin-left:auto;font-size:.8rem;color:#8c8c8c">
+                    @Model.Items.Count sản phẩm
+                </span>
+            </div>
+            <div>
+                <table class="dd-product-table">
+                    <thead>
+                        <tr>
+                            <th colspan="2">Sách</th>
+                            <th style="text-align:center;width:80px">Số lượng</th>
+                            <th style="text-align:right;width:140px">Đơn giá</th>
+                            <th style="text-align:right;width:140px">Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr>
+                                <td style="width:60px;padding-right:0">
+                                    <div class="dd-book-cover">
+                                        @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                                        {
+                                            <img src="@item.ImageUrl" alt="@item.BookTitle" />
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-book"></i>
+                                        }
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="dd-book-title">@item.BookTitle</div>
+                                    @if (!string.IsNullOrWhiteSpace(item.AuthorName))
+                                    {
+                                        <div class="dd-book-author">@item.AuthorName</div>
+                                    }
+                                </td>
+                                <td style="text-align:center">
+                                    <span class="dd-qty-badge">@item.Quantity</span>
+                                </td>
+                                <td style="text-align:right;color:#595959">
+                                    @item.UnitPrice.ToString("N0")₫
+                                </td>
+                                <td style="text-align:right">
+                                    <span class="dd-line-price">@item.LineTotal.ToString("N0")₫</span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ═══ RIGHT COLUMN ═══ -->
+    <div>
+
+        <!-- ④ Thanh toán -->
+        <div class="dd-card">
+            <div class="dd-card-header">
+                <div class="dd-card-header-icon purple"><i class="bi bi-credit-card-fill"></i></div>
+                <h2 class="dd-card-title">Thanh toán</h2>
+            </div>
+            <div class="dd-card-body">
+                @{
+                    var payBadgeClass = Model.IsPrepaid ? (Model.IsCod ? "cod" : "online") : "cod";
+                    var payIcon  = Model.IsPrepaid ? "bi-check-circle-fill" : "bi-cash-coin";
+                    var payLabel = Model.IsPrepaid
+                        ? $"{Model.PaymentMethod} — Đã thanh toán"
+                        : "COD — Thu tiền khi giao";
+                }
+                <div class="dd-pay-badge @payBadgeClass">
+                    <i class="bi @payIcon"></i> @payLabel
+                </div>
+
+                @if (!Model.IsPrepaid)
+                {
+                    <div style="background:#fff7e6;border:1px solid #ffd591;border-radius:9px;padding:10px 14px;margin-bottom:16px;font-size:.82rem;color:#d46b08">
+                        <i class="bi bi-exclamation-circle me-1"></i>
+                        <strong>Nhắc nhở:</strong> Thu <strong>@Model.GrandTotal.ToString("N0")₫</strong> tiền mặt khi giao.
+                    </div>
+                }
+
+                <div class="dd-pay-row">
+                    <span class="dd-pay-label">Tạm tính</span>
+                    <span class="dd-pay-value">@Model.SubTotal.ToString("N0")₫</span>
+                </div>
+                @if (Model.DiscountAmount > 0)
+                {
+                    <div class="dd-pay-row">
+                        <span class="dd-pay-label">
+                            Giảm giá @(Model.VoucherId.HasValue ? "(Voucher)" : "")
+                        </span>
+                        <span class="dd-pay-value" style="color:var(--dd-red)">
+                            -@Model.DiscountAmount.ToString("N0")₫
+                        </span>
+                    </div>
+                }
+                <div class="dd-pay-row total">
+                    <span class="dd-pay-label">Tổng cộng</span>
+                    <span class="dd-pay-value">@Model.GrandTotal.ToString("N0")₫</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ⑤ Thao tác -->
+        <div class="dd-card">
+            <div class="dd-card-header">
+                <div class="dd-card-header-icon blue"><i class="bi bi-lightning-fill"></i></div>
+                <h2 class="dd-card-title">Thao tác</h2>
+            </div>
+            <div class="dd-card-body">
+                <div class="dd-actions">
+
+                    @if (Model.CanAccept)
+                    {
+                        <!-- Accept -->
+                        <form asp-controller="Shipper" asp-action="AcceptOrder" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="orderId" value="@Model.OrderId" />
+                            <button type="submit" class="dd-btn accept"
+                                    onclick="return confirm('Nhận đơn #@Model.OrderId và bắt đầu giao?')">
+                                <i class="bi bi-check-lg"></i> Nhận đơn & Bắt đầu giao
+                            </button>
+                        </form>
+
+                        <!-- Reject -->
+                        <button type="button" class="dd-btn reject"
+                                data-bs-toggle="modal" data-bs-target="#rejectModal">
+                            <i class="bi bi-x-lg"></i> Từ chối đơn này
+                        </button>
+                    }
+
+                    @if (Model.CanDeliver)
+                    {
+                        <!-- Mark Delivered -->
+                        <form asp-controller="Shipper" asp-action="MarkDelivered" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="orderId" value="@Model.OrderId" />
+                            <button type="submit" class="dd-btn delivered"
+                                    onclick="return confirm('Xác nhận đã giao thành công đơn #@Model.OrderId?')">
+                                <i class="bi bi-check-circle-fill"></i> Đã giao thành công
+                            </button>
+                        </form>
+                    }
+
+                    @if (Model.Status == OrderStatus.Delivered)
+                    {
+                        <div style="text-align:center;padding:10px;color:#52c41a;font-weight:700;font-size:.9rem">
+                            <i class="bi bi-patch-check-fill me-1"></i> Đơn hàng đã giao thành công
+                        </div>
+                    }
+
+                    <!-- Back -->
+                    <a asp-controller="Shipper" asp-action="AssignedOrders" class="dd-btn back">
+                        <i class="bi bi-arrow-left"></i> Về danh sách
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ── Reject Modal ── -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:400px">
+        <div class="modal-content" style="border-radius:14px;border:none;box-shadow:0 20px 60px rgba(0,0,0,.15)">
+            <div class="modal-header px-4 pt-4 pb-3" style="border-color:#f0f0f0">
+                <h5 class="modal-title" style="font-size:1rem;font-weight:700">
+                    <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                    Từ chối đơn #@Model.OrderId?
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body px-4 py-3">
+                <p style="font-size:.9rem;color:#595959;margin:0">
+                    Đơn hàng sẽ được trả về trạng thái <strong>Chờ xử lý</strong>
+                    để được phân công lại cho shipper khác.
+                    <br><br>Bạn có chắc chắn muốn từ chối không?
+                </p>
+            </div>
+            <div class="modal-footer px-4 pb-4 pt-3 gap-2" style="border:none">
+                <button type="button" class="btn btn-light"
+                        data-bs-dismiss="modal" style="border-radius:8px;font-size:.875rem">
+                    Hủy
+                </button>
+                <form asp-controller="Shipper" asp-action="RejectOrder" method="post" style="margin:0">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="orderId" value="@Model.OrderId" />
+                    <button type="submit" class="btn"
+                            style="background:var(--dd-red);color:#fff;border-radius:8px;font-size:.875rem;font-weight:600">
+                        <i class="bi bi-x-circle me-1"></i> Xác nhận từ chối
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // Auto-hide toast after 4s
+    document.querySelectorAll('.dd-toast').forEach(el => {
+        setTimeout(() => {
+            el.style.transition = 'opacity .4s';
+            el.style.opacity = '0';
+            setTimeout(() => el.remove(), 400);
+        }, 4000);
+    });
+</script>
+}

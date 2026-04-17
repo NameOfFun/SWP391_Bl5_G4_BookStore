@@ -382,7 +382,9 @@
                     <td data-label="Thao tác" style="text-align:right">
                         <div class="ao-actions" style="justify-content:flex-end">
                             <!-- View Detail -->
-                            <a href="#" class="ao-btn view"
+                            <a asp-controller="Shipper" asp-action="DeliveryDetail"
+                               asp-route-id="@order.OrderId"
+                               class="ao-btn view"
                                title="Xem chi tiết đơn #@order.OrderId">
                                 <i class="bi bi-eye"></i>
                             </a>

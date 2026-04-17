@@ -68,4 +68,35 @@ public class ShipperController : Controller
         TempData[ok ? "Success" : "Error"] = message;
         return RedirectToAction(nameof(AssignedOrders), new { filter = returnFilter ?? "all" });
     }
+
+    // ─── GET /Shipper/DeliveryDetail/{id} ─────────────────────
+    public async Task<IActionResult> DeliveryDetail(int id)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null) return Challenge();
+
+        var vm = await _shipperService.GetDeliveryDetailAsync(id, user.Id);
+        if (vm is null) return NotFound();
+
+        ViewData["Title"]               = $"Chi tiết đơn #{id}";
+        ViewData["BreadcrumbParent"]    = "Đơn được giao";
+        ViewData["BreadcrumbParentUrl"] = Url.Action("AssignedOrders", "Shipper");
+        return View(vm);
+    }
+
+    // ─── POST /Shipper/MarkDelivered ──────────────────────────
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> MarkDelivered(int orderId)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null) return Challenge();
+
+        var (ok, message) = await _shipperService.MarkDeliveredAsync(orderId, user.Id);
+
+        TempData[ok ? "Success" : "Error"] = message;
+        // Sau khi giao thành công → về danh sách
+        return ok
+            ? RedirectToAction(nameof(AssignedOrders), new { filter = "all" })
+            : RedirectToAction(nameof(DeliveryDetail), new { id = orderId });
+    }
 }

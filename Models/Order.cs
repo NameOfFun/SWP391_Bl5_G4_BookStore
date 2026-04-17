@@ -37,6 +37,9 @@ public class Order
 
     public string? PaymentStatus { get; set; }
 
+    /// <summary>Ghi chú giao hàng từ khách hàng (ví dụ: "Gọi trước 30p", "Để ở bảo vệ").</summary>
+    public string? DeliveryNote { get; set; }
+
     public virtual IdentityUser? Shipper { get; set; }
 
     public virtual Voucher? Voucher { get; set; }

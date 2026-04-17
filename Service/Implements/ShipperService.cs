@@ -49,6 +49,67 @@ public class ShipperService : IShipperService
         };
     }
 
+    // ─── Delivery Detail ──────────────────────────────────────
+    public async Task<DeliveryDetailViewModel?> GetDeliveryDetailAsync(int orderId, string shipperId)
+    {
+        var order = await _db.Orders
+            .Include(o => o.Details)
+                .ThenInclude(d => d.Book)
+                    .ThenInclude(b => b.Author)
+            .FirstOrDefaultAsync(o => o.OrderId == orderId && o.ShipperId == shipperId);
+
+        if (order is null) return null;
+
+        return new DeliveryDetailViewModel
+        {
+            // Thông tin đơn
+            OrderId   = order.OrderId,
+            OrderDate = order.OrderDate,
+            Status    = order.Status,
+
+            // Người nhận
+            RecipientName    = order.ShippingName    ?? "—",
+            RecipientPhone   = order.ShippingPhone   ?? "—",
+            RecipientAddress = order.ShippingAddress ?? "—",
+            DeliveryNote     = order.DeliveryNote,
+
+            // Sản phẩm
+            Items = order.Details.Select(d => new DeliveryItemDto
+            {
+                BookTitle  = d.Book?.Title      ?? "—",
+                ImageUrl   = d.Book?.ImageUrl,
+                AuthorName = d.Book?.Author?.Name,
+                Quantity   = d.Quantity,
+                UnitPrice  = d.UnitPrice
+            }).ToList(),
+
+            // Thanh toán
+            PaymentMethod  = order.PaymentMethod,
+            PaymentStatus  = order.PaymentStatus,
+            SubTotal       = order.SubTotal,
+            DiscountAmount = order.DiscountAmount,
+            GrandTotal     = order.GrandTotal,
+            VoucherId      = order.VoucherId
+        };
+    }
+
+    // ─── Mark Delivered: Delivering → Delivered ───────────────
+    public async Task<(bool ok, string message)> MarkDeliveredAsync(int orderId, string shipperId)
+    {
+        var order = await _db.Orders.FirstOrDefaultAsync(
+            o => o.OrderId == orderId && o.ShipperId == shipperId);
+
+        if (order is null)
+            return (false, "Không tìm thấy đơn hàng.");
+
+        if (order.Status != OrderStatus.Delivering)
+            return (false, $"Đơn #{orderId} chưa ở trạng thái Đang giao.");
+
+        order.Status = OrderStatus.Delivered;
+        await _db.SaveChangesAsync();
+        return (true, $"Đơn #{orderId} đã giao thành công! 🎉");
+    }
+
     // ─── Assigned Orders List ─────────────────────────────────
     public async Task<AssignedOrdersViewModel> GetAssignedOrdersAsync(string shipperId, string? filter)
     {
