@@ -5,6 +5,7 @@
     ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "Book");
     var authors = Model.Where(b => !string.IsNullOrEmpty(b.AuthorName)).Select(b => b.AuthorName!).Distinct().OrderBy(a => a).ToList();
     var categories = Model.Where(b => !string.IsNullOrEmpty(b.CategoryName)).Select(b => b.CategoryName!).Distinct().OrderBy(c => c).ToList();
+    var tags = Model.SelectMany(b => b.TagNames).Distinct().OrderBy(t => t).ToList();
 }
 
 <style>
@@ -307,6 +308,16 @@
                     }
                 </select>
             </div>
+            <div class="col-md-2">
+                <label class="form-label mb-1" style="font-size:.8rem;font-weight:500;color:#595959">Tag</label>
+                <select id="filterTag" class="form-select form-select-sm" style="border-radius:6px;font-size:.875rem" onchange="applyFilters()">
+                    <option value="">Tất cả</option>
+                    @foreach (var tag in tags)
+                    {
+                        <option value="@tag">@tag</option>
+                    }
+                </select>
+            </div>
             <div class="col-md-auto">
                 <button class="btn btn-primary btn-sm" onclick="applyFilters()" style="border-radius:6px;font-size:.875rem;padding:6px 16px">
                     <i class="bi bi-funnel me-1"></i>Lọc
@@ -328,6 +339,7 @@
                 <th>Tiêu đề</th>
                 <th style="width:160px">Tác giả</th>
                 <th style="width:140px">Danh Mục</th>
+                <th style="width:160px">Tag</th>
                 <th class="text-end" style="width:110px">Giá</th>
                 <th class="text-center" style="width:80px">Tồn kho</th>
                 <th class="text-center" style="width:100px">Trạng thái</th>
@@ -344,6 +356,7 @@
                     data-title="@book.Title.ToLower()"
                     data-author="@(book.AuthorName ?? "")"
                     data-category="@(book.CategoryName ?? "")"
+                    data-tags="@string.Join(",", book.TagNames)"
                     data-price="@price"
                     data-status="@(book.IsActive ? "active" : "inactive")">
                     <td class="row-stt">@stt</td>
@@ -370,6 +383,19 @@
                     </td>
                     <td>@(book.AuthorName ?? "—")</td>
                     <td>@(book.CategoryName ?? "—")</td>
+                    <td>
+                        @if (book.TagNames.Count > 0)
+                        {
+                            @foreach (var tagName in book.TagNames)
+                            {
+                                <span style="display:inline-block;background:#f0f5ff;color:#2f54eb;border:1px solid #adc6ff;border-radius:4px;font-size:0.75rem;padding:1px 8px;margin:1px 2px 1px 0">@tagName</span>
+                            }
+                        }
+                        else
+                        {
+                            <span class="text-muted">—</span>
+                        }
+                    </td>
                     <td class="text-end">
                         @if (book.PromotionalPrice.HasValue)
                         {
@@ -452,6 +478,7 @@
         const statusFilter = document.getElementById('filterStatus').value;
         const authorFilter = document.getElementById('filterAuthor').value.toLowerCase();
         const categoryFilter = document.getElementById('filterCategory').value.toLowerCase();
+        const tagFilter = document.getElementById('filterTag').value.toLowerCase();
 
         const allRows = Array.from(document.querySelectorAll('.book-row'));
 
@@ -459,6 +486,7 @@
             const title = row.dataset.title || '';
             const author = (row.dataset.author || '').toLowerCase();
             const category = (row.dataset.category || '').toLowerCase();
+            const rowTags = (row.dataset.tags || '').toLowerCase().split(',').map(t => t.trim()).filter(Boolean);
             const price = parseFloat(row.dataset.price) || 0;
             const status = row.dataset.status || '';
 
@@ -466,6 +494,7 @@
             if (statusFilter && status !== statusFilter) return false;
             if (authorFilter && !author.includes(authorFilter)) return false;
             if (categoryFilter && !category.includes(categoryFilter)) return false;
+            if (tagFilter && !rowTags.some(t => t.includes(tagFilter))) return false;
             if (priceFilter) {
                 const [min, max] = priceFilter.split('-').map(Number);
                 if (price < min || price > max) return false;
@@ -545,6 +574,7 @@
         document.getElementById('filterStatus').value = '';
         document.getElementById('filterAuthor').value = '';
         document.getElementById('filterCategory').value = '';
+        document.getElementById('filterTag').value = '';
         applyFilters();
     }
 

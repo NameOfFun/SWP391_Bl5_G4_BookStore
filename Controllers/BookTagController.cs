@@ -8,13 +8,13 @@ namespace BookStore.Controllers
 {
     //[Authorize(Roles = "Admin,Manager")]
     [Authorize(Roles = "Customer")]
-    public class CategoryController : Controller
+    public class BookTagController : Controller
     {
-        private readonly ICategoryService _categoryService;
+        private readonly IBookTagService _bookTagService;
 
-        public CategoryController(ICategoryService categoryService)
+        public BookTagController(IBookTagService bookTagService)
         {
-            _categoryService = categoryService;
+            _bookTagService = bookTagService;
         }
 
         private const int PageSize = 10;
@@ -22,19 +22,18 @@ namespace BookStore.Controllers
         [HttpGet]
         public async Task<IActionResult> Index(string? search, string? status, int page = 1)
         {
-            
             ViewData["Search"] = search;
             ViewData["Status"] = status;
 
-            var all = await _categoryService.GetAllAsync();
+            var all = await _bookTagService.GetAllAsync();
 
             if (!string.IsNullOrWhiteSpace(search))
-                all = all.Where(c => c.Name.Contains(search.Trim(), StringComparison.OrdinalIgnoreCase)).ToList();
+                all = all.Where(t => t.Name.Contains(search.Trim(), StringComparison.OrdinalIgnoreCase)).ToList();
 
             if (status == "active")
-                all = all.Where(c => c.IsActive).ToList();
+                all = all.Where(t => t.IsActive).ToList();
             else if (status == "inactive")
-                all = all.Where(c => !c.IsActive).ToList();
+                all = all.Where(t => !t.IsActive).ToList();
 
             int totalCount = all.Count;
             int totalPages = (int)Math.Ceiling(totalCount / (double)PageSize);
@@ -52,45 +51,38 @@ namespace BookStore.Controllers
         [HttpGet]
         public IActionResult Create()
         {
-            return View(new CategoryDto());
+            return View(new BookTagDto());
         }
 
         [HttpPost, ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(CategoryDto dto)
+        public async Task<IActionResult> Create(BookTagDto dto)
         {
             if (!ModelState.IsValid)
-            {
-                ViewData["Title"] = "Thêm Danh Mục";
-                ViewData["BreadcrumbParent"] = "Danh Mục Sách";
-                ViewData["BreadcrumbParentUrl"] = Url.Action("Index");
                 return View(dto);
-            }
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-            await _categoryService.CreateAsync(dto, userId);
-            TempData["Success"] = "Thêm danh mục thành công";
+            await _bookTagService.CreateAsync(dto, userId);
+            TempData["Success"] = "Thêm tag thành công";
             return RedirectToAction(nameof(Index));
         }
 
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
-            var category = await _categoryService.GetByIdAsync(id);
-            if (category == null) return NotFound();
-            return View(category);
+            var tag = await _bookTagService.GetByIdAsync(id);
+            if (tag == null) return NotFound();
+            return View(tag);
         }
 
         [HttpPost, ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, CategoryDto dto)
+        public async Task<IActionResult> Edit(int id, BookTagDto dto)
         {
             if (!ModelState.IsValid)
-            {
                 return View(dto);
-            }
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-            await _categoryService.UpdateAsync(id, dto, userId);
-            TempData["Success"] = "Cập nhật danh mục thành công";
+            await _bookTagService.UpdateAsync(id, dto, userId);
+            TempData["Success"] = "Cập nhật tag thành công";
             return RedirectToAction(nameof(Index));
         }
 
@@ -98,10 +90,10 @@ namespace BookStore.Controllers
         public async Task<IActionResult> ToggleStatus(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-            var result = await _categoryService.ToggleStatusAsync(id, userId);
+            var result = await _bookTagService.ToggleStatusAsync(id, userId);
             TempData["Success"] = result.IsActive
-                ? "Đã kích hoạt danh mục"
-                : "Đã vô hiệu hóa danh mục";
+                ? "Đã kích hoạt tag"
+                : "Đã vô hiệu hóa tag";
             return RedirectToAction(nameof(Index));
         }
     }

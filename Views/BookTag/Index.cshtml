@@ -1,15 +1,7 @@
-@model IReadOnlyList<BookStore.Dtos.Common.HomeSliderDto>
+@model IReadOnlyList<BookStore.Dtos.Common.BookTagDto>
 @{
-    ViewData["Title"] = "Quản Lý Home Slider";
-    ViewData["BreadcrumbParent"] = "Trang Chủ";
-
-    int page            = (int)(ViewData["Page"] ?? 1);
-    int totalPages      = (int)(ViewData["TotalPages"] ?? 1);
-    int totalCount      = (int)(ViewData["TotalCount"] ?? 0);
-    int pageSize        = (int)(ViewData["PageSize"] ?? 10);
-    int allSlidersCount = (int)(ViewData["AllSlidersCount"] ?? 0);
-    string? search = ViewData["Search"]?.ToString();
-    string? status = ViewData["Status"]?.ToString();
+    ViewData["Title"] = "Tag Sách";
+    ViewData["BreadcrumbParent"] = "Quản Lý";
 }
 
 <style>
@@ -52,27 +44,24 @@
         font-size: 0.8125rem;
         color: #8c8c8c;
     }
-    .order-btn {
-        width: 26px;
-        height: 26px;
-        padding: 0;
-        font-size: .75rem;
-        border-radius: 4px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        line-height: 1;
-    }
-    .order-btn.disabled { opacity: 0.35; pointer-events: none; }
 </style>
+
+@{
+    int page       = (int)(ViewData["Page"] ?? 1);
+    int totalPages = (int)(ViewData["TotalPages"] ?? 1);
+    int totalCount = (int)(ViewData["TotalCount"] ?? 0);
+    int pageSize   = (int)(ViewData["PageSize"] ?? 10);
+    string? search = ViewData["Search"]?.ToString();
+    string? status = ViewData["Status"]?.ToString();
+}
 
 <div class="d-flex align-items-center justify-content-between mb-4">
     <div>
-        <h4 class="mb-0 fw-600" style="font-size:1.15rem;color:#262626">Home Slider</h4>
-        <p class="text-muted mb-0" style="font-size:.85rem">Banner carousel trang chủ (giao diện khách): chỉ slide <strong>đang bật</strong> hiển thị, sắp xếp theo <strong>thứ tự</strong>.</p>
+        <h4 class="mb-0 fw-600" style="font-size:1.15rem;color:#262626">Tag Sách</h4>
+        <p class="text-muted mb-0" style="font-size:.85rem">Quản lý tag phân loại sách trong hệ thống</p>
     </div>
     <a asp-action="Create" class="btn btn-primary btn-sm" style="border-radius:6px;font-size:.875rem;padding:7px 16px">
-        <i class="bi bi-plus-lg me-1"></i>Thêm Slider
+        <i class="bi bi-plus-lg me-1"></i>Thêm Tag
     </a>
 </div>
 
@@ -81,29 +70,29 @@
     <div class="card-body py-3 px-4">
         <form method="get" asp-action="Index" class="row g-2 align-items-end">
             <div class="col-md-5">
-                <label class="form-label mb-1" style="font-size:.8rem;font-weight:500;color:#595959">Tìm kiếm</label>
+                <label class="form-label mb-1" style="font-size:.8rem;font-weight:500;color:#595959">Tìm kiếm theo tên</label>
                 <div class="input-group input-group-sm">
                     <span class="input-group-text bg-white border-end-0" style="border-radius:6px 0 0 6px">
                         <i class="bi bi-search text-muted" style="font-size:.85rem"></i>
                     </span>
-                    <input type="text" name="search" value="@search"
+                    <input type="text" name="search" value="@ViewData["Search"]"
                            class="form-control border-start-0" style="border-radius:0 6px 6px 0;font-size:.875rem"
-                           placeholder="Tìm theo tiêu đề hoặc đường dẫn..." />
+                           placeholder="Nhập tên tag..." />
                 </div>
             </div>
             <div class="col-md-3">
                 <label class="form-label mb-1" style="font-size:.8rem;font-weight:500;color:#595959">Trạng thái</label>
                 <select name="status" class="form-select form-select-sm" style="border-radius:6px;font-size:.875rem">
-                    <option value="" selected="@(string.IsNullOrEmpty(status))">Tất cả</option>
-                    <option value="active" selected="@(status == "active")">Hoạt động</option>
-                    <option value="inactive" selected="@(status == "inactive")">Vô hiệu</option>
+                    <option value="" selected="@(ViewData["Status"] == null || ViewData["Status"]!.ToString() == "")">Tất cả</option>
+                    <option value="active" selected="@(ViewData["Status"]?.ToString() == "active")">Hoạt động</option>
+                    <option value="inactive" selected="@(ViewData["Status"]?.ToString() == "inactive")">Vô hiệu</option>
                 </select>
             </div>
             <div class="col-md-auto">
                 <button type="submit" class="btn btn-primary btn-sm" style="border-radius:6px;font-size:.875rem;padding:6px 16px">
                     <i class="bi bi-funnel me-1"></i>Lọc
                 </button>
-                @if (!string.IsNullOrEmpty(search) || !string.IsNullOrEmpty(status))
+                @if (!string.IsNullOrEmpty(ViewData["Search"]?.ToString()) || !string.IsNullOrEmpty(ViewData["Status"]?.ToString()))
                 {
                     <a asp-action="Index" class="btn btn-outline-secondary btn-sm ms-1" style="border-radius:6px;font-size:.875rem;padding:6px 14px">
                         <i class="bi bi-x-lg me-1"></i>Xóa lọc
@@ -121,6 +110,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 }
+
 @if (TempData["Error"] != null)
 {
     <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert" style="border-radius:8px;font-size:.875rem">
@@ -135,22 +125,19 @@
             <table class="table table-hover align-middle mb-0" style="font-size:.875rem">
                 <thead style="background:#fafafa;border-bottom:1px solid #f0f0f0">
                     <tr>
-                        <th class="px-4 py-3 text-muted fw-500" style="width:50px">#</th>
-                        <th class="py-3 text-muted fw-500" style="width:110px">Hình ảnh</th>
-                        <th class="py-3 text-muted fw-500">Tiêu đề</th>
-                        <th class="py-3 text-muted fw-500">Đường dẫn</th>
-                        <th class="py-3 text-muted fw-500 text-center" style="width:120px">Thứ tự</th>
-                        <th class="py-3 text-muted fw-500 text-center" style="width:120px">Trạng thái</th>
-                        <th class="py-3 text-muted fw-500 text-end pe-4" style="width:160px">Thao tác</th>
+                        <th class="px-4 py-3 text-muted fw-500" style="width:60px">#</th>
+                        <th class="py-3 text-muted fw-500">Tên Tag</th>
+                        <th class="py-3 text-muted fw-500" style="width:120px">Trạng Thái</th>
+                        <th class="py-3 text-muted fw-500 text-end pe-4" style="width:150px">Thao Tác</th>
                     </tr>
                 </thead>
                 <tbody>
                     @if (!Model.Any())
                     {
                         <tr>
-                            <td colspan="7" class="text-center py-5 text-muted">
-                                <i class="bi bi-images" style="font-size:2rem;display:block;margin-bottom:8px"></i>
-                                Không có bản ghi nào
+                            <td colspan="4" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox" style="font-size:2rem;display:block;margin-bottom:8px"></i>
+                                Chưa có tag nào
                             </td>
                         </tr>
                     }
@@ -158,48 +145,8 @@
                     {
                         <tr>
                             <td class="px-4 text-muted">@idx</td>
+                            <td class="fw-500" style="color:#262626">@item.Name</td>
                             <td>
-                                <img src="@item.ImageUrl" alt="@item.Caption"
-                                     style="width:90px;height:52px;object-fit:cover;border-radius:6px;border:1px solid #f0f0f0"
-                                     onerror="this.src='';this.style.background='#f5f5f5';this.style.display='inline-block'" />
-                            </td>
-                            <td class="fw-500" style="color:#262626">@(item.Caption ?? "—")</td>
-                            <td>
-                                @if (!string.IsNullOrEmpty(item.LinkUrl))
-                                {
-                                    <a href="@item.LinkUrl" target="_blank" class="text-primary" style="font-size:.8rem">
-                                        <i class="bi bi-box-arrow-up-right me-1"></i>@item.LinkUrl
-                                    </a>
-                                }
-                                else
-                                {
-                                    <span class="text-muted">—</span>
-                                }
-                            </td>
-                            <td class="text-center">
-                                <div class="d-flex align-items-center justify-content-center gap-1">
-                                    <form asp-action="MoveUp" asp-route-id="@item.HomeSliderId" method="post" class="d-inline">
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit"
-                                                class="btn btn-sm btn-outline-secondary order-btn @(item.DisplayOrder <= 1 ? "disabled" : "")"
-                                                title="Lên" @(item.DisplayOrder <= 1 ? "disabled" : "")>
-                                            <i class="bi bi-arrow-up"></i>
-                                        </button>
-                                    </form>
-                                    <span class="badge rounded-pill bg-light text-secondary border" style="font-size:.78rem;min-width:28px">
-                                        @item.DisplayOrder
-                                    </span>
-                                    <form asp-action="MoveDown" asp-route-id="@item.HomeSliderId" method="post" class="d-inline">
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit"
-                                                class="btn btn-sm btn-outline-secondary order-btn @(item.DisplayOrder >= allSlidersCount ? "disabled" : "")"
-                                                title="Xuống" @(item.DisplayOrder >= allSlidersCount ? "disabled" : "")>
-                                            <i class="bi bi-arrow-down"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                            <td class="text-center">
                                 @if (item.IsActive)
                                 {
                                     <span class="badge rounded-pill" style="background:#f6ffed;color:#52c41a;border:1px solid #b7eb8f;font-size:.78rem;font-weight:500;padding:4px 10px">
@@ -214,30 +161,19 @@
                                 }
                             </td>
                             <td class="text-end pe-4">
-                                <a asp-action="Edit" asp-route-id="@item.HomeSliderId"
+                                <a asp-action="Edit" asp-route-id="@item.TagId"
                                    class="btn btn-sm btn-outline-primary me-1" style="border-radius:6px;font-size:.8rem;padding:4px 10px" title="Sửa">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <form asp-action="ToggleStatus" asp-route-id="@item.HomeSliderId"
+                                <form asp-action="ToggleStatus" asp-route-id="@item.TagId"
                                       method="post" class="d-inline"
-                                      onsubmit="return confirm('@(item.IsActive ? "Vô hiệu hóa slider này?" : "Kích hoạt slider này?")')">
+                                      onsubmit="return confirm('@(item.IsActive ? "Vô hiệu hóa tag này?" : "Kích hoạt tag này?")')">
                                     @Html.AntiForgeryToken()
                                     <button type="submit"
-                                            class="btn btn-sm @(item.IsActive ? "btn-outline-warning" : "btn-outline-success") me-1"
+                                            class="btn btn-sm @(item.IsActive ? "btn-outline-warning" : "btn-outline-success")"
                                             style="border-radius:6px;font-size:.8rem;padding:4px 10px"
                                             title="@(item.IsActive ? "Vô hiệu hóa" : "Kích hoạt")">
                                         <i class="bi @(item.IsActive ? "bi-toggle-on" : "bi-toggle-off")"></i>
-                                    </button>
-                                </form>
-                                <form asp-action="Delete" asp-route-id="@item.HomeSliderId"
-                                      method="post" class="d-inline"
-                                      onsubmit="return confirm('Xoá slider này? Hành động không thể hoàn tác.')">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit"
-                                            class="btn btn-sm btn-outline-danger"
-                                            style="border-radius:6px;font-size:.8rem;padding:4px 10px"
-                                            title="Xoá">
-                                        <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
                             </td>

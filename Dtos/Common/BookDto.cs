@@ -34,9 +34,13 @@ namespace BookStore.Dtos.Common
 
         public bool IsActive { get; set; } = true;
 
+        // Tags
+        public List<int> TagIds { get; set; } = new();
+
         // Read-only display helpers
         public string? CategoryName { get; set; }
         public string? AuthorName { get; set; }
+        public List<string> TagNames { get; set; } = new();
         public DateTime? CreatedAt { get; set; }
     }
 }

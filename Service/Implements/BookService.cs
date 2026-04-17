@@ -16,13 +16,15 @@ namespace BookStore.Service.Implements
 
         public async Task<IReadOnlyList<BookDto>> GetAllAsync()
         {
-            return await _context.Books
+            var books = await _context.Books
                 .AsNoTracking()
                 .Include(b => b.Category)
                 .Include(b => b.Author)
+                .Include(b => b.Tags)
                 .OrderByDescending(b => b.CreatedAt)
-                .Select(b => ToDto(b))
                 .ToListAsync();
+
+            return books.Select(ToDto).ToList();
         }
 
         public async Task<BookDto?> GetByIdAsync(int id)
@@ -31,6 +33,7 @@ namespace BookStore.Service.Implements
                 .AsNoTracking()
                 .Include(b => b.Category)
                 .Include(b => b.Author)
+                .Include(b => b.Tags)
                 .FirstOrDefaultAsync(b => b.BookId == id);
 
             return entity == null ? null : ToDto(entity);
@@ -64,12 +67,23 @@ namespace BookStore.Service.Implements
             _context.Books.Add(entity);
             await _context.SaveChangesAsync();
 
+            if (dto.TagIds.Count > 0)
+            {
+                var tags = await _context.BookTags
+                    .Where(t => dto.TagIds.Contains(t.TagId) && t.IsActive)
+                    .ToListAsync();
+                foreach (var tag in tags)
+                    entity.Tags.Add(tag);
+                await _context.SaveChangesAsync();
+            }
+
             return ToDto(entity);
         }
 
         public async Task<BookDto> UpdateAsync(int id, BookDto dto, string userId)
         {
             var entity = await _context.Books
+                .Include(b => b.Tags)
                 .FirstOrDefaultAsync(b => b.BookId == id);
 
             if (entity == null)
@@ -92,6 +106,17 @@ namespace BookStore.Service.Implements
             entity.AuthorId = authorId;
             entity.ImageUrl = dto.ImageUrl;
             entity.UpdatedByUserId = userId;
+
+            // Sync tags
+            entity.Tags.Clear();
+            if (dto.TagIds.Count > 0)
+            {
+                var tags = await _context.BookTags
+                    .Where(t => dto.TagIds.Contains(t.TagId) && t.IsActive)
+                    .ToListAsync();
+                foreach (var tag in tags)
+                    entity.Tags.Add(tag);
+            }
 
             await _context.SaveChangesAsync();
 
@@ -157,8 +182,10 @@ namespace BookStore.Service.Implements
             ImageUrl = b.ImageUrl,
             IsActive = b.IsActive,
             CreatedAt = b.CreatedAt,
-            CategoryName = b.Category?.Name,
-            AuthorName = b.Author?.Name
+            CategoryName = b.Category?.IsActive == true ? b.Category.Name : null,
+            AuthorName = b.Author?.Name,
+            TagIds = b.Tags.Where(t => t.IsActive).Select(t => t.TagId).ToList(),
+            TagNames = b.Tags.Where(t => t.IsActive).Select(t => t.Name ?? string.Empty).ToList()
         };
     }
 }

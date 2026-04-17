@@ -255,13 +255,13 @@
 
         <!-- Quản Lý Sách -->
         <div class="nav-item-group">
-            <button class="nav-link-item @(ctrl == "Book" || ctrl == "Category" ? "active" : "")"
+            <button class="nav-link-item @(ctrl == "Book" || ctrl == "Category" || ctrl == "BookTag" ? "active" : "")"
                     onclick="toggleSubmenu('submenu-book', this)">
                 <i class="bi bi-journal-bookmark nav-icon"></i>
                 <span class="nav-label">Quản Lý Sách</span>
                 <i class="bi bi-chevron-down nav-chevron"></i>
             </button>
-            <div class="nav-submenu @(ctrl == "Book" || ctrl == "Category" ? "open" : "")" id="submenu-book">
+            <div class="nav-submenu @(ctrl == "Book" || ctrl == "Category" || ctrl == "BookTag" ? "open" : "")" id="submenu-book">
                 <a class="nav-link-item @(ctrl == "Book" ? "active" : "")"
                    asp-controller="Book" asp-action="Index">
                     <span class="nav-label">Danh sách sách</span>
@@ -269,6 +269,10 @@
                 <a class="nav-link-item @(ctrl == "Category" ? "active" : "")"
                    asp-controller="Category" asp-action="Index">
                     <span class="nav-label">Danh mục sách</span>
+                </a>
+                <a class="nav-link-item @(ctrl == "BookTag" ? "active" : "")"
+                   asp-controller="BookTag" asp-action="Index">
+                    <span class="nav-label">Tag sách</span>
                 </a>
             </div>
         </div>
