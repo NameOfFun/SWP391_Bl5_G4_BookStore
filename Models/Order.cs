@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Identity;
 
 namespace BookStore.Models;
 
@@ -8,6 +9,8 @@ public class Order
     public int OrderId { get; set; }
 
     public string UserId { get; set; } = null!;
+
+    public string? ShipperId { get; set; }
 
     public DateTime OrderDate { get; set; }
 

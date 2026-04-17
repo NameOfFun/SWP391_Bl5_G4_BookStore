@@ -1,0 +1,251 @@
+@model BookStore.Dtos.ShipperDashboardViewModel
+@using BookStore.Models
+@{
+    ViewData["Title"] = "Shipper Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    :root {
+        --sd-blue: #1677ff;
+        --sd-orange: #fa8c16;
+        --sd-green: #52c41a;
+        --sd-red: #ff4d4f;
+        --sd-purple: #722ed1;
+        --sd-radius: 16px;
+        --sd-shadow: 0 4px 20px rgba(0,0,0,.08);
+    }
+
+    /* ── Header ── */
+    .sd-header {
+        margin-bottom: 30px;
+    }
+    .sd-title {
+        font-size: 1.75rem; font-weight: 800; color: #1a1a2e;
+        margin-bottom: 5px; display: flex; align-items: center; gap: 12px;
+    }
+    .sd-title i { color: var(--sd-blue); }
+    .sd-subtitle { color: #8c8c8c; font-size: 0.95rem; }
+
+    /* ── Stats Grid ── */
+    .sd-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 20px; margin-bottom: 35px;
+    }
+    .sd-stat-card {
+        background: #fff; border-radius: var(--sd-radius);
+        padding: 24px; box-shadow: var(--sd-shadow);
+        display: flex; align-items: center; gap: 20px;
+        transition: transform .2s, box-shadow .2s;
+        text-decoration: none; border: 1px solid transparent;
+    }
+    .sd-stat-card:hover { 
+        transform: translateY(-5px); 
+        box-shadow: 0 8px 30px rgba(0,0,0,.12);
+        border-color: #e6f4ff;
+    }
+    .sd-icon-box {
+        width: 56px; height: 56px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem; flex-shrink: 0;
+    }
+    .sd-stat-info { flex-grow: 1; }
+    .sd-stat-label { font-size: 0.85rem; color: #8c8c8c; font-weight: 600; margin-bottom: 4px; }
+    .sd-stat-value { font-size: 1.5rem; font-weight: 800; color: #1a1a2e; }
+    
+    .sd-blue-box   { background: #e6f4ff; color: var(--sd-blue); }
+    .sd-orange-box { background: #fff7e6; color: var(--sd-orange); }
+    .sd-green-box  { background: #f6ffed; color: var(--sd-green); }
+    .sd-red-box    { background: #fff1f0; color: var(--sd-red); }
+
+    /* ── Urgent Section ── */
+    .sd-section-card {
+        background: #fff; border-radius: var(--sd-radius);
+        box-shadow: var(--sd-shadow); overflow: hidden;
+        margin-bottom: 30px;
+    }
+    .sd-section-header {
+        padding: 20px 24px; border-bottom: 1px solid #f0f0f0;
+        display: flex; align-items: center; justify-content: space-between;
+    }
+    .sd-section-title {
+        font-size: 1.1rem; font-weight: 700; color: #1a1a2e; margin: 0;
+        display: flex; align-items: center; gap: 10px;
+    }
+    .sd-section-title i { color: var(--sd-red); }
+
+    /* ── Table ── */
+    .sd-table-wrap { overflow-x: auto; }
+    .sd-table { width: 100%; border-collapse: collapse; }
+    .sd-table th {
+        background: #fafafa; padding: 14px 20px;
+        font-size: 0.75rem; font-weight: 700; color: #8c8c8c;
+        text-transform: uppercase; border-bottom: 1px solid #f0f0f0;
+    }
+    .sd-table td { padding: 16px 20px; border-bottom: 1px solid #f5f5f5; vertical-align: middle; }
+    .sd-table tr:last-child td { border-bottom: none; }
+    
+    .sd-order-id { font-weight: 700; color: var(--sd-blue); }
+    .sd-order-date { font-size: 0.75rem; color: #bfbfbf; display: block; }
+    .sd-cust-name { font-weight: 600; color: #262626; margin-bottom: 2px; }
+    .sd-cust-addr { font-size: 0.8rem; color: #8c8c8c; display: block; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    
+    .sd-urgency-badge {
+        font-size: 0.7rem; font-weight: 700; padding: 3px 8px; border-radius: 4px;
+        text-transform: uppercase;
+    }
+    .urgency-crit { background: #fff1f0; color: var(--sd-red); border: 1px solid #ffa39e; }
+    .urgency-high { background: #fff7e6; color: var(--sd-orange); border: 1px solid #ffd591; }
+    .urgency-norm { background: #f6ffed; color: var(--sd-green); border: 1px solid #b7eb8f; }
+
+    .sd-btn-go {
+        width: 36px; height: 36px; border-radius: 10px;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: #f0f7ff; color: var(--sd-blue); text-decoration: none;
+        transition: background .2s, color .2s;
+    }
+    .sd-btn-go:hover { background: var(--sd-blue); color: #fff; }
+
+    /* ── Empty ── */
+    .sd-empty { padding: 60px 40px; text-align: center; color: #bfbfbf; }
+    .sd-empty i { font-size: 3rem; display: block; margin-bottom: 15px; }
+
+    @@media (max-width: 768px) {
+        .sd-stats-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @@media (max-width: 480px) {
+        .sd-stats-grid { grid-template-columns: 1fr; }
+    }
+</style>
+
+<div class="sd-header">
+    <h1 class="sd-title">
+        <i class="bi bi-speedometer2"></i> Shipper Console
+    </h1>
+    <p class="sd-subtitle">Chào mừng bạn quay lại! Dưới đây là tóm tắt công việc của bạn.</p>
+</div>
+
+<!-- ── Quick Overview Cards ── -->
+<div class="sd-stats-grid">
+    <a href="@Url.Action("AssignedOrders", "Shipper", new { filter = "assigned" })" class="sd-stat-card">
+        <div class="sd-icon-box sd-blue-box">
+            <i class="bi bi-box-seam"></i>
+        </div>
+        <div class="sd-stat-info">
+            <div class="sd-stat-label">Chờ Nhận Đơn</div>
+            <div class="sd-stat-value">@Model.AssignedCount</div>
+        </div>
+        <i class="bi bi-chevron-right text-muted"></i>
+    </a>
+
+    <a href="@Url.Action("AssignedOrders", "Shipper", new { filter = "delivering" })" class="sd-stat-card">
+        <div class="sd-icon-box sd-orange-box">
+            <i class="bi bi-truck"></i>
+        </div>
+        <div class="sd-stat-info">
+            <div class="sd-stat-label">Đang Giao</div>
+            <div class="sd-stat-value">@Model.DeliveringCount</div>
+        </div>
+        <i class="bi bi-chevron-right text-muted"></i>
+    </a>
+
+    <div class="sd-stat-card">
+        <div class="sd-icon-box sd-green-box">
+            <i class="bi bi-check2-circle"></i>
+        </div>
+        <div class="sd-stat-info">
+            <div class="sd-stat-label">Đã Hoàn Thành</div>
+            <div class="sd-stat-value">@Model.DeliveredCount</div>
+        </div>
+    </div>
+
+    <div class="sd-stat-card">
+        <div class="sd-icon-box sd-red-box">
+            <i class="bi bi-x-circle"></i>
+        </div>
+        <div class="sd-stat-info">
+            <div class="sd-stat-label">Giao Thất Bại</div>
+            <div class="sd-stat-value">@Model.FailedCount</div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Urgent Orders ── -->
+<div class="sd-section-card">
+    <div class="sd-section-header">
+        <h2 class="sd-section-title">
+            <i class="bi bi-lightning-fill"></i> Đơn Hàng Cần Xử Lý Ngay
+        </h2>
+        <a href="@Url.Action("AssignedOrders", "Shipper")" class="btn btn-sm btn-link text-decoration-none fw-600">
+            Xem tất cả <i class="bi bi-arrow-right"></i>
+        </a>
+    </div>
+
+    @if (Model.UrgentOrders == null || Model.UrgentOrders.Count == 0)
+    {
+        <div class="sd-empty">
+            <i class="bi bi-clipboard-check"></i>
+            <p>Tuyệt vời! Bạn không có đơn hàng nào tồn đọng lâu.</p>
+        </div>
+    }
+    else
+    {
+        <div class="sd-table-wrap">
+            <table class="sd-table">
+                <thead>
+                    <tr>
+                        <th>Mã Đơn</th>
+                        <th>Khách Hàng</th>
+                        <th>Tiền Thu</th>
+                        <th>Thời Gian</th>
+                        <th>Trạng Thái</th>
+                        <th style="text-align:center">Chi tiết</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var order in Model.UrgentOrders)
+                    {
+                        var hours = order.HoursSinceOrder;
+                        var urgencyClass = hours > 24 ? "urgency-crit" : (hours > 12 ? "urgency-high" : "urgency-norm");
+                        var urgencyText = hours > 24 ? "Rất gấp" : (hours > 12 ? "Cần giao" : "Mới");
+                        
+                        <tr>
+                            <td>
+                                <span class="sd-order-id">#@order.OrderId</span>
+                                <span class="sd-order-date">@order.OrderDate.ToString("dd/MM HH:mm")</span>
+                            </td>
+                            <td>
+                                <div class="sd-cust-name">@order.ShippingName</div>
+                                <span class="sd-cust-addr" title="@order.ShippingAddress">@order.ShippingAddress</span>
+                            </td>
+                            <td>
+                                <strong class="text-dark">@order.GrandTotal.ToString("N0") ₫</strong>
+                            </td>
+                            <td>
+                                <span class="sd-urgency-badge @urgencyClass">
+                                    <i class="bi bi-clock me-1"></i> @urgencyText
+                                </span>
+                            </td>
+                            <td>
+                                @if (order.Status == OrderStatus.Shipped)
+                                {
+                                    <span class="badge bg-light text-primary border border-primary-subtle px-2">Chờ nhận</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-light text-warning border border-warning-subtle px-2">Đang giao</span>
+                                }
+                            </td>
+                            <td style="text-align:center">
+                                <a asp-controller="Shipper" asp-action="DeliveryDetail" asp-route-id="@order.OrderId" class="sd-btn-go">
+                                    <i class="bi bi-arrow-right-short" style="font-size: 1.5rem"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

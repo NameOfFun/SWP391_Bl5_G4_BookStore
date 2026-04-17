@@ -281,7 +281,6 @@
         @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
         {
             <div class="nav-item-group">
-
                 <button class="nav-link-item @(ctrl == "Shipper" ? "active" : "")"
                         onclick="toggleSubmenu('submenu-shipper', this)">
                     <i class="bi bi-truck nav-icon"></i>
@@ -296,7 +295,11 @@
                     <a class="nav-link-item @(ctrl == "Shipper" && action == "AssignedOrders" ? "active" : "")"
                        asp-controller="Shipper" asp-action="AssignedOrders">
                         <span class="nav-label">Đơn được giao</span>
+                    </a>
+                </div>
+            </div>
 
+            <div class="nav-item-group">
                 <button class="nav-link-item @(ctrl == "User" ? "active" : "")"
                         onclick="toggleSubmenu('submenu-user', this)">
                     <i class="bi bi-people nav-icon"></i>
@@ -311,7 +314,6 @@
                     <a class="nav-link-item @(ctrl == "User" && action == "Create" ? "active" : "")"
                        asp-controller="User" asp-action="Create">
                         <span class="nav-label">Thêm người dùng</span>
-
                     </a>
                 </div>
             </div>

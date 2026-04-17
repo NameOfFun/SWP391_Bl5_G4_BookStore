@@ -36,6 +36,8 @@ namespace BookStore
             builder.Services.AddScoped<IHomeSliderService, HomeSliderService>();
 
             builder.Services.AddScoped<IBookTagService, BookTagService>();
+            builder.Services.AddScoped<IShipperService, ShipperService>();
+            builder.Services.AddScoped<IUserService, UserService>();
 
 
             builder.Services.AddControllersWithViews();
@@ -66,7 +68,7 @@ namespace BookStore
             {
                 var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
                 var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-                string[] roleNames = ["Customer", "Admin", "Staff", "Manager"];
+                string[] roleNames = ["Customer", "Admin", "Staff", "Manager", "Shipper"];
                 foreach (var roleName in roleNames)
                 {
                     if (!roleManager.RoleExistsAsync(roleName).GetAwaiter().GetResult())
@@ -93,6 +95,9 @@ namespace BookStore
             // Customer
             var customerEmail = "customer@bookstore.com";
             var customerPassword = "Customer@123";
+            // Shipper
+            var shipperEmail = "shipper@bookstore.com";
+            var shipperPassword = "Shipper@123";
 
             if (userManager.FindByEmailAsync(adminEmail).GetAwaiter().GetResult() == null)
             {
@@ -171,6 +176,26 @@ namespace BookStore
                 if (result.Succeeded)
                 {
                     userManager.AddToRoleAsync(customerUser, "Customer").GetAwaiter().GetResult();
+                }
+            }
+
+            if (userManager.FindByEmailAsync(shipperEmail).GetAwaiter().GetResult() == null)
+            {
+                var shipperUser = new ApplicationUser
+                {
+                    UserName = "shipper",
+                    Email = shipperEmail,
+                    EmailConfirmed = true,
+                    LockoutEnabled = false,
+                    Name = "Shipper",
+                    Status = true,
+                    CreatedAt = DateTime.Now
+                };
+
+                var result = userManager.CreateAsync(shipperUser, shipperPassword).GetAwaiter().GetResult();
+                if (result.Succeeded)
+                {
+                    userManager.AddToRoleAsync(shipperUser, "Shipper").GetAwaiter().GetResult();
                 }
             }
 

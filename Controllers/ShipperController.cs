@@ -2,6 +2,7 @@ using BookStore.Service.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using BookStore.Models;
 
 namespace BookStore.Controllers;
 
@@ -9,9 +10,9 @@ namespace BookStore.Controllers;
 public class ShipperController : Controller
 {
     private readonly IShipperService _shipperService;
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public ShipperController(IShipperService shipperService, UserManager<IdentityUser> userManager)
+    public ShipperController(IShipperService shipperService, UserManager<ApplicationUser> userManager)
     {
         _shipperService = shipperService;
         _userManager    = userManager;
