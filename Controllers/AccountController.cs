@@ -13,7 +13,7 @@ public class AccountController : Controller
     private readonly IAuthService _authService;
     private readonly ILogger<AccountController> _logger;
     private readonly IWebHostEnvironment _environment;
-    UserManager<ApplicationUser> _userManager;
+    private readonly UserManager<ApplicationUser> _userManager;
 
     public AccountController(
         IAuthService authService,
