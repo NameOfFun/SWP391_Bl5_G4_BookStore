@@ -25,6 +25,9 @@ public class RegisterDto
     [MaxLength(20, ErrorMessage = "Số điện thoại không được vượt quá 20 ký tự")]
     public string? PhoneNumber { get; set; }
 
+    [MaxLength(500, ErrorMessage = "Địa chỉ không được vượt quá 500 ký tự")]
+    public string? Address { get; set; }
+
     public string? ReturnUrl { get; set; }
 }
 

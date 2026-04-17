@@ -17,7 +17,7 @@ namespace BookStore
             builder.Services.AddDbContext<BookStoreDbContext>(opt =>
                 opt.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
 
-            builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
                 {
                     options.Password.RequireDigit = true;
                     options.Password.RequireLowercase = true;
