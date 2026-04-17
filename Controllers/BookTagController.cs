@@ -6,8 +6,7 @@ using System.Security.Claims;
 
 namespace BookStore.Controllers
 {
-    //[Authorize(Roles = "Admin,Manager")]
-    [Authorize(Roles = "Customer")]
+    [Authorize(Roles = "Staff")]
     public class BookTagController : Controller
     {
         private readonly IBookTagService _bookTagService;

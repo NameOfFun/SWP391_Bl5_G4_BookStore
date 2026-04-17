@@ -13,6 +13,9 @@ using System.Security.Claims;
 
 namespace BookStore.Controllers
 {
+
+    [Authorize(Roles = "Staff,Manager")]
+
     public class BookController : Controller
     {
         private readonly IBookService _bookService;

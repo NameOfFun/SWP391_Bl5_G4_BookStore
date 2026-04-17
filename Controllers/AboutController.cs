@@ -6,7 +6,7 @@ using System.Security.Claims;
 
 namespace BookStore.Controllers
 {
-    [Authorize(Roles = "Customer")]
+    [Authorize(Roles = "Staff")]
     public class AboutController : Controller
     {
         private readonly IAboutService _aboutService;
