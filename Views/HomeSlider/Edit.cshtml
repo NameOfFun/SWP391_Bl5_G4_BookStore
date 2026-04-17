@@ -1,0 +1,105 @@
+@model BookStore.Dtos.Common.HomeSliderDto
+@{
+    ViewData["Title"] = "Sửa Slider";
+    ViewData["BreadcrumbParent"] = "Home Slider";
+    ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "HomeSlider");
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-7 col-md-9">
+        <div class="card border-0 shadow-sm" style="border-radius:10px">
+            <div class="card-header bg-white border-0 px-4 pt-4 pb-0">
+                <h5 class="mb-0 fw-600" style="font-size:1rem;color:#262626">
+                    <i class="bi bi-pencil-square me-2 text-primary"></i>Sửa Slider
+                </h5>
+            </div>
+            <div class="card-body px-4 py-4">
+                <form asp-action="Edit" asp-route-id="@Model.HomeSliderId" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-3">
+                        <label asp-for="ImageUrl" class="form-label" style="font-size:.875rem;font-weight:500;color:#595959">
+                            URL Hình Ảnh <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="ImageUrl" class="form-control" style="border-radius:6px;font-size:.875rem"
+                               placeholder="https://..." oninput="previewImage(this.value)" />
+                        <span asp-validation-for="ImageUrl" class="text-danger" style="font-size:.8rem"></span>
+                    </div>
+
+                    <!-- Preview -->
+                    <div id="imagePreview" class="mb-3">
+                        <img id="previewImg" src="@Model.ImageUrl" alt="Preview"
+                             style="width:100%;max-height:200px;object-fit:cover;border-radius:8px;border:1px solid #f0f0f0"
+                             onerror="this.parentElement.style.display='none'" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Caption" class="form-label" style="font-size:.875rem;font-weight:500;color:#595959">
+                            Chữ trên slider (tuỳ chọn)
+                        </label>
+                        <textarea asp-for="Caption" class="form-control" rows="4" style="border-radius:6px;font-size:.875rem"
+                                  placeholder="Nhiều dòng: dòng 1 = phụ đề nhỏ, dòng 2 = tiêu đề chính, từ dòng 3 = mô tả."></textarea>
+                        <div class="form-text" style="font-size:.78rem">Trang chủ hiển thị theo thứ tự dòng. Chỉ một dòng = chỉ tiêu đề chính.</div>
+                        <span asp-validation-for="Caption" class="text-danger" style="font-size:.8rem"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="LinkUrl" class="form-label" style="font-size:.875rem;font-weight:500;color:#595959">
+                            Đường Dẫn Khi Click
+                        </label>
+                        <input asp-for="LinkUrl" class="form-control" style="border-radius:6px;font-size:.875rem"
+                               placeholder="https://... (tuỳ chọn)" />
+                        <span asp-validation-for="LinkUrl" class="text-danger" style="font-size:.8rem"></span>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label asp-for="DisplayOrder" class="form-label" style="font-size:.875rem;font-weight:500;color:#595959">
+                                Thứ Tự Hiển Thị
+                            </label>
+                            <input asp-for="DisplayOrder" type="number" min="0" class="form-control"
+                                   style="border-radius:6px;font-size:.875rem" />
+                            <div class="form-text" style="font-size:.78rem">Số nhỏ hơn hiển thị trước.</div>
+                            <span asp-validation-for="DisplayOrder" class="text-danger" style="font-size:.8rem"></span>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end pb-1">
+                            <div class="form-check form-switch">
+                                <input asp-for="IsActive" class="form-check-input" type="checkbox" role="switch" />
+                                <label asp-for="IsActive" class="form-check-label" style="font-size:.875rem;font-weight:500;color:#595959">
+                                    Kích hoạt
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary" style="border-radius:6px;font-size:.875rem;padding:8px 20px">
+                            <i class="bi bi-check-lg me-1"></i>Lưu Thay Đổi
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary" style="border-radius:6px;font-size:.875rem;padding:8px 20px">
+                            Hủy
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        function previewImage(url) {
+            const preview = document.getElementById('imagePreview');
+            const img = document.getElementById('previewImg');
+            if (url.trim()) {
+                img.src = url.trim();
+                preview.style.display = '';
+                img.onerror = function () { preview.style.display = 'none'; };
+                img.onload = function () { preview.style.display = ''; };
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+    </script>
+}

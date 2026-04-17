@@ -1,5 +1,9 @@
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,44 +12,394 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/BookStore.styles.css" asp-append-version="true" />
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f6fa;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ── Sidebar ── */
+        #sidebar {
+            width: 220px;
+            min-width: 220px;
+            background: #fff;
+            border-right: 1px solid #e8e8e8;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            z-index: 100;
+            transition: width .22s ease;
+        }
+        #sidebar.collapsed { width: 64px; min-width: 64px; }
+
+        .sidebar-brand {
+            padding: 18px 20px 14px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1677ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #f0f0f0;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        .sidebar-brand i { font-size: 1.3rem; flex-shrink: 0; }
+        .sidebar-brand .brand-text { transition: opacity .2s; }
+        #sidebar.collapsed .brand-text { opacity: 0; width: 0; }
+
+        .sidebar-nav { flex: 1; padding: 10px 0; overflow-y: auto; overflow-x: hidden; }
+
+        .nav-item-group { margin-bottom: 2px; }
+
+        .nav-link-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            color: #595959;
+            font-size: 0.9rem;
+            text-decoration: none;
+            border-radius: 0;
+            transition: background .15s, color .15s;
+            white-space: nowrap;
+            overflow: hidden;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+        .nav-link-item:hover { background: #f0f7ff; color: #1677ff; }
+        .nav-link-item.active { background: #e6f4ff; color: #1677ff; font-weight: 600; }
+        .nav-link-item i.nav-icon { font-size: 1.05rem; flex-shrink: 0; width: 20px; text-align: center; }
+        .nav-link-item .nav-label { flex: 1; transition: opacity .2s; }
+        #sidebar.collapsed .nav-label { opacity: 0; width: 0; }
+        .nav-link-item .nav-chevron { margin-left: auto; font-size: .75rem; transition: transform .2s, opacity .2s; }
+        #sidebar.collapsed .nav-chevron { opacity: 0; }
+        .nav-link-item[aria-expanded="true"] .nav-chevron { transform: rotate(180deg); }
+
+        .nav-submenu {
+            overflow: hidden;
+            transition: max-height .25s ease;
+            max-height: 0;
+        }
+        .nav-submenu.open { max-height: 300px; }
+        .nav-submenu .nav-link-item {
+            padding-left: 48px;
+            font-size: 0.85rem;
+            color: #8c8c8c;
+        }
+        .nav-submenu .nav-link-item:hover { color: #1677ff; background: #f0f7ff; }
+        .nav-submenu .nav-link-item.active { color: #1677ff; background: #e6f4ff; }
+        #sidebar.collapsed .nav-submenu { display: none; }
+
+        .sidebar-footer {
+            padding: 12px 0;
+            border-top: 1px solid #f0f0f0;
+        }
+        .collapse-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            color: #8c8c8c;
+            font-size: 0.875rem;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            transition: color .15s;
+            white-space: nowrap;
+        }
+        .collapse-btn:hover { color: #1677ff; }
+        .collapse-btn i { font-size: 1rem; flex-shrink: 0; width: 20px; text-align: center; transition: transform .22s; }
+        #sidebar.collapsed .collapse-btn i { transform: rotate(180deg); }
+        .collapse-btn .collapse-label { transition: opacity .2s; }
+        #sidebar.collapsed .collapse-label { opacity: 0; width: 0; }
+
+        /* ── Main wrapper ── */
+        #main-wrapper {
+            margin-left: 220px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            transition: margin-left .22s ease;
+        }
+        #sidebar.collapsed ~ #main-wrapper { margin-left: 64px; }
+
+        /* ── Top header ── */
+        #top-header {
+            height: 56px;
+            background: #fff;
+            border-bottom: 1px solid #e8e8e8;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            position: sticky;
+            top: 0;
+            z-index: 99;
+        }
+        .breadcrumb-nav {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.875rem;
+            color: #8c8c8c;
+        }
+        .breadcrumb-nav a { color: #8c8c8c; text-decoration: none; }
+        .breadcrumb-nav a:hover { color: #1677ff; }
+        .breadcrumb-nav .bc-sep { font-size: .7rem; }
+        .breadcrumb-nav .bc-current { color: #262626; font-weight: 500; }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .notif-btn {
+            position: relative;
+            background: none;
+            border: none;
+            color: #595959;
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 4px;
+            line-height: 1;
+        }
+        .notif-badge {
+            position: absolute;
+            top: 2px; right: 2px;
+            width: 8px; height: 8px;
+            background: #ff4d4f;
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        .user-avatar {
+            width: 36px; height: 36px;
+            background: #1677ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.875rem;
+        }
+        .user-details { line-height: 1.3; }
+        .user-name { font-size: 0.875rem; font-weight: 600; color: #262626; }
+        .user-role { font-size: 0.75rem; color: #8c8c8c; }
+        .user-chevron { color: #8c8c8c; font-size: .75rem; }
+
+        /* ── Page content ── */
+        #page-content {
+            padding: 24px;
+            flex: 1;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">BookStore</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                    <partial name="_LoginPartial" />
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<nav id="sidebar">
+    <div class="sidebar-brand">
+        <i class="bi bi-book-half"></i>
+        <span class="brand-text">BookStore</span>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - BookStore - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <div class="sidebar-nav">
+        @{
+            var ctrl = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+            var action = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+        }
+
+        <!-- Trang Chủ -->
+        <div class="nav-item-group">
+            <button class="nav-link-item @(ctrl == "HomeSlider" ? "active" : "")"
+                    onclick="toggleSubmenu('submenu-home', this)">
+                <i class="bi bi-house nav-icon"></i>
+                <span class="nav-label">Trang Chủ</span>
+                <i class="bi bi-chevron-down nav-chevron"></i>
+            </button>
+            <div class="nav-submenu @(ctrl == "HomeSlider" ? "open" : "")" id="submenu-home">
+                <a class="nav-link-item @(ctrl == "HomeSlider" ? "active" : "")"
+                   asp-controller="HomeSlider" asp-action="Index">
+                    <span class="nav-label">Quản lý Home Slider</span>
+                </a>
+            </div>
         </div>
-    </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+
+        <!-- Về Chúng Tôi -->
+        <div class="nav-item-group">
+            <a class="nav-link-item @(ctrl == "About" ? "active" : "")"
+               asp-controller="About" asp-action="Index">
+                <i class="bi bi-info-circle nav-icon"></i>
+                <span class="nav-label">Về Chúng Tôi</span>
+            </a>
+        </div>
+
+        <!-- Quản Lý Sách -->
+        <div class="nav-item-group">
+            <button class="nav-link-item @(ctrl == "Book" || ctrl == "Category" ? "active" : "")"
+                    onclick="toggleSubmenu('submenu-book', this)">
+                <i class="bi bi-journal-bookmark nav-icon"></i>
+                <span class="nav-label">Quản Lý Sách</span>
+                <i class="bi bi-chevron-down nav-chevron"></i>
+            </button>
+            <div class="nav-submenu @(ctrl == "Book" || ctrl == "Category" ? "open" : "")" id="submenu-book">
+                <a class="nav-link-item @(ctrl == "Book" ? "active" : "")"
+                   asp-controller="Book" asp-action="Index">
+                    <span class="nav-label">Danh sách sách</span>
+                </a>
+                <a class="nav-link-item @(ctrl == "Category" ? "active" : "")"
+                   asp-controller="Category" asp-action="Index">
+                    <span class="nav-label">Danh mục sách</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Cấu Hình Chung -->
+        <div class="nav-item-group">
+            <a class="nav-link-item" href="#">
+                <i class="bi bi-gear nav-icon"></i>
+                <span class="nav-label">Cấu Hình Chung</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="sidebar-footer">
+        <button class="collapse-btn" id="collapseBtn" onclick="toggleSidebar()">
+            <i class="bi bi-chevron-left"></i>
+            <span class="collapse-label">Thu gọn</span>
+        </button>
+    </div>
+</nav>
+
+<!-- ═══════════ MAIN WRAPPER ═══════════ -->
+<div id="main-wrapper">
+
+    <!-- Top Header -->
+    <header id="top-header">
+        <nav class="breadcrumb-nav" aria-label="breadcrumb">
+            <a href="#">Dashboard</a>
+            @if (ViewData["BreadcrumbParent"] != null)
+            {
+                <i class="bi bi-chevron-right bc-sep"></i>
+                <a href="@ViewData["BreadcrumbParentUrl"]">@ViewData["BreadcrumbParent"]</a>
+            }
+            @if (ViewData["Title"] != null)
+            {
+                <i class="bi bi-chevron-right bc-sep"></i>
+                <span class="bc-current">@ViewData["Title"]</span>
+            }
+        </nav>
+
+        <div class="header-right">
+            <button class="notif-btn" title="Thông báo">
+                <i class="bi bi-bell"></i>
+                <span class="notif-badge"></span>
+            </button>
+
+            @if (SignInManager.IsSignedIn(User))
+            {
+                var currentUser = await UserManager.GetUserAsync(User);
+                    var displayName = currentUser?.UserName ?? User.Identity?.Name ?? "User";
+                    var initials = displayName.Length >= 2
+                        ? (displayName[0].ToString() + displayName[1].ToString()).ToUpper()
+                        : displayName[..1].ToUpper();
+                    var roles = currentUser != null ? await UserManager.GetRolesAsync(currentUser) : new List<string>();
+                    var roleLabel = roles.FirstOrDefault() ?? "Người dùng";
+                    string roleVietnamese = roleLabel switch {
+                        "Admin" => "Quản trị viên",
+                        "Manager" => "Quản lý",
+                        "Staff" => "Nhân viên",
+                        "Customer" => "Khách hàng",
+                        _ => roleLabel
+                    };
+                <div class="dropdown">
+                    <div class="user-info" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="user-avatar">@initials</div>
+                        <div class="user-details">
+                            <div class="user-name">@displayName</div>
+                            <div class="user-role">@roleVietnamese</div>
+                        </div>
+                        <i class="bi bi-chevron-down user-chevron"></i>
+                    </div>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="min-width:180px;border-radius:8px;margin-top:6px">
+                        <li>
+                            <a class="dropdown-item" asp-controller="Account" asp-action="Profile">
+                                <i class="bi bi-person me-2"></i>Tài khoản
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider my-1"></li>
+                        <li>
+                            <form asp-controller="Account" asp-action="Logout" method="post">
+                                <button type="submit" class="dropdown-item text-danger">
+                                    <i class="bi bi-box-arrow-right me-2"></i>Đăng xuất
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            }
+            else
+            {
+                <a asp-controller="Account" asp-action="Login" class="btn btn-sm btn-outline-primary" style="border-radius:6px;font-size:.875rem">
+                    Đăng nhập
+                </a>
+            }
+        </div>
+    </header>
+
+    <!-- Page Content -->
+    <main id="page-content" role="main">
+        @RenderBody()
+    </main>
+</div>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('collapsed');
+        localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+    }
+
+    function toggleSubmenu(id, btn) {
+        const menu = document.getElementById(id);
+        const isOpen = menu.classList.contains('open');
+        menu.classList.toggle('open', !isOpen);
+        btn.setAttribute('aria-expanded', String(!isOpen));
+    }
+
+    // Restore sidebar state
+    document.addEventListener('DOMContentLoaded', function () {
+        if (localStorage.getItem('sidebarCollapsed') === 'true') {
+            document.getElementById('sidebar').classList.add('collapsed');
+        }
+        // Auto-open active submenus
+        document.querySelectorAll('.nav-submenu.open').forEach(function(menu) {
+            const btn = menu.previousElementSibling;
+            if (btn) btn.setAttribute('aria-expanded', 'true');
+        });
+    });
+</script>
+@await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
