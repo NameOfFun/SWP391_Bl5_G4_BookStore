@@ -3,7 +3,6 @@ using BookStore.Service.Implements;
 using BookStore.Service.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace BookStore
 {
@@ -34,11 +33,9 @@ namespace BookStore
             builder.Services.AddScoped<IBookService, BookService>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<IHomeSliderService, HomeSliderService>();
-
             builder.Services.AddScoped<IBookTagService, BookTagService>();
             builder.Services.AddScoped<IShipperService, ShipperService>();
             builder.Services.AddScoped<IUserService, UserService>();
-
 
             builder.Services.AddControllersWithViews();
 
@@ -53,11 +50,13 @@ namespace BookStore
             }
 
             app.UseHttpsRedirection();
+
             app.UseStaticFiles();
 
             app.UseRouting();
 
             app.UseAuthentication();
+
             app.UseAuthorization();
 
             app.MapControllerRoute(
@@ -68,7 +67,9 @@ namespace BookStore
             {
                 var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
                 var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
                 string[] roleNames = ["Customer", "Admin", "Staff", "Manager", "Shipper"];
+
                 foreach (var roleName in roleNames)
                 {
                     if (!roleManager.RoleExistsAsync(roleName).GetAwaiter().GetResult())

@@ -1,4 +1,5 @@
-@model IReadOnlyList<BookStore.Dtos.Admin.UserListDto>
+@using BookStore.Dtos.Admin.User
+@model IReadOnlyList<UserListDto>
 @{
     ViewData["Title"] = "Quản lý người dùng";
     ViewData["BreadcrumbParent"] = "Quản lý người dùng";
@@ -244,13 +245,13 @@
             {
                 stt++;
                 <tr class="user-row"
-                    data-name="@user.FullName.ToLower()"
+                    data-name="@user.Name.ToLower()"
                     data-email="@(user.Email?.ToLower() ?? "")"
                     data-role="@user.RolesDisplay.ToLower()"
                     data-status="@(user.IsActive ? "active" : "inactive")">
                     <td class="row-stt">@stt</td>
                     <td>
-                        <span class="fw-semibold">@(string.IsNullOrEmpty(user.FullName) ? "—" : user.FullName)</span>
+                        <span class="fw-semibold">@(string.IsNullOrEmpty(user.Name) ? "—" : user.Name)</span>
                     </td>
                     <td>@(user.Email ?? "—")</td>
                     <td>@(user.PhoneNumber ?? "—")</td>

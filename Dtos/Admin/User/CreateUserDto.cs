@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace BookStore.Dtos.Admin;
+namespace BookStore.Dtos.Admin.User;
 
 public class CreateUserDto
 {

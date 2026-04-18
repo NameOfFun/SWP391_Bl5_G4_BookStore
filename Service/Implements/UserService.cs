@@ -1,4 +1,4 @@
-using BookStore.Dtos.Admin;
+using BookStore.Dtos.Admin.User;
 using BookStore.Models;
 using BookStore.Service.Interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -28,7 +28,7 @@ public class UserService : IUserService
             result.Add(new UserListDto
             {
                 Id = user.Id,
-                FullName = user.Name,
+                Name = user.Name ?? string.Empty,
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber,
                 IsActive = user.Status,
@@ -52,7 +52,7 @@ public class UserService : IUserService
         return new EditUserDto
         {
             Id = user.Id,
-            FullName = user.Name,
+            FullName = user.Name ?? string.Empty,
             Email = user.Email ?? string.Empty,
             PhoneNumber = user.PhoneNumber,
             IsActive = user.Status,
@@ -177,6 +177,6 @@ public class UserService : IUserService
         }
 
         await _userManager.UpdateAsync(user);
-        return (user.Status, user.Name);
+        return (user.Status, user.Name ?? "");
     }
 }

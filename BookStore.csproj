@@ -32,7 +32,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Dtos\Admin\" />
     <Folder Include="Dtos\Manager\" />
     <Folder Include="Dtos\Customer\" />
     <Folder Include="Dtos\Staff\" />

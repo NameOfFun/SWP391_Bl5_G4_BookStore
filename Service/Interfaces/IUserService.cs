@@ -1,4 +1,4 @@
-using BookStore.Dtos.Admin;
+using BookStore.Dtos.Admin.User;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace BookStore.Service.Interfaces;
