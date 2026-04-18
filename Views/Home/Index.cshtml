@@ -1,12 +1,15 @@
-﻿@model IReadOnlyList<BookStore.Dtos.Common.HomeSliderDto>
+@model IReadOnlyList<BookStore.Dtos.Common.HomeSliderDto>
 @{
     ViewData["Title"] = "Trang chủ";
     Layout = "~/Views/Shared/_LayoutAuth.cshtml";
     ViewData["LibrariaInnerHeader"] = false;
     ViewData["HideLibrariaSocial"] = true;
+    ViewData["LibrariaBodyClass"] = "libraria-page-home";
 }
 
 @* Thứ tự: Header → Slider (HomeSlider CRUD) → Tìm kiếm → Sách mới → Footer *@
+<main class="bookstore-home-v1">
 @await Html.PartialAsync("Partials/_HomeHero", Model)
 @await Html.PartialAsync("Partials/_HomeLibrarySearch")
 @await Html.PartialAsync("Partials/_HomeNewReleases")
+</main>
