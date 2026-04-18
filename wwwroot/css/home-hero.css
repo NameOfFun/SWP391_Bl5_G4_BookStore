@@ -119,9 +119,9 @@
   }
 }
 
-/* Typography — tiêu đề hero lớn hơn 2rem; còn lại dùng 2rem (co nhẹ trên màn hẹp) */
+/* Typography co giãn theo viewport — bỏ cỡ px cố định của template */
 .bookstore-home-v1 #home-v1-header-carousel .carousel-caption h2 {
-  font-size: clamp(2rem, 3.5vw + 1.25rem, 4.25rem);
+  font-size: clamp(1.55rem, 3.1vw + 0.92rem, 4rem);
   line-height: 1.12;
   margin-bottom: 0.35em;
 }
@@ -132,26 +132,14 @@
 }
 
 .bookstore-home-v1 #home-v1-header-carousel .carousel-caption h3 {
-  font-size: clamp(1.25rem, 3.5vw, 2rem);
+  font-size: clamp(1.05rem, 1.35vw + 0.72rem, 1.95rem);
   margin: 0 0 0.4em;
 }
 
-@media (min-width: 768px) {
-  .bookstore-home-v1 #home-v1-header-carousel .carousel-caption h3 {
-    font-size: 2rem;
-  }
-}
-
 .bookstore-home-v1 #home-v1-header-carousel .carousel-caption p {
-  font-size: clamp(1.125rem, 3.2vw, 2rem);
+  font-size: 2rem;
   line-height: 1.45;
   margin: 0 0 0.65em;
-}
-
-@media (min-width: 768px) {
-  .bookstore-home-v1 #home-v1-header-carousel .carousel-caption p {
-    font-size: 2rem;
-  }
 }
 
 .bookstore-home-v1 #home-v1-header-carousel .carousel-caption .slide-buttons {
@@ -159,76 +147,51 @@
 }
 
 .bookstore-home-v1 #home-v1-header-carousel .carousel-caption .slide-buttons .btn {
-  font-size: clamp(1.125rem, 3.2vw, 2rem);
-  padding: 0.45em 1.15em;
+  font-size: 2rem;
+  padding: 0.5em 1.35em;
+  line-height: 1.2;
 }
 
-@media (min-width: 768px) {
-  .bookstore-home-v1 #home-v1-header-carousel .carousel-caption .slide-buttons .btn {
-    font-size: 2rem;
-  }
-}
-
-/* Khối tìm kiếm — 2rem */
+/* Khối tìm kiếm — tiêu đề + ô nhập rõ hơn một chút */
 .bookstore-home-v1 .search-filters .filter-box h3 {
-  font-size: clamp(1.25rem, 3.5vw, 2rem);
+  font-size: clamp(1.15rem, 2.4vw + 0.55rem, 2rem);
 }
 
-@media (min-width: 768px) {
+@media (max-width: 767px) {
   .bookstore-home-v1 .search-filters .filter-box h3 {
-    font-size: 2rem;
+    font-size: clamp(1.05rem, 4vw + 0.35rem, 1.35rem);
   }
 }
 
 .bookstore-home-v1 .search-filters .filter-box .form-control {
-  font-size: clamp(1.125rem, 3.2vw, 2rem);
-  min-height: 48px;
-  padding-top: 10px;
-  padding-bottom: 10px;
-}
-
-@media (min-width: 768px) {
-  .bookstore-home-v1 .search-filters .filter-box .form-control {
-    font-size: 2rem;
-    min-height: 54px;
-  }
+  font-size: 15px;
+  min-height: 40px;
+  padding-top: 8px;
+  padding-bottom: 8px;
 }
 
 .bookstore-home-v1 .search-filters .filter-box input.form-control::placeholder,
 .bookstore-home-v1 .search-filters .filter-box textarea.form-control::placeholder {
-  font-size: clamp(1.125rem, 3.2vw, 2rem);
+  font-size: 15px;
 }
 
-@media (min-width: 768px) {
-  .bookstore-home-v1 .search-filters .filter-box input.form-control::placeholder,
-  .bookstore-home-v1 .search-filters .filter-box textarea.form-control::placeholder {
-    font-size: 2rem;
-  }
-}
-
-/* Trang chủ — thanh trên + menu: 2rem desktop, nhỏ hơn trên mobile */
+/* Trang chủ — thanh trên + menu (body class từ Index) */
 body.libraria-page-home .header-topbar,
 body.libraria-page-home .header-topbar a,
 body.libraria-page-home .header-topbar span:not(.caret) {
-  font-size: clamp(1rem, 2.8vw, 2rem);
+  font-size: 14px;
 }
 
 body.libraria-page-home .header-topbar a small {
-  font-size: clamp(0.8rem, 2vw, 1.1rem);
+  font-size: 12px;
 }
 
 body.libraria-page-home .navbar-nav > li > a {
-  font-size: clamp(1rem, 2.8vw, 2rem);
+  font-size: 15px;
 }
 
-@media (min-width: 768px) {
-  body.libraria-page-home .header-topbar,
-  body.libraria-page-home .header-topbar a,
-  body.libraria-page-home .header-topbar span:not(.caret) {
-    font-size: 2rem;
-  }
-
+@media (max-width: 991px) {
   body.libraria-page-home .navbar-nav > li > a {
-    font-size: 2rem;
+    font-size: 14px;
   }
 }
