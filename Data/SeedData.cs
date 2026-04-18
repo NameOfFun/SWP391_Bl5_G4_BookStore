@@ -1,9 +1,74 @@
 using BookStore.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace BookStore.Data;
 
 public static class SeedData
 {
+    public static void SeedRolesAndUsers(RoleManager<ApplicationRole> roleManager, UserManager<ApplicationUser> userManager)
+    {
+        string[] roleNames = ["Customer", "Admin", "Staff", "Manager", "Shipper"];
+        // Note: Changing a user's password here will not take effect if the user already exists in the database.
+        // To apply credential changes, either drop the users table data or change the seed email so it is treated as a new user.
+        var seedUsers = new[]
+        {
+            (UserName: "admin",    Email: "admin@test.com",    Name: "Administrator", Password: "Admin@123",    Role: "Admin"),
+            (UserName: "manager",  Email: "manager@test.com",  Name: "Manager",       Password: "Manager@123",  Role: "Manager"),
+            (UserName: "staff",    Email: "staff@test.com",    Name: "Staff",         Password: "Staff@123",    Role: "Staff"),
+            (UserName: "customer", Email: "customer@test.com", Name: "Customer",      Password: "Customer@123", Role: "Customer"),
+            (UserName: "shipper",  Email: "shipper@test.com",  Name: "Shipper",       Password: "Shipper@123",  Role: "Shipper"),
+        };
+
+        // Seed roles first
+        foreach (var roleName in roleNames)
+        {
+            if (!roleManager.RoleExistsAsync(roleName).GetAwaiter().GetResult())
+            {
+                roleManager.CreateAsync(new ApplicationRole
+                {
+                    Name = roleName,
+                    IsSystemRole = roleName == "Admin",
+                    Status = true,
+                    CreatedDate = DateTime.Now
+                }).GetAwaiter().GetResult();
+            }
+            else
+            {
+                var existing = roleManager.FindByNameAsync(roleName).GetAwaiter().GetResult();
+                if (existing != null)
+                {
+                    existing.Status = true;
+                    existing.IsSystemRole = roleName == "Admin";
+                    if (existing.CreatedDate == default)
+                        existing.CreatedDate = DateTime.Now;
+                    roleManager.UpdateAsync(existing).GetAwaiter().GetResult();
+                }
+            }
+        }
+
+        // Then seed users
+        foreach (var seed in seedUsers)
+        {
+            if (userManager.FindByEmailAsync(seed.Email).GetAwaiter().GetResult() != null) continue;
+
+            var user = new ApplicationUser
+            {
+                UserName = seed.UserName,
+                Email = seed.Email,
+                EmailConfirmed = true,
+                LockoutEnabled = true,
+                Name = seed.Name,
+                Status = true,
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now
+            };
+
+            var result = userManager.CreateAsync(user, seed.Password).GetAwaiter().GetResult();
+            if (result.Succeeded)
+                userManager.AddToRoleAsync(user, seed.Role).GetAwaiter().GetResult();
+        }
+    }
+
     public static void SeedCatalog(BookStoreDbContext db)
     {
         db.Database.EnsureCreated();
