@@ -27,7 +27,8 @@ public class CreateUserDto
     [Compare("Password", ErrorMessage = "Mật khẩu xác nhận không khớp")]
     public string ConfirmPassword { get; set; } = null!;
 
-    public List<string> SelectedRoles { get; set; } = new();
+    [Required(ErrorMessage = "Vui lòng chọn vai trò")]
+    public string SelectedRole { get; set; } = null!;
 
     [ValidateNever]
     public List<SelectListItem> AvailableRoles { get; set; } = new();

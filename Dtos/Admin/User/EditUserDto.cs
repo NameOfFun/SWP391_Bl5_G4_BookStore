@@ -23,8 +23,17 @@ public class EditUserDto
 
     public bool IsActive { get; set; } = true;
 
-    public List<string> SelectedRoles { get; set; } = new();
+    [Required(ErrorMessage = "Vui lòng chọn vai trò")]
+    public string SelectedRole { get; set; } = null!;
 
     [ValidateNever]
     public List<SelectListItem> AvailableRoles { get; set; } = new();
+
+    // Optional password reset
+    [MinLength(6, ErrorMessage = "Mật khẩu tối thiểu 6 ký tự")]
+    [MaxLength(100, ErrorMessage = "Mật khẩu tối đa 100 ký tự")]
+    public string? NewPassword { get; set; }
+
+    [Compare("NewPassword", ErrorMessage = "Mật khẩu xác nhận không khớp")]
+    public string? ConfirmNewPassword { get; set; }
 }

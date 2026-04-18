@@ -46,23 +46,13 @@
                     </div>
 
                     <div class="col-12">
-                        <label class="form-label fw-semibold">
+                        <label asp-for="SelectedRole" class="form-label fw-semibold">
                             Vai trò <span class="text-danger">*</span>
                         </label>
-                        <div class="d-flex flex-wrap gap-3 mt-1">
-                            @for (int i = 0; i < Model.AvailableRoles.Count; i++)
-                            {
-                                var role = Model.AvailableRoles[i];
-                                var isChecked = Model.SelectedRoles.Contains(role.Value);
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox"
-                                           name="SelectedRoles" value="@role.Value"
-                                           id="role_@i" @(isChecked ? "checked" : "") />
-                                    <label class="form-check-label" for="role_@i">@role.Text</label>
-                                </div>
-                            }
-                        </div>
-                        <span asp-validation-for="SelectedRoles" class="text-danger small"></span>
+                        <select asp-for="SelectedRole" asp-items="Model.AvailableRoles" class="form-select">
+                            <option value="">-- Chọn vai trò --</option>
+                        </select>
+                        <span asp-validation-for="SelectedRole" class="text-danger small"></span>
                     </div>
 
                     <div class="col-12">
@@ -73,6 +63,24 @@
                             </label>
                         </div>
                         <small class="text-muted">Bỏ chọn để vô hiệu hóa đăng nhập của tài khoản này.</small>
+                    </div>
+
+                    <div class="col-12">
+                        <hr class="my-2" />
+                        <h6 class="fw-semibold text-secondary mb-3">Đặt lại mật khẩu <span class="fw-normal text-muted">(tùy chọn)</span></h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="NewPassword" class="form-label fw-semibold">Mật khẩu mới</label>
+                                <input asp-for="NewPassword" type="password" class="form-control" placeholder="Tối thiểu 6 ký tự" autocomplete="new-password" />
+                                <span asp-validation-for="NewPassword" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="ConfirmNewPassword" class="form-label fw-semibold">Xác nhận mật khẩu mới</label>
+                                <input asp-for="ConfirmNewPassword" type="password" class="form-control" placeholder="Nhập lại mật khẩu mới" autocomplete="new-password" />
+                                <span asp-validation-for="ConfirmNewPassword" class="text-danger small"></span>
+                            </div>
+                        </div>
+                        <small class="text-muted">Để trống nếu không muốn thay đổi mật khẩu.</small>
                     </div>
                 </div>
 
