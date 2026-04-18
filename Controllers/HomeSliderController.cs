@@ -6,8 +6,7 @@ using System.Security.Claims;
 
 namespace BookStore.Controllers
 {
-    //[Authorize(Roles = "Admin,Manager")]
-    [Authorize(Roles = "Customer")]
+    [Authorize(Roles = "Staff")]
     public class HomeSliderController : Controller
     {
         private readonly IHomeSliderService _sliderService;
@@ -20,18 +19,12 @@ namespace BookStore.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            ViewData["Title"] = "Quản Lý Home Slider";
-            ViewData["BreadcrumbParent"] = "Trang Chủ";
-            ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "Home");
             return View(await _sliderService.GetAllAsync());
         }
 
         [HttpGet]
         public IActionResult Create()
         {
-            ViewData["Title"] = "Thêm Slider";
-            ViewData["BreadcrumbParent"] = "Home Slider";
-            ViewData["BreadcrumbParentUrl"] = Url.Action("Index");
             return View(new HomeSliderDto());
         }
 
@@ -40,9 +33,6 @@ namespace BookStore.Controllers
         {
             if (!ModelState.IsValid)
             {
-                ViewData["Title"] = "Thêm Slider";
-                ViewData["BreadcrumbParent"] = "Home Slider";
-                ViewData["BreadcrumbParentUrl"] = Url.Action("Index");
                 return View(dto);
             }
 
@@ -58,9 +48,6 @@ namespace BookStore.Controllers
             var slider = await _sliderService.GetByIdAsync(id);
             if (slider == null) return NotFound();
 
-            ViewData["Title"] = "Sửa Slider";
-            ViewData["BreadcrumbParent"] = "Home Slider";
-            ViewData["BreadcrumbParentUrl"] = Url.Action("Index");
             return View(slider);
         }
 
@@ -69,9 +56,6 @@ namespace BookStore.Controllers
         {
             if (!ModelState.IsValid)
             {
-                ViewData["Title"] = "Sửa Slider";
-                ViewData["BreadcrumbParent"] = "Home Slider";
-                ViewData["BreadcrumbParentUrl"] = Url.Action("Index");
                 return View(dto);
             }
 
