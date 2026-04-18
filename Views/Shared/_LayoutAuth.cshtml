@@ -28,7 +28,7 @@
     <link href="~/css/bookstore-fonts.css" rel="stylesheet" asp-append-version="true" />
 </head>
 
-<body>
+<body class="@(ViewData["LibrariaBodyClass"] as string)">
     @await Html.PartialAsync("Partials/Libraria/_LibrariaHeader")
 
     @RenderBody()

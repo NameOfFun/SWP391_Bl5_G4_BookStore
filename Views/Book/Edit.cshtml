@@ -71,11 +71,8 @@
 
                     <div class="col-12">
                         <label class="form-label fw-semibold">Ảnh bìa</label>
-                        <p class="small text-muted mb-2">Link ảnh hoặc chọn file mới từ máy (lưu vào <code>wwwroot/image/cover</code>). File upload sẽ thay thế link khi lưu.</p>
-                        <label asp-for="ImageUrl" class="form-label small">Đường dẫn / URL hiện tại</label>
-                        <input asp-for="ImageUrl" class="form-control" id="imageUrlInput" placeholder="https://... hoặc ~/image/cover/..." />
-                        <label for="coverImage" class="form-label small mt-3">Chọn ảnh mới từ máy (tuỳ chọn)</label>
-                        <input type="file" name="coverImage" id="coverImage" class="form-control" accept="image/jpeg,image/png,image/webp,image/gif" />
+                        <label asp-for="ImageUrl" class="form-label small">Đường dẫn / URL ảnh</label>
+                        <input asp-for="ImageUrl" class="form-control" id="imageUrlInput" placeholder="https://..." />
                         <div id="imagePreview" class="mt-2 @(string.IsNullOrEmpty(Model.ImageUrl) ? "d-none" : "")">
                             <img id="previewImg" src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "" : Url.Content(Model.ImageUrl))" alt="Xem trước" class="rounded border"
                                  style="max-height:180px;object-fit:contain;" />

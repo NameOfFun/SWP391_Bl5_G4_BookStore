@@ -6,8 +6,7 @@ using System.Security.Claims;
 
 namespace BookStore.Controllers
 {
-    //[Authorize(Roles = "Admin,Manager")]
-    [Authorize(Roles = "Customer")]
+    [Authorize(Roles = "Staff")]
     public class CategoryController : Controller
     {
         private readonly ICategoryService _categoryService;
@@ -22,7 +21,6 @@ namespace BookStore.Controllers
         [HttpGet]
         public async Task<IActionResult> Index(string? search, string? status, int page = 1)
         {
-            
             ViewData["Search"] = search;
             ViewData["Status"] = status;
 
@@ -60,9 +58,6 @@ namespace BookStore.Controllers
         {
             if (!ModelState.IsValid)
             {
-                ViewData["Title"] = "Thêm Danh Mục";
-                ViewData["BreadcrumbParent"] = "Danh Mục Sách";
-                ViewData["BreadcrumbParentUrl"] = Url.Action("Index");
                 return View(dto);
             }
 

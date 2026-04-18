@@ -64,3 +64,171 @@
     --home-hero-height-min: 220px;
   }
 }
+
+/* --------------------------------------------------------------------------
+ * Trang chủ: tránh chồng chữ giữa menu (absolute), caption và khối tìm kiếm
+ * (template gốc: caption căn giữa + search-filters margin-top: -114px trên ≥1200px).
+ * Menu + topbar chiếm ~140–220px; caption neo đáy hero để không cùng dải với nav.
+ * -------------------------------------------------------------------------- */
+.bookstore-home-v1 {
+  /* Đủ cao để neo caption đáy vẫn còn chỗ dưới vùng header phủ */
+  --home-hero-height-min: 340px;
+}
+
+.bookstore-home-v1 .search-filters {
+  margin-top: 0;
+  padding-top: 1.25rem;
+  padding-bottom: 0.25rem;
+}
+
+.bookstore-home-v1 #home-v1-header-carousel .carousel-caption {
+  top: auto;
+  bottom: clamp(1rem, 4vh + 0.5rem, 3.5rem);
+  left: 5%;
+  right: 5%;
+  max-width: 48rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 0.5rem;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  transform: none;
+  -webkit-transform: none;
+  -moz-transform: none;
+  -ms-transform: none;
+  -o-transform: none;
+}
+
+@media (max-width: 991px) {
+  .bookstore-home-v1 #home-v1-header-carousel .carousel-caption {
+    left: 4%;
+    right: 4%;
+    max-width: none;
+    bottom: clamp(0.75rem, 3vh + 0.25rem, 2.75rem);
+  }
+}
+
+@media (max-width: 767px) {
+  .bookstore-home-v1 {
+    --home-hero-height-min: 300px;
+  }
+
+  .bookstore-home-v1 #home-v1-header-carousel .carousel-caption {
+    padding-left: 10px;
+    padding-right: 10px;
+    bottom: clamp(0.5rem, 2.5vh, 2rem);
+  }
+}
+
+/* Typography — tiêu đề hero lớn hơn 2rem; còn lại dùng 2rem (co nhẹ trên màn hẹp) */
+.bookstore-home-v1 #home-v1-header-carousel .carousel-caption h2 {
+  font-size: clamp(2rem, 3.5vw + 1.25rem, 4.25rem);
+  line-height: 1.12;
+  margin-bottom: 0.35em;
+}
+
+.bookstore-home-v1 #home-v1-header-carousel .carousel-caption h2 strong {
+  font-size: inherit;
+  font-weight: 900;
+}
+
+.bookstore-home-v1 #home-v1-header-carousel .carousel-caption h3 {
+  font-size: clamp(1.25rem, 3.5vw, 2rem);
+  margin: 0 0 0.4em;
+}
+
+@media (min-width: 768px) {
+  .bookstore-home-v1 #home-v1-header-carousel .carousel-caption h3 {
+    font-size: 2rem;
+  }
+}
+
+.bookstore-home-v1 #home-v1-header-carousel .carousel-caption p {
+  font-size: clamp(1.125rem, 3.2vw, 2rem);
+  line-height: 1.45;
+  margin: 0 0 0.65em;
+}
+
+@media (min-width: 768px) {
+  .bookstore-home-v1 #home-v1-header-carousel .carousel-caption p {
+    font-size: 2rem;
+  }
+}
+
+.bookstore-home-v1 #home-v1-header-carousel .carousel-caption .slide-buttons {
+  margin-top: 0.35rem;
+}
+
+.bookstore-home-v1 #home-v1-header-carousel .carousel-caption .slide-buttons .btn {
+  font-size: clamp(1.125rem, 3.2vw, 2rem);
+  padding: 0.45em 1.15em;
+}
+
+@media (min-width: 768px) {
+  .bookstore-home-v1 #home-v1-header-carousel .carousel-caption .slide-buttons .btn {
+    font-size: 2rem;
+  }
+}
+
+/* Khối tìm kiếm — 2rem */
+.bookstore-home-v1 .search-filters .filter-box h3 {
+  font-size: clamp(1.25rem, 3.5vw, 2rem);
+}
+
+@media (min-width: 768px) {
+  .bookstore-home-v1 .search-filters .filter-box h3 {
+    font-size: 2rem;
+  }
+}
+
+.bookstore-home-v1 .search-filters .filter-box .form-control {
+  font-size: clamp(1.125rem, 3.2vw, 2rem);
+  min-height: 48px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+@media (min-width: 768px) {
+  .bookstore-home-v1 .search-filters .filter-box .form-control {
+    font-size: 2rem;
+    min-height: 54px;
+  }
+}
+
+.bookstore-home-v1 .search-filters .filter-box input.form-control::placeholder,
+.bookstore-home-v1 .search-filters .filter-box textarea.form-control::placeholder {
+  font-size: clamp(1.125rem, 3.2vw, 2rem);
+}
+
+@media (min-width: 768px) {
+  .bookstore-home-v1 .search-filters .filter-box input.form-control::placeholder,
+  .bookstore-home-v1 .search-filters .filter-box textarea.form-control::placeholder {
+    font-size: 2rem;
+  }
+}
+
+/* Trang chủ — thanh trên + menu: 2rem desktop, nhỏ hơn trên mobile */
+body.libraria-page-home .header-topbar,
+body.libraria-page-home .header-topbar a,
+body.libraria-page-home .header-topbar span:not(.caret) {
+  font-size: clamp(1rem, 2.8vw, 2rem);
+}
+
+body.libraria-page-home .header-topbar a small {
+  font-size: clamp(0.8rem, 2vw, 1.1rem);
+}
+
+body.libraria-page-home .navbar-nav > li > a {
+  font-size: clamp(1rem, 2.8vw, 2rem);
+}
+
+@media (min-width: 768px) {
+  body.libraria-page-home .header-topbar,
+  body.libraria-page-home .header-topbar a,
+  body.libraria-page-home .header-topbar span:not(.caret) {
+    font-size: 2rem;
+  }
+
+  body.libraria-page-home .navbar-nav > li > a {
+    font-size: 2rem;
+  }
+}
