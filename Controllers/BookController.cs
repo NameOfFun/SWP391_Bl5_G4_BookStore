@@ -239,6 +239,12 @@ namespace BookStore.Controllers
             ViewBag.Categories = new SelectList(
                 await _context.Categories.Where(c => c.IsActive).OrderBy(c => c.Name).ToListAsync(),
                 "CategoryId", "Name", selectedCategory);
+
+            ViewBag.AllTags = await _context.BookTags
+                .Where(t => t.IsActive)
+                .OrderBy(t => t.Name)
+                .Select(t => new { t.TagId, t.Name })
+                .ToListAsync();
         }
     }
 }

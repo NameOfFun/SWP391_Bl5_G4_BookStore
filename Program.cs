@@ -1,3 +1,4 @@
+using BookStore.Data;
 using BookStore.Models;
 using BookStore.Service.Implements;
 using BookStore.Service.Interfaces;
@@ -76,6 +77,9 @@ namespace BookStore
                 }
 
                 SeedUsers(userManager, roleManager);
+
+                var db = scope.ServiceProvider.GetRequiredService<BookStoreDbContext>();
+                SeedData.SeedCatalog(db);
             }
 
             app.Run();
