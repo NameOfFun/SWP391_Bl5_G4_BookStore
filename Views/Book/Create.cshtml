@@ -16,7 +16,7 @@
             <h5 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Thêm sách mới</h5>
         </div>
         <div class="card-body">
-            <form asp-action="Create" method="post">
+            <form asp-action="Create" method="post" enctype="multipart/form-data">
                 @Html.AntiForgeryToken()
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3"></div>
 
@@ -74,12 +74,16 @@
                         <input asp-for="PromotionalEndsAt" class="form-control" type="datetime-local" />
                     </div>
 
-                    @* URL ảnh *@
+                    @* Ảnh bìa: URL hoặc file trên máy *@
                     <div class="col-12">
-                        <label asp-for="ImageUrl" class="form-label fw-semibold">URL ảnh bìa</label>
-                        <input asp-for="ImageUrl" class="form-control" placeholder="https://..." id="imageUrlInput" />
+                        <label class="form-label fw-semibold">Ảnh bìa</label>
+                        <p class="small text-muted mb-2">Dán link ảnh trên internet, hoặc chọn file từ máy (lưu vào thư mục <code>wwwroot/image/cover</code>). Nếu chọn file, ảnh upload sẽ được ưu tiên hơn link.</p>
+                        <label asp-for="ImageUrl" class="form-label small">Đường dẫn / URL ảnh</label>
+                        <input asp-for="ImageUrl" class="form-control" placeholder="https://... hoặc để trống nếu chỉ upload file" id="imageUrlInput" />
+                        <label for="coverImage" class="form-label small mt-3">Chọn ảnh từ máy tính</label>
+                        <input type="file" name="coverImage" id="coverImage" class="form-control" accept="image/jpeg,image/png,image/webp,image/gif" />
                         <div id="imagePreview" class="mt-2 d-none">
-                            <img id="previewImg" src="" alt="Preview" class="rounded border"
+                            <img id="previewImg" src="" alt="Xem trước" class="rounded border"
                                  style="max-height:180px;object-fit:contain;" />
                         </div>
                     </div>
@@ -122,16 +126,29 @@
 @section Scripts {
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
     <script>
-        document.getElementById('imageUrlInput').addEventListener('input', function () {
-            var url = this.value.trim();
+        (function () {
+            var urlInput = document.getElementById('imageUrlInput');
+            var fileInput = document.getElementById('coverImage');
             var preview = document.getElementById('imagePreview');
             var img = document.getElementById('previewImg');
-            if (url) {
-                img.src = url;
-                preview.classList.remove('d-none');
-            } else {
-                preview.classList.add('d-none');
+            function showUrlPreview() {
+                var url = urlInput.value.trim();
+                if (url && (!fileInput.files || !fileInput.files.length)) {
+                    img.src = url;
+                    preview.classList.remove('d-none');
+                } else if (!fileInput.files || !fileInput.files.length) {
+                    preview.classList.add('d-none');
+                }
             }
-        });
+            urlInput.addEventListener('input', showUrlPreview);
+            fileInput.addEventListener('change', function () {
+                if (this.files && this.files[0]) {
+                    img.src = URL.createObjectURL(this.files[0]);
+                    preview.classList.remove('d-none');
+                } else {
+                    showUrlPreview();
+                }
+            });
+        })();
     </script>
 }

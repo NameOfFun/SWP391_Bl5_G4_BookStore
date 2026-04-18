@@ -1,0 +1,93 @@
+/* Cửa hàng & trang danh mục — bổ sung cho template LIBRARIA */
+.book-category-dark {
+  background: linear-gradient(180deg, #161616 0%, #0d0d0d 100%);
+  color: #eaeaea;
+  padding: 22px 24px 18px;
+  margin-bottom: 28px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+
+.book-category-dark h3 {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1.35rem;
+  margin: 0 0 16px;
+  color: #fff;
+  letter-spacing: 0.04em;
+}
+
+.book-category-dark table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.book-category-dark thead th {
+  color: #b8b8b8;
+  font-weight: 600;
+  text-align: left;
+  padding: 10px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.book-category-dark tbody td {
+  padding: 12px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  vertical-align: middle;
+}
+
+.book-category-dark tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.book-category-dark a {
+  color: #ffb380;
+}
+
+.book-category-dark a:hover {
+  color: #ffc9a3;
+}
+
+.book-detail-shop .post-thumbnail img {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid #e8e8e8;
+}
+
+.book-detail-shop .shop-price {
+  font-size: 1.75rem;
+  color: #ff7236;
+  font-weight: 700;
+}
+
+.book-detail-shop .rating-static .fa-star,
+.book-detail-shop .rating-static .fa-star-half-o {
+  color: #ff7236;
+}
+
+.book-detail-shop .comment-box {
+  border: 1px solid #e8e8e8;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  background: #fafafa;
+}
+
+.book-detail-shop .comment-box .meta {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 6px;
+}
+
+.bookshop-grid-cover img {
+  width: 100%;
+  height: 280px;
+  object-fit: cover;
+  display: block;
+}
+
+@media (max-width: 767px) {
+  .bookshop-grid-cover img {
+    height: 220px;
+  }
+}

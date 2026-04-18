@@ -1,7 +1,8 @@
 @model IReadOnlyList<BookStore.Dtos.Common.BookDto>
 @{
-    ViewData["Title"] = "Quản lý sách";
-    ViewData["BreadcrumbParent"] = "Quản lý sách";
+    var canManageBooks = User.IsInRole("Admin") || User.IsInRole("Staff") || User.IsInRole("Manager");
+    ViewData["Title"] = canManageBooks ? "Quản lý sách" : "Sách";
+    ViewData["BreadcrumbParent"] = canManageBooks ? "Quản lý sách" : "Sách";
     ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "Book");
     var authors = Model.Where(b => !string.IsNullOrEmpty(b.AuthorName)).Select(b => b.AuthorName!).Distinct().OrderBy(a => a).ToList();
     var categories = Model.Where(b => !string.IsNullOrEmpty(b.CategoryName)).Select(b => b.CategoryName!).Distinct().OrderBy(c => c).ToList();
@@ -250,10 +251,18 @@
 }
 
 <div class="book-management-header">
-    <h4>Quản lý sách</h4>
-    <a asp-action="Create" class="btn btn-primary btn-add-new">
-        <i class="bi bi-plus-lg"></i> Thêm mới
-    </a>
+    <h4>@(canManageBooks ? "Quản lý sách" : "Danh mục sách")</h4>
+    @if (canManageBooks)
+    {
+        <div class="d-flex gap-2 align-items-center">
+            <a asp-action="Shop" class="btn btn-outline-primary btn-sm" style="border-radius:8px">
+                <i class="bi bi-shop"></i> Xem cửa hàng
+            </a>
+            <a asp-action="Create" class="btn btn-primary btn-add-new">
+                <i class="bi bi-plus-lg"></i> Thêm mới
+            </a>
+        </div>
+    }
 </div>
 
 <div class="card border-0 shadow-sm mb-3" style="border-radius:10px">
@@ -435,20 +444,23 @@
                                class="btn-action btn-view" title="Chi tiết">
                                 <i class="bi bi-eye"></i>
                             </a>
-                            <a asp-action="Edit" asp-route-id="@book.BookId"
-                               class="btn-action btn-edit" title="Sửa">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <form asp-action="ChangeStatus" asp-route-id="@book.BookId"
-                                  method="post" class="d-inline"
-                                  onsubmit="return confirm('@(book.IsActive ? "Vô hiệu hóa sách này?" : "Kích hoạt sách này?")')">
-                                @Html.AntiForgeryToken()
-                                <button type="submit"
-                                        class="btn-action @(book.IsActive ? "btn-deactivate" : "btn-activate")"
-                                        title="@(book.IsActive ? "Deactive" : "Active")">
-                                    <i class="bi @(book.IsActive ? "bi-toggle-on" : "bi-toggle-off")"></i>
-                                </button>
-                            </form>
+                            @if (canManageBooks)
+                            {
+                                <a asp-action="Edit" asp-route-id="@book.BookId"
+                                   class="btn-action btn-edit" title="Sửa">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form asp-action="ChangeStatus" asp-route-id="@book.BookId"
+                                      method="post" class="d-inline"
+                                      onsubmit="return confirm('@(book.IsActive ? "Vô hiệu hóa sách này?" : "Kích hoạt sách này?")')">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit"
+                                            class="btn-action @(book.IsActive ? "btn-deactivate" : "btn-activate")"
+                                            title="@(book.IsActive ? "Deactive" : "Active")">
+                                        <i class="bi @(book.IsActive ? "bi-toggle-on" : "bi-toggle-off")"></i>
+                                    </button>
+                                </form>
+                            }
                         </div>
                     </td>
                 </tr>

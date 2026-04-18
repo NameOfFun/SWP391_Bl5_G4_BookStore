@@ -253,52 +253,33 @@
             </a>
         </div>
 
-        <!-- Quản Lý Sách -->
-        <div class="nav-item-group">
-            <button class="nav-link-item @(ctrl == "Book" || ctrl == "Category" || ctrl == "BookTag" ? "active" : "")"
-                    onclick="toggleSubmenu('submenu-book', this)">
-                <i class="bi bi-journal-bookmark nav-icon"></i>
-                <span class="nav-label">Quản Lý Sách</span>
-                <i class="bi bi-chevron-down nav-chevron"></i>
-            </button>
-            <div class="nav-submenu @(ctrl == "Book" || ctrl == "Category" || ctrl == "BookTag" ? "open" : "")" id="submenu-book">
-                <a class="nav-link-item @(ctrl == "Book" ? "active" : "")"
-                   asp-controller="Book" asp-action="Index">
-                    <span class="nav-label">Danh sách sách</span>
-                </a>
-                <a class="nav-link-item @(ctrl == "Category" ? "active" : "")"
-                   asp-controller="Category" asp-action="Index">
-                    <span class="nav-label">Danh mục sách</span>
-                </a>
-                <a class="nav-link-item @(ctrl == "BookTag" ? "active" : "")"
-                   asp-controller="BookTag" asp-action="Index">
-                    <span class="nav-label">Tag sách</span>
-                </a>
+        @if (User.IsInRole("Admin") || User.IsInRole("Manager") || User.IsInRole("Staff"))
+        {
+            <!-- Quản Lý Sách — trang quản trị tại /Book -->
+            <div class="nav-item-group">
+                <button class="nav-link-item @(ctrl == "Book" || ctrl == "Category" ? "active" : "")"
+                        onclick="toggleSubmenu('submenu-book', this)">
+                    <i class="bi bi-journal-bookmark nav-icon"></i>
+                    <span class="nav-label">Quản Lý Sách</span>
+                    <i class="bi bi-chevron-down nav-chevron"></i>
+                </button>
+                <div class="nav-submenu @(ctrl == "Book" || ctrl == "Category" ? "open" : "")" id="submenu-book">
+                    <a class="nav-link-item @(ctrl == "Book" && (action == "Index" || string.IsNullOrEmpty(action)) ? "active" : "")"
+                       asp-controller="Book" asp-action="Index">
+                        <span class="nav-label">Quản lý sách</span>
+                        <span class="nav-label" style="font-size:0.72rem;opacity:0.65;display:block;margin-top:2px">/Book</span>
+                    </a>
+                    <a class="nav-link-item @(ctrl == "Category" ? "active" : "")"
+                       asp-controller="Category" asp-action="Index">
+                        <span class="nav-label">Danh mục sách</span>
+                    </a>
+                </div>
             </div>
-        </div>
+        }
 
         <!-- Quản Lý Người Dùng -->
         @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
         {
-            <div class="nav-item-group">
-                <button class="nav-link-item @(ctrl == "Shipper" ? "active" : "")"
-                        onclick="toggleSubmenu('submenu-shipper', this)">
-                    <i class="bi bi-truck nav-icon"></i>
-                    <span class="nav-label">Shipper</span>
-                    <i class="bi bi-chevron-down nav-chevron"></i>
-                </button>
-                <div class="nav-submenu @(ctrl == "Shipper" ? "open" : "")" id="submenu-shipper">
-                    <a class="nav-link-item @(ctrl == "Shipper" && action == "Dashboard" ? "active" : "")"
-                       asp-controller="Shipper" asp-action="Dashboard">
-                        <span class="nav-label">Dashboard</span>
-                    </a>
-                    <a class="nav-link-item @(ctrl == "Shipper" && action == "AssignedOrders" ? "active" : "")"
-                       asp-controller="Shipper" asp-action="AssignedOrders">
-                        <span class="nav-label">Đơn được giao</span>
-                    </a>
-                </div>
-            </div>
-
             <div class="nav-item-group">
                 <button class="nav-link-item @(ctrl == "User" ? "active" : "")"
                         onclick="toggleSubmenu('submenu-user', this)">

@@ -1,7 +1,11 @@
 using BookStore.Dtos.Common;
+using BookStore.Helpers;
 using BookStore.Models;
 using BookStore.Service.Interfaces;
+using BookStore.ViewModels;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -9,39 +13,112 @@ using System.Security.Claims;
 
 namespace BookStore.Controllers
 {
-    //[Authorize(Roles = "Admin,Staff,Manager")]
-    [Authorize(Roles = "Customer")]
     public class BookController : Controller
     {
         private readonly IBookService _bookService;
         private readonly BookStoreDbContext _context;
+        private readonly IWebHostEnvironment _env;
 
-        public BookController(IBookService bookService, BookStoreDbContext context)
+        public BookController(IBookService bookService, BookStoreDbContext context, IWebHostEnvironment env)
         {
             _bookService = bookService;
             _context = context;
+            _env = env;
         }
 
-        // GET: /Book
+        // GET: /Book — chỉ quản trị; khách chuyển sang Shop
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
-            ViewData["Title"] = "Danh Sách Sách";
-            ViewData["BreadcrumbParent"] = "Quản Lý Sách";
-            return View(await _bookService.GetAllAsync());
+            if (User.IsInRole("Admin") || User.IsInRole("Staff") || User.IsInRole("Manager"))
+                return View(await _bookService.GetAllAsync());
+            return RedirectToAction(nameof(Shop));
+        }
+
+        /// <summary>Cửa hàng — danh sách sách (template LIBRARIA list/grid).</summary>
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> Shop(string? q, int? categoryId, string view = "list", string order = "newest")
+        {
+            ViewData["Title"] = "Danh sách sách";
+            ViewData["LibrariaInnerHeader"] = true;
+
+            var all = await _bookService.GetAllAsync();
+            IEnumerable<BookDto> query = all.Where(b => b.IsActive);
+
+            if (categoryId.HasValue)
+                query = query.Where(b => b.CategoryId == categoryId);
+            if (!string.IsNullOrWhiteSpace(q))
+                query = query.Where(b => b.Title.Contains(q.Trim(), StringComparison.OrdinalIgnoreCase));
+
+            query = order switch
+            {
+                "price_asc" => query.OrderBy(b => b.PromotionalPrice ?? b.Price),
+                "price_desc" => query.OrderByDescending(b => b.PromotionalPrice ?? b.Price),
+                "title" => query.OrderBy(b => b.Title),
+                _ => query.OrderByDescending(b => b.CreatedAt ?? DateTime.MinValue)
+            };
+
+            var list = query.ToList();
+            var catList = await _context.Categories.Where(c => c.IsActive).OrderBy(c => c.Name).ToListAsync();
+            var activeAll = all.Where(b => b.IsActive).ToList();
+            ViewBag.Categories = catList;
+            ViewBag.CategoryCounts = catList.ToDictionary(c => c.CategoryId, c => activeAll.Count(b => b.CategoryId == c.CategoryId));
+            ViewBag.TotalActiveCount = activeAll.Count;
+            ViewBag.CategoryId = categoryId;
+            ViewBag.Search = q;
+            ViewBag.ViewMode = string.Equals(view, "grid", StringComparison.OrdinalIgnoreCase) ? "grid" : "list";
+            ViewBag.Order = order;
+            ViewBag.TotalCount = list.Count;
+            return View(list);
+        }
+
+        /// <summary>Bảng sách theo từng danh mục (giao diện tối, nhiều nhóm).</summary>
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> Categories()
+        {
+            ViewData["Title"] = "Sách theo danh mục";
+            ViewData["LibrariaInnerHeader"] = true;
+
+            var all = await _bookService.GetAllAsync();
+            var active = all.Where(b => b.IsActive).ToList();
+            var cats = await _context.Categories.Where(c => c.IsActive).OrderBy(c => c.Name).ToListAsync();
+
+            var groups = cats
+                .Select(c => new CategoryBooksGroup
+                {
+                    CategoryName = c.Name ?? "",
+                    Books = active.Where(b => b.CategoryId == c.CategoryId).OrderBy(b => b.Title).ToList()
+                })
+                .Where(g => g.Books.Count > 0)
+                .ToList();
+
+            return View(groups);
         }
 
         // GET: /Book/Details/5
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> Details(int id)
         {
             var book = await _bookService.GetByIdAsync(id);
             if (book == null) return NotFound();
+
+            var canManage = User.IsInRole("Admin") || User.IsInRole("Staff") || User.IsInRole("Manager");
+            if (!book.IsActive && !canManage)
+                return NotFound();
+
+            ViewData["Title"] = book.Title;
+            ViewData["LibrariaInnerHeader"] = true;
+            ViewBag.CoverUrl = BookCoverHelper.ResolveCoverPath(_env, book.BookId, book.ImageUrl);
             return View(book);
         }
 
         // GET: /Book/Create
         [HttpGet]
+        [Authorize(Roles = "Admin,Staff,Manager")]
         public async Task<IActionResult> Create()
         {
             await PopulateDropdownsAsync();
@@ -50,7 +127,9 @@ namespace BookStore.Controllers
 
         // POST: /Book/Create
         [HttpPost, ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(BookDto dto)
+        [Authorize(Roles = "Admin,Staff,Manager")]
+        [RequestSizeLimit(6 * 1024 * 1024)]
+        public async Task<IActionResult> Create(BookDto dto, IFormFile? coverImage)
         {
             if (!ModelState.IsValid)
             {
@@ -61,7 +140,18 @@ namespace BookStore.Controllers
             try
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-                await _bookService.CreateAsync(dto, userId);
+                if (coverImage != null && coverImage.Length > 0)
+                    dto.ImageUrl = null;
+
+                var created = await _bookService.CreateAsync(dto, userId);
+
+                if (coverImage != null && coverImage.Length > 0)
+                {
+                    var path = await BookCoverHelper.SaveUploadedCoverAsync(_env, created.BookId, coverImage);
+                    created.ImageUrl = path;
+                    await _bookService.UpdateAsync(created.BookId, created, userId);
+                }
+
                 TempData["Success"] = "Thêm sách thành công";
                 return RedirectToAction(nameof(Index));
             }
@@ -75,6 +165,7 @@ namespace BookStore.Controllers
 
         // GET: /Book/Edit/5
         [HttpGet]
+        [Authorize(Roles = "Admin,Staff,Manager")]
         public async Task<IActionResult> Edit(int id)
         {
             var book = await _bookService.GetByIdAsync(id);
@@ -86,7 +177,9 @@ namespace BookStore.Controllers
 
         // POST: /Book/Edit/5
         [HttpPost, ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, BookDto dto)
+        [Authorize(Roles = "Admin,Staff,Manager")]
+        [RequestSizeLimit(6 * 1024 * 1024)]
+        public async Task<IActionResult> Edit(int id, BookDto dto, IFormFile? coverImage)
         {
             if (!ModelState.IsValid)
             {
@@ -97,6 +190,9 @@ namespace BookStore.Controllers
             try
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+                if (coverImage != null && coverImage.Length > 0)
+                    dto.ImageUrl = await BookCoverHelper.SaveUploadedCoverAsync(_env, id, coverImage);
+
                 await _bookService.UpdateAsync(id, dto, userId);
                 TempData["Success"] = "Cập nhật sách thành công";
                 return RedirectToAction(nameof(Index));
@@ -115,6 +211,7 @@ namespace BookStore.Controllers
 
         // POST: /Book/ChangeStatus/5
         [HttpPost, ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,Staff,Manager")]
         public async Task<IActionResult> ChangeStatus(int id)
         {
             try
@@ -139,12 +236,6 @@ namespace BookStore.Controllers
             ViewBag.Categories = new SelectList(
                 await _context.Categories.Where(c => c.IsActive).OrderBy(c => c.Name).ToListAsync(),
                 "CategoryId", "Name", selectedCategory);
-
-            ViewBag.AllTags = await _context.BookTags
-                .Where(t => t.IsActive)
-                .OrderBy(t => t.Name)
-                .Select(t => new { t.TagId, t.Name })
-                .ToListAsync();
         }
     }
 }
