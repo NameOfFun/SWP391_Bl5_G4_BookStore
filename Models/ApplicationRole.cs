@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 
 namespace BookStore.Models
@@ -10,7 +10,7 @@ namespace BookStore.Models
         public DateTime CreatedDate { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public bool IsSystemRole { get; set; } = false;
-        public bool Status { get; set; } = false;
+        public bool Status { get; set; } = true; // true = Active
         //public RoleStatus Status { get; set; } = RoleStatus.Active;
     }
 

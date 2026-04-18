@@ -11,32 +11,32 @@ public class AuthService : IAuthService
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
-    
-   public AuthService(
-       UserManager<ApplicationUser> userManager,
-       SignInManager<ApplicationUser> signInManager)
+    private readonly RoleManager<ApplicationRole> _roleManager;
+
+    public AuthService(
+        UserManager<ApplicationUser> userManager,
+        SignInManager<ApplicationUser> signInManager,
+        RoleManager<ApplicationRole> roleManager)
     {
         _userManager = userManager;
         _signInManager = signInManager;
+        _roleManager = roleManager;
     }
 
     public async Task<LoginResultDto> LoginAsync(LoginDto model)
     {
-
-        //Check duplicate
-       var user = await _userManager.FindByEmailAsync(model.Email);
-        if(user == null)
+        var user = await _userManager.FindByEmailAsync(model.Email);
+        if (user == null)
         {
-            return new LoginResultDto{ Succeeded = false, ErrorMessage = "Email hoặc mật khẩu không đúng." };
+            return new LoginResultDto { Succeeded = false, ErrorMessage = "Email hoặc mật khẩu không đúng." };
         }
-        
-        //Cho phep Login
+
         var result = await _signInManager.PasswordSignInAsync(
             user,
             model.Password,
             model.RememberMe,
             lockoutOnFailure: true);
-        
+
         if (result.IsLockedOut)
         {
             return new LoginResultDto { Succeeded = false, ErrorMessage = "Tài khoản đã bị khóa do đăng nhập sai nhiều lần..." };
@@ -50,12 +50,23 @@ public class AuthService : IAuthService
             return new LoginResultDto { Succeeded = false, ErrorMessage = "Email hoặc mật khẩu không đúng." };
         }
 
+        // Check if user's role is deactivated
+        var userRoles = await _userManager.GetRolesAsync(user);
+        if (userRoles.Count > 0)
+        {
+            var role = await _roleManager.FindByNameAsync(userRoles[0]);
+            if (role is ApplicationRole appRole && !appRole.Status)
+            {
+                await _signInManager.SignOutAsync();
+                return new LoginResultDto { Succeeded = false, ErrorMessage = "Vai trò tài khoản đã bị vô hiệu hóa." };
+            }
+        }
+
         return new LoginResultDto
         {
             Succeeded = true,
             ReturnUrl = model.ReturnUrl ?? "/",
         };
-
     }
 
     public async Task<RegisterResultDto> RegisterAsync(RegisterDto model)

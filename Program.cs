@@ -16,7 +16,7 @@ namespace BookStore
             builder.Services.AddDbContext<BookStoreDbContext>(opt =>
                 opt.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
 
-            builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+            builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
                 {
                     options.Password.RequireDigit = true;
                     options.Password.RequireLowercase = true;
@@ -36,6 +36,7 @@ namespace BookStore
             builder.Services.AddScoped<IBookTagService, BookTagService>();
             builder.Services.AddScoped<IShipperService, ShipperService>();
             builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IRoleService, RoleService>();
 
             builder.Services.AddControllersWithViews();
 
@@ -66,140 +67,77 @@ namespace BookStore
             using (var scope = app.Services.CreateScope())
             {
                 var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-                var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-
-                string[] roleNames = ["Customer", "Admin", "Staff", "Manager", "Shipper"];
-
-                foreach (var roleName in roleNames)
-                {
-                    if (!roleManager.RoleExistsAsync(roleName).GetAwaiter().GetResult())
-                        roleManager.CreateAsync(new IdentityRole(roleName)).GetAwaiter().GetResult();
-                }
-
-                SeedUsers(userManager, roleManager);
+                var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
+                SeedRoles(roleManager);
+                SeedUsers(userManager);
             }
 
             app.Run();
         }
 
-        private static void SeedUsers(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
+        private static void SeedRoles(RoleManager<ApplicationRole> roleManager)
         {
-            // Admin
-            var adminEmail = "admin@test.com";
-            var adminPassword = "Admin@123";
-            // Manager
-            var managerEmail = "manager@bookstore.com";
-            var managerPassword = "Manager@123";
-            // Staff
-            var staffEmail = "staff@bookstore.com";
-            var staffPassword = "Staff@123";
-            // Customer
-            var customerEmail = "customer@bookstore.com";
-            var customerPassword = "Customer@123";
-            // Shipper
-            var shipperEmail = "shipper@bookstore.com";
-            var shipperPassword = "Shipper@123";
+            string[] roleNames = ["Customer", "Admin", "Staff", "Manager", "Shipper"];
 
-            if (userManager.FindByEmailAsync(adminEmail).GetAwaiter().GetResult() == null)
+            foreach (var roleName in roleNames)
             {
-                var adminUser = new ApplicationUser
+                if (!roleManager.RoleExistsAsync(roleName).GetAwaiter().GetResult())
                 {
-                    UserName = "admin",
-                    Email = adminEmail,
-                    EmailConfirmed = true,
-                    LockoutEnabled = false,
-                    Name = "Administrator",
-                    Status = true,
-                    CreatedAt = DateTime.Now
-                };
-
-                var result = userManager.CreateAsync(adminUser, adminPassword).GetAwaiter().GetResult();
-                if (result.Succeeded)
+                    roleManager.CreateAsync(new ApplicationRole
+                    {
+                        Name = roleName,
+                        IsSystemRole = roleName == "Admin",
+                        Status = true,
+                        CreatedDate = DateTime.Now
+                    }).GetAwaiter().GetResult();
+                }
+                else
                 {
-                    userManager.AddToRoleAsync(adminUser, "Admin").GetAwaiter().GetResult();
+                    // Ensure existing roles (created before migration) have correct values
+                    var existing = roleManager.FindByNameAsync(roleName).GetAwaiter().GetResult();
+                    if (existing != null)
+                    {
+                        existing.Status = true;
+                        existing.IsSystemRole = roleName == "Admin";
+                        if (existing.CreatedDate == default)
+                            existing.CreatedDate = DateTime.Now;
+                        roleManager.UpdateAsync(existing).GetAwaiter().GetResult();
+                    }
                 }
             }
+        }
 
-            if (userManager.FindByEmailAsync(managerEmail).GetAwaiter().GetResult() == null)
+        private static void SeedUsers(UserManager<ApplicationUser> userManager)
+        {
+            var seedUsers = new[]
             {
-                var managerUser = new ApplicationUser
+                (UserName: "admin",    Email: "admin@test.com",          Name: "Administrator", Password: "Admin@123",    Role: "Admin"),
+                (UserName: "manager",  Email: "manager@test.com",   Name: "Manager",       Password: "Manager@123",  Role: "Manager"),
+                (UserName: "staff",    Email: "staff@test.com",     Name: "Staff",         Password: "Staff@123",    Role: "Staff"),
+                (UserName: "customer", Email: "customer@test.com",  Name: "Customer",      Password: "Customer@123", Role: "Customer"),
+                (UserName: "shipper",  Email: "shipper@test.com",   Name: "Shipper",       Password: "Shipper@123",  Role: "Shipper"),
+            };
+
+            foreach (var seed in seedUsers)
+            {
+                if (userManager.FindByEmailAsync(seed.Email).GetAwaiter().GetResult() != null) continue;
+
+                var user = new ApplicationUser
                 {
-                    UserName = "manager",
-                    Email = managerEmail,
+                    UserName = seed.UserName,
+                    Email = seed.Email,
                     EmailConfirmed = true,
                     LockoutEnabled = false,
-                    Name = "Manager",
+                    Name = seed.Name,
                     Status = true,
-                    CreatedAt = DateTime.Now
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
                 };
 
-                var result = userManager.CreateAsync(managerUser, managerPassword).GetAwaiter().GetResult();
+                var result = userManager.CreateAsync(user, seed.Password).GetAwaiter().GetResult();
                 if (result.Succeeded)
-                {
-                    userManager.AddToRoleAsync(managerUser, "Manager").GetAwaiter().GetResult();
-                }
+                    userManager.AddToRoleAsync(user, seed.Role).GetAwaiter().GetResult();
             }
-
-            if (userManager.FindByEmailAsync(staffEmail).GetAwaiter().GetResult() == null)
-            {
-                var staffUser = new ApplicationUser
-                {
-                    UserName = "staff",
-                    Email = staffEmail,
-                    EmailConfirmed = true,
-                    LockoutEnabled = false,
-                    Name = "Staff",
-                    Status = true,
-                    CreatedAt = DateTime.Now
-                };
-
-                var result = userManager.CreateAsync(staffUser, staffPassword).GetAwaiter().GetResult();
-                if (result.Succeeded)
-                {
-                    userManager.AddToRoleAsync(staffUser, "Staff").GetAwaiter().GetResult();
-                }
-            }
-
-            if (userManager.FindByEmailAsync(customerEmail).GetAwaiter().GetResult() == null)
-            {
-                var customerUser = new ApplicationUser
-                {
-                    UserName = "customer",
-                    Email = customerEmail,
-                    EmailConfirmed = true,
-                    LockoutEnabled = false,
-                    Name = "Customer",
-                    Status = true,
-                    CreatedAt = DateTime.Now
-                };
-
-                var result = userManager.CreateAsync(customerUser, customerPassword).GetAwaiter().GetResult();
-                if (result.Succeeded)
-                {
-                    userManager.AddToRoleAsync(customerUser, "Customer").GetAwaiter().GetResult();
-                }
-            }
-
-            if (userManager.FindByEmailAsync(shipperEmail).GetAwaiter().GetResult() == null)
-            {
-                var shipperUser = new ApplicationUser
-                {
-                    UserName = "shipper",
-                    Email = shipperEmail,
-                    EmailConfirmed = true,
-                    LockoutEnabled = false,
-                    Name = "Shipper",
-                    Status = true,
-                    CreatedAt = DateTime.Now
-                };
-
-                var result = userManager.CreateAsync(shipperUser, shipperPassword).GetAwaiter().GetResult();
-                if (result.Succeeded)
-                {
-                    userManager.AddToRoleAsync(shipperUser, "Shipper").GetAwaiter().GetResult();
-                }
-            }
-
         }
     }
 }

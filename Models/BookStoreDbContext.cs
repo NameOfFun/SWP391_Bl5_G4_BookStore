@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace BookStore.Models;
 
-public partial class BookStoreDbContext : IdentityDbContext<IdentityUser>
+public partial class BookStoreDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>
 {
     public BookStoreDbContext()
     {
@@ -203,7 +203,7 @@ public partial class BookStoreDbContext : IdentityDbContext<IdentityUser>
             entity.Property(e => e.PaymentMethod).HasMaxLength(50);
             entity.Property(e => e.PaymentStatus).HasMaxLength(50);
             entity.Property(e => e.DeliveryNote).HasMaxLength(500);
-            entity.HasOne<IdentityUser>().WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne<ApplicationUser>().WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Restrict);
             entity.HasOne(e => e.Shipper).WithMany().HasForeignKey(e => e.ShipperId).IsRequired(false).OnDelete(DeleteBehavior.SetNull);
             entity.HasOne(e => e.Voucher).WithMany(v => v.Orders).HasForeignKey(e => e.VoucherId).OnDelete(DeleteBehavior.SetNull);
         });
@@ -365,6 +365,14 @@ public partial class BookStoreDbContext : IdentityDbContext<IdentityUser>
         {
             entity.Property(e => e.Name).HasMaxLength(100);
             entity.Property(e => e.Status).HasDefaultValue(true);
+        });
+
+        modelBuilder.Entity<ApplicationRole>(entity =>
+        {
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.Status).HasDefaultValue(true);
+            entity.Property(e => e.CreatedDate).HasColumnType("datetime").HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
         });
 
         OnModelCreatingPartial(modelBuilder);
