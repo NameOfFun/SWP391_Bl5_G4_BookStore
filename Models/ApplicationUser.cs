@@ -11,6 +11,14 @@ namespace BookStore.Models
         public string? Address { get; set; }
         public string? Avatar { get; set; }  
         public DateTime? CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
         public bool Status { get; set; } = true;
+        //public UserStatus Status { get; set; } = UserStatus.Active;
     }
+
+    //public enum UserStatus
+    //{
+    //    Active,
+    //    Inactive
+    //}
 }

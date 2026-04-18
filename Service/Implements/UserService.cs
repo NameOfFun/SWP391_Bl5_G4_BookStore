@@ -1,4 +1,4 @@
-using BookStore.Dtos.Admin;
+using BookStore.Dtos.Admin.User;
 using BookStore.Models;
 using BookStore.Service.Interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -10,9 +10,9 @@ namespace BookStore.Service.Implements;
 public class UserService : IUserService
 {
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly RoleManager<ApplicationRole> _roleManager;
 
-    public UserService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
+    public UserService(UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager)
     {
         _userManager = userManager;
         _roleManager = roleManager;
@@ -28,7 +28,7 @@ public class UserService : IUserService
             result.Add(new UserListDto
             {
                 Id = user.Id,
-                FullName = user.Name,
+                Name = user.Name ?? string.Empty,
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber,
                 IsActive = user.Status,
@@ -45,23 +45,34 @@ public class UserService : IUserService
             ?? throw new InvalidOperationException("Không tìm thấy người dùng.");
 
         var currentRoles = await _userManager.GetRolesAsync(user);
+
+        if (currentRoles.Contains("Admin"))
+            throw new InvalidOperationException("Không thể chỉnh sửa tài khoản Admin.");
+
         var availableRoles = await GetAvailableRolesAsync();
-        foreach (var item in availableRoles)
-            item.Selected = currentRoles.Contains(item.Value);
 
         return new EditUserDto
         {
             Id = user.Id,
-            FullName = user.Name,
+            FullName = user.Name ?? string.Empty,
             Email = user.Email ?? string.Empty,
             PhoneNumber = user.PhoneNumber,
             IsActive = user.Status,
-            SelectedRoles = currentRoles.ToList(),
+            SelectedRole = currentRoles.FirstOrDefault() ?? string.Empty,
             AvailableRoles = availableRoles
         };
     }
 
     public async Task<List<SelectListItem>> GetAvailableRolesAsync()
+    {
+        return await _roleManager.Roles
+            .Where(r => r.Name != "Admin" && r.Status)
+            .OrderBy(r => r.Name)
+            .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
+            .ToListAsync();
+    }
+
+    public async Task<List<SelectListItem>> GetAllRolesForFilterAsync()
     {
         return await _roleManager.Roles
             .OrderBy(r => r.Name)
@@ -74,14 +85,16 @@ public class UserService : IUserService
         if (await _userManager.FindByEmailAsync(dto.Email) != null)
             throw new ArgumentException("Email này đã được sử dụng.");
 
-        if (dto.SelectedRoles == null || dto.SelectedRoles.Count == 0)
-            throw new ArgumentException("Phải chọn ít nhất một vai trò.");
+        var role = (dto.SelectedRole ?? string.Empty).Trim();
 
-        foreach (var role in dto.SelectedRoles)
-        {
-            if (!await _roleManager.RoleExistsAsync(role))
-                throw new ArgumentException($"Vai trò '{role}' không tồn tại.");
-        }
+        if (string.IsNullOrEmpty(role))
+            throw new ArgumentException("Vui lòng chọn vai trò.");
+
+        if (role.Equals("Admin", StringComparison.OrdinalIgnoreCase))
+            throw new ArgumentException("Không thể gán vai trò Admin.");
+
+        if (!await _roleManager.RoleExistsAsync(role))
+            throw new ArgumentException($"Vai trò '{role}' không tồn tại.");
 
         var user = new ApplicationUser
         {
@@ -100,7 +113,7 @@ public class UserService : IUserService
             throw new ArgumentException(errors);
         }
 
-        await _userManager.AddToRolesAsync(user, dto.SelectedRoles);
+        await _userManager.AddToRoleAsync(user, role);
     }
 
     public async Task UpdateUserAsync(EditUserDto dto)
@@ -108,14 +121,20 @@ public class UserService : IUserService
         var user = await _userManager.FindByIdAsync(dto.Id)
             ?? throw new InvalidOperationException("Không tìm thấy người dùng.");
 
-        if (dto.SelectedRoles == null || dto.SelectedRoles.Count == 0)
-            throw new ArgumentException("Phải chọn ít nhất một vai trò.");
+        var currentRoles = await _userManager.GetRolesAsync(user);
+        if (currentRoles.Contains("Admin"))
+            throw new InvalidOperationException("Không thể chỉnh sửa tài khoản Admin.");
 
-        foreach (var role in dto.SelectedRoles)
-        {
-            if (!await _roleManager.RoleExistsAsync(role))
-                throw new ArgumentException($"Vai trò '{role}' không tồn tại.");
-        }
+        var newRole = (dto.SelectedRole ?? string.Empty).Trim();
+
+        if (string.IsNullOrEmpty(newRole))
+            throw new ArgumentException("Vui lòng chọn vai trò.");
+
+        if (newRole.Equals("Admin", StringComparison.OrdinalIgnoreCase))
+            throw new ArgumentException("Không thể gán vai trò Admin.");
+
+        if (!await _roleManager.RoleExistsAsync(newRole))
+            throw new ArgumentException($"Vai trò '{newRole}' không tồn tại.");
 
         // Check email uniqueness if changed
         if (!string.Equals(user.Email, dto.Email, StringComparison.OrdinalIgnoreCase))
@@ -150,19 +169,32 @@ public class UserService : IUserService
             throw new ArgumentException(errors);
         }
 
-        // Sync roles
-        var currentRoles = await _userManager.GetRolesAsync(user);
-        var toRemove = currentRoles.Except(dto.SelectedRoles).ToList();
-        var toAdd = dto.SelectedRoles.Except(currentRoles).ToList();
-
+        // Sync to single role
+        var toRemove = currentRoles.Except([newRole]).ToList();
         if (toRemove.Count > 0) await _userManager.RemoveFromRolesAsync(user, toRemove);
-        if (toAdd.Count > 0) await _userManager.AddToRolesAsync(user, toAdd);
+        if (!currentRoles.Contains(newRole)) await _userManager.AddToRoleAsync(user, newRole);
+
+        // Optional password reset
+        if (!string.IsNullOrWhiteSpace(dto.NewPassword))
+        {
+            await _userManager.RemovePasswordAsync(user);
+            var pwResult = await _userManager.AddPasswordAsync(user, dto.NewPassword);
+            if (!pwResult.Succeeded)
+            {
+                var errors = string.Join(" ", pwResult.Errors.Select(e => e.Description));
+                throw new ArgumentException(errors);
+            }
+        }
     }
 
     public async Task<(bool IsNowActive, string FullName)> ToggleUserActiveAsync(string id)
     {
         var user = await _userManager.FindByIdAsync(id)
             ?? throw new InvalidOperationException("Không tìm thấy người dùng.");
+
+        var roles = await _userManager.GetRolesAsync(user);
+        if (roles.Contains("Admin"))
+            throw new InvalidOperationException("Không thể thay đổi trạng thái tài khoản Admin.");
 
         if (user.Status)
         {
@@ -177,6 +209,6 @@ public class UserService : IUserService
         }
 
         await _userManager.UpdateAsync(user);
-        return (user.Status, user.Name);
+        return (user.Status, user.Name ?? "");
     }
 }

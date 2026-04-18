@@ -1,0 +1,56 @@
+@using BookStore.Dtos.Admin.Role
+@model CreateRoleDto
+@{
+    ViewData["Title"] = "Thêm vai trò mới";
+}
+
+<div class="container mt-4" style="max-width:600px">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Quản lý Vai trò</a></li>
+            <li class="breadcrumb-item active">Thêm mới</li>
+        </ol>
+    </nav>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-shield-plus me-2"></i>Thêm vai trò mới</h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3"></div>
+
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label asp-for="Name" class="form-label fw-semibold">
+                            Tên vai trò <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="Name" class="form-control" placeholder="Ví dụ: Accountant" />
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                        <small class="text-muted">Tên vai trò phải là duy nhất và không trùng với vai trò hiện có.</small>
+                    </div>
+
+                    <div class="col-12">
+                        <label asp-for="Description" class="form-label fw-semibold">Mô tả</label>
+                        <textarea asp-for="Description" class="form-control" rows="3"
+                                  placeholder="Mô tả chức năng của vai trò này..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-floppy me-1"></i> Lưu
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

@@ -1,4 +1,5 @@
-@model BookStore.Dtos.Admin.CreateUserDto
+@using BookStore.Dtos.Admin.User
+@model CreateUserDto
 @{
     ViewData["Title"] = "Thêm người dùng mới";
 }
@@ -60,23 +61,13 @@
                     </div>
 
                     <div class="col-12">
-                        <label class="form-label fw-semibold">
+                        <label asp-for="SelectedRole" class="form-label fw-semibold">
                             Vai trò <span class="text-danger">*</span>
                         </label>
-                        <div class="d-flex flex-wrap gap-3 mt-1">
-                            @for (int i = 0; i < Model.AvailableRoles.Count; i++)
-                            {
-                                var role = Model.AvailableRoles[i];
-                                var isChecked = Model.SelectedRoles.Contains(role.Value);
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox"
-                                           name="SelectedRoles" value="@role.Value"
-                                           id="role_@i" @(isChecked ? "checked" : "") />
-                                    <label class="form-check-label" for="role_@i">@role.Text</label>
-                                </div>
-                            }
-                        </div>
-                        <span asp-validation-for="SelectedRoles" class="text-danger small"></span>
+                        <select asp-for="SelectedRole" asp-items="Model.AvailableRoles" class="form-select">
+                            <option value="">-- Chọn vai trò --</option>
+                        </select>
+                        <span asp-validation-for="SelectedRole" class="text-danger small"></span>
                     </div>
                 </div>
 

@@ -1,5 +1,4 @@
 using System;
-using Microsoft.AspNetCore.Identity;
 
 namespace BookStore.Models;
 
@@ -19,5 +18,5 @@ public class Policy
 
     public virtual ApplicationUser? UpdatedBy { get; set; }
 
-    public virtual IdentityRole? Role { get; set; }
+    public virtual ApplicationRole? Role { get; set; }
 }

@@ -1,9 +1,11 @@
-@model IReadOnlyList<BookStore.Dtos.Admin.UserListDto>
+@using BookStore.Dtos.Admin.User
+@using Microsoft.AspNetCore.Mvc.Rendering
+@model IReadOnlyList<UserListDto>
 @{
     ViewData["Title"] = "Quản lý người dùng";
     ViewData["BreadcrumbParent"] = "Quản lý người dùng";
     ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "User");
-    var allRoles = Model.SelectMany(u => u.Roles).Distinct().OrderBy(r => r).ToList();
+    var allRoles = (ViewBag.AllRolesForFilter as List<SelectListItem>) ?? new List<SelectListItem>();
 }
 
 <style>
@@ -214,7 +216,7 @@
             <option value="">Filter theo vai trò</option>
             @foreach (var role in allRoles)
             {
-                <option value="@role.ToLower()">@role</option>
+                <option value="@role.Value?.ToLower()">@role.Text</option>
             }
         </select>
         <select class="form-select filter-select" id="filterStatus" onchange="applyFilters()">
@@ -244,13 +246,13 @@
             {
                 stt++;
                 <tr class="user-row"
-                    data-name="@user.FullName.ToLower()"
+                    data-name="@user.Name.ToLower()"
                     data-email="@(user.Email?.ToLower() ?? "")"
                     data-role="@user.RolesDisplay.ToLower()"
                     data-status="@(user.IsActive ? "active" : "inactive")">
                     <td class="row-stt">@stt</td>
                     <td>
-                        <span class="fw-semibold">@(string.IsNullOrEmpty(user.FullName) ? "—" : user.FullName)</span>
+                        <span class="fw-semibold">@(string.IsNullOrEmpty(user.Name) ? "—" : user.Name)</span>
                     </td>
                     <td>@(user.Email ?? "—")</td>
                     <td>@(user.PhoneNumber ?? "—")</td>
@@ -276,20 +278,29 @@
                     </td>
                     <td class="text-center">
                         <div class="d-flex gap-1 justify-content-center">
-                            <a asp-action="Edit" asp-route-id="@user.Id"
-                               class="btn-action btn-edit" title="Chỉnh sửa">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <form asp-action="ToggleActive" asp-route-id="@user.Id"
-                                  method="post" class="d-inline"
-                                  onsubmit="return confirm('@(user.IsActive ? "Vô hiệu hóa tài khoản này?" : "Kích hoạt tài khoản này?")')">
-                                @Html.AntiForgeryToken()
-                                <button type="submit"
-                                        class="btn-action @(user.IsActive ? "btn-deactivate" : "btn-activate")"
-                                        title="@(user.IsActive ? "Vô hiệu hóa" : "Kích hoạt")">
-                                    <i class="bi @(user.IsActive ? "bi-toggle-on" : "bi-toggle-off")"></i>
-                                </button>
-                            </form>
+                            @if (!user.Roles.Contains("Admin"))
+                            {
+                                <a asp-action="Edit" asp-route-id="@user.Id"
+                                   class="btn-action btn-edit" title="Chỉnh sửa">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form asp-action="ToggleActive" asp-route-id="@user.Id"
+                                      method="post" class="d-inline"
+                                      onsubmit="return confirm('@(user.IsActive ? "Vô hiệu hóa tài khoản này?" : "Kích hoạt tài khoản này?")')">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit"
+                                            class="btn-action @(user.IsActive ? "btn-deactivate" : "btn-activate")"
+                                            title="@(user.IsActive ? "Vô hiệu hóa" : "Kích hoạt")">
+                                        <i class="bi @(user.IsActive ? "bi-toggle-on" : "bi-toggle-off")"></i>
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <span class="text-muted small" title="Tài khoản Admin được bảo vệ">
+                                    <i class="bi bi-shield-lock"></i>
+                                </span>
+                            }
                         </div>
                     </td>
                 </tr>

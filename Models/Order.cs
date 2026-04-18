@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Identity;
 
 namespace BookStore.Models;
 
@@ -37,7 +36,7 @@ public class Order
     /// <summary>Ghi chú giao hàng từ khách hàng (ví dụ: "Gọi trước 30p", "Để ở bảo vệ").</summary>
     public string? DeliveryNote { get; set; }
 
-    public virtual IdentityUser? Shipper { get; set; }
+    public virtual ApplicationUser? Shipper { get; set; }
 
     public virtual Voucher? Voucher { get; set; }
 

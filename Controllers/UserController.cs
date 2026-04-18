@@ -1,4 +1,4 @@
-using BookStore.Dtos.Admin;
+using BookStore.Dtos.Admin.User;
 using BookStore.Service.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -6,7 +6,7 @@ using System.Security.Claims;
 
 namespace BookStore.Controllers;
 
-[Authorize(Roles = "Admin,Manager")]
+[Authorize(Roles = "Admin")]
 public class UserController : Controller
 {
     private readonly IUserService _userService;
@@ -27,6 +27,7 @@ public class UserController : Controller
             ViewData["Title"] = "Quản lý người dùng";
             ViewData["BreadcrumbParent"] = "Quản lý người dùng";
             ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "User");
+            ViewBag.AllRolesForFilter = await _userService.GetAllRolesForFilterAsync();
             return View(users);
         }
         catch (Exception ex)
@@ -92,9 +93,10 @@ public class UserController : Controller
             ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "User");
             return View(dto);
         }
-        catch (InvalidOperationException)
+        catch (InvalidOperationException ex)
         {
-            return NotFound();
+            TempData["Error"] = ex.Message;
+            return RedirectToAction(nameof(Index));
         }
     }
 
@@ -118,9 +120,10 @@ public class UserController : Controller
             TempData["Success"] = $"Cập nhật tài khoản \"{dto.FullName}\" thành công.";
             return RedirectToAction(nameof(Index));
         }
-        catch (InvalidOperationException)
+        catch (InvalidOperationException ex)
         {
-            return NotFound();
+            TempData["Error"] = ex.Message;
+            return RedirectToAction(nameof(Index));
         }
         catch (ArgumentException ex)
         {
@@ -151,9 +154,9 @@ public class UserController : Controller
                 ? $"Tài khoản \"{fullName}\" đã được kích hoạt."
                 : $"Tài khoản \"{fullName}\" đã bị vô hiệu hóa.";
         }
-        catch (InvalidOperationException)
+        catch (InvalidOperationException ex)
         {
-            TempData["Error"] = "Không tìm thấy người dùng.";
+            TempData["Error"] = ex.Message;
         }
 
         return RedirectToAction(nameof(Index));

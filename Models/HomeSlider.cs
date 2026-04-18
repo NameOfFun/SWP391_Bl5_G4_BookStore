@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Identity;
-
 namespace BookStore.Models;
 
 public class HomeSlider
@@ -24,5 +22,5 @@ public class HomeSlider
 
     public virtual ApplicationUser? CreatedBy { get; set; }
 
-    public virtual IdentityRole? Role { get; set; }
+    public virtual ApplicationRole? Role { get; set; }
 }
