@@ -69,13 +69,9 @@ namespace BookStore
             {
                 var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
                 var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
+                var db = scope.ServiceProvider.GetRequiredService<BookStoreDbContext>();
                 SeedRoles(roleManager);
                 SeedUsers(userManager);
-            }
-
-                SeedUsers(userManager, roleManager);
-
-                var db = scope.ServiceProvider.GetRequiredService<BookStoreDbContext>();
                 SeedData.SeedCatalog(db);
             }
 
