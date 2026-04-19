@@ -175,7 +175,11 @@
         text-decoration: none; white-space: nowrap;
     }
     .ao-btn:hover { opacity: .85; transform: scale(1.03); }
-    .ao-btn.view    { background: #f0f7ff; color: var(--ao-blue); }
+    .ao-btn.view    { 
+        width: 36px; height: 36px; border-radius: 10px;
+        background: #f0f7ff; color: var(--ao-blue); 
+        padding: 0; justify-content: center;
+    }
     .ao-btn.accept  { background: linear-gradient(135deg,#52c41a,#73d13d); color:#fff; }
     .ao-btn.reject  { background: #fff1f0; color: var(--ao-red); border: 1px solid #ffa39e; }
     .ao-btn.disabled-btn { background: #f5f5f5; color: #bfbfbf; cursor: not-allowed; pointer-events:none; }
@@ -386,7 +390,7 @@
                                asp-route-id="@order.OrderId"
                                class="ao-btn view"
                                title="Xem chi tiết đơn #@order.OrderId">
-                                <i class="bi bi-eye"></i>
+                                <i class="bi bi-arrow-right-short" style="font-size: 1.4rem"></i>
                             </a>
 
                             @if (isAssigned)

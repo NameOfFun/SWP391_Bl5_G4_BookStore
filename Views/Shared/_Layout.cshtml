@@ -307,6 +307,33 @@
             </div>
         }
 
+        <!-- Quản Lý Giao Hàng (Shipper) -->
+        @if (User.IsInRole("Shipper"))
+        {
+            <div class="nav-item-group">
+                <button class="nav-link-item @(ctrl == "Shipper" ? "active" : "")"
+                        onclick="toggleSubmenu('submenu-shipper', this)">
+                    <i class="bi bi-truck nav-icon"></i>
+                    <span class="nav-label">Quản Lý Giao Hàng</span>
+                    <i class="bi bi-chevron-down nav-chevron"></i>
+                </button>
+                <div class="nav-submenu @(ctrl == "Shipper" ? "open" : "")" id="submenu-shipper">
+                    <a class="nav-link-item @(ctrl == "Shipper" && action == "Dashboard" ? "active" : "")"
+                       asp-controller="Shipper" asp-action="Dashboard">
+                        <span class="nav-label">Bảng điều khiển</span>
+                    </a>
+                    <a class="nav-link-item @(ctrl == "Shipper" && action == "AssignedOrders" ? "active" : "")"
+                       asp-controller="Shipper" asp-action="AssignedOrders">
+                        <span class="nav-label">Đơn được giao</span>
+                    </a>
+                    <a class="nav-link-item @(ctrl == "Shipper" && action == "DeliveryHistory" ? "active" : "")"
+                       asp-controller="Shipper" asp-action="DeliveryHistory">
+                        <span class="nav-label">Lịch sử giao hàng</span>
+                    </a>
+                </div>
+            </div>
+        }
+
         <!-- Cấu Hình Chung -->
         <div class="nav-item-group">
             <a class="nav-link-item" href="#">
@@ -363,6 +390,7 @@
                         "Manager" => "Quản lý",
                         "Staff" => "Nhân viên",
                         "Customer" => "Khách hàng",
+                        "Shipper" => "Nhân viên giao hàng",
                         _ => roleLabel
                     };
                 <div class="dropdown">

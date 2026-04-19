@@ -69,11 +69,14 @@
     }
     .dh-badge.success { background: #f6ffed; color: #389e0d; border: 1px solid #b7eb8f; }
     .dh-badge.failed  { background: #fff1f0; color: #cf1322; border: 1px solid #ffa39e; }
-
+    
+    /* Actions */
     .dh-btn-view {
-        padding: 6px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 600;
-        text-decoration: none; background: #f0f7ff; color: var(--dh-blue);
-        transition: all 0.2s;
+        width: 36px; height: 36px; border-radius: 10px;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: #f0f7ff; color: var(--dh-blue); text-decoration: none;
+        transition: background .2s, color .2s;
+        border: none;
     }
     .dh-btn-view:hover { background: var(--dh-blue); color: #fff; }
 
@@ -151,7 +154,9 @@
                             </td>
                             <td style="text-align: center">
                                 <a asp-controller="Shipper" asp-action="DeliveryDetail" asp-route-id="@order.OrderId" 
-                                   class="dh-btn-view">Chi tiết</a>
+                                   class="dh-btn-view" title="Xem chi tiết đơn #@order.OrderId">
+                                    <i class="bi bi-arrow-right-short" style="font-size: 1.4rem"></i>
+                                </a>
                             </td>
                         </tr>
                     }
