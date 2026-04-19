@@ -12,11 +12,11 @@ public static class SeedData
         // To apply credential changes, either drop the users table data or change the seed email so it is treated as a new user.
         var seedUsers = new[]
         {
-            (UserName: "admin",    Email: "admin@test.com",    Name: "Administrator", Password: "Admin@123",    Role: "Admin"),
-            (UserName: "manager",  Email: "manager@test.com",  Name: "Manager",       Password: "Manager@123",  Role: "Manager"),
-            (UserName: "staff",    Email: "staff@test.com",    Name: "Staff",         Password: "Staff@123",    Role: "Staff"),
-            (UserName: "customer", Email: "customer@test.com", Name: "Customer",      Password: "Customer@123", Role: "Customer"),
-            (UserName: "shipper",  Email: "shipper@test.com",  Name: "Shipper",       Password: "Shipper@123",  Role: "Shipper"),
+            (Id: "d781ad2b-1123-4f24-9b88-12c5b74681f0", UserName: "admin",    Email: "admin@test.com",    Name: "Administrator", Password: "Admin@123",    Role: "Admin"),
+            (Id: "e781ad2b-1123-4f24-9b88-12c5b74681f1", UserName: "manager",  Email: "manager@test.com",  Name: "Manager",       Password: "Manager@123",  Role: "Manager"),
+            (Id: "f781ad2b-1123-4f24-9b88-12c5b74681f2", UserName: "staff",    Email: "staff@test.com",    Name: "Staff",         Password: "Staff@123",    Role: "Staff"),
+            (Id: ShipperSeedData.CUSTOMER_ID,           UserName: "customer", Email: "customer@test.com", Name: "Customer",      Password: "Customer@123", Role: "Customer"),
+            (Id: ShipperSeedData.SHIPPER_ID,            UserName: "shipper",  Email: "shipper@test.com",  Name: "Shipper",       Password: "Shipper@123",  Role: "Shipper"),
         };
 
         // Seed roles first
@@ -53,6 +53,7 @@ public static class SeedData
 
             var user = new ApplicationUser
             {
+                Id = seed.Id,
                 UserName = seed.UserName,
                 Email = seed.Email,
                 EmailConfirmed = true,
@@ -71,12 +72,8 @@ public static class SeedData
 
     public static void SeedCatalog(BookStoreDbContext db)
     {
-        db.Database.EnsureCreated();
-
-        if (!db.Categories.Any()) SeedCategories(db);
-        if (!db.BookTags.Any())   SeedBookTags(db);
-        if (!db.Authors.Any())    SeedAuthors(db);
-        if (!db.Books.Any())      SeedBooks(db);
+        // Redundant as we now use ShipperSeedData with HasData in migrations.
+        // Keeping the method signature to avoid breaking Program.cs, but it can be empty or removed.
     }
 
     private static void SeedCategories(BookStoreDbContext db)

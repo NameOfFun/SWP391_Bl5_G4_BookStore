@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using BookStore.Data;
 
 namespace BookStore.Models;
 
@@ -376,6 +377,7 @@ public partial class BookStoreDbContext : IdentityDbContext<ApplicationUser, App
         });
 
         OnModelCreatingPartial(modelBuilder);
+        ShipperSeedData.Seed(modelBuilder);
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
