@@ -16,7 +16,7 @@
             <h5 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Thêm sách mới</h5>
         </div>
         <div class="card-body">
-            <form asp-action="Create" method="post" enctype="multipart/form-data">
+            <form asp-action="Create" method="post">
                 @Html.AntiForgeryToken()
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3"></div>
 
@@ -74,9 +74,10 @@
                         <input asp-for="PromotionalEndsAt" class="form-control" type="datetime-local" />
                     </div>
 
-                    @* Ảnh bìa: URL hoặc file trên máy *@
+                    @* Ảnh bìa: URL *@
                     <div class="col-12">
                         <label class="form-label fw-semibold">Ảnh bìa</label>
+                        <p class="small text-muted mb-2">Dán link ảnh trên internet (URL).</p>
                         <label asp-for="ImageUrl" class="form-label small">Đường dẫn / URL ảnh</label>
                         <input asp-for="ImageUrl" class="form-control" placeholder="https://..." id="imageUrlInput" />
                         <div id="imagePreview" class="mt-2 d-none">
@@ -125,27 +126,18 @@
     <script>
         (function () {
             var urlInput = document.getElementById('imageUrlInput');
-            var fileInput = document.getElementById('coverImage');
             var preview = document.getElementById('imagePreview');
             var img = document.getElementById('previewImg');
             function showUrlPreview() {
                 var url = urlInput.value.trim();
-                if (url && (!fileInput.files || !fileInput.files.length)) {
+                if (url) {
                     img.src = url;
                     preview.classList.remove('d-none');
-                } else if (!fileInput.files || !fileInput.files.length) {
+                } else {
                     preview.classList.add('d-none');
                 }
             }
             urlInput.addEventListener('input', showUrlPreview);
-            fileInput.addEventListener('change', function () {
-                if (this.files && this.files[0]) {
-                    img.src = URL.createObjectURL(this.files[0]);
-                    preview.classList.remove('d-none');
-                } else {
-                    showUrlPreview();
-                }
-            });
         })();
     </script>
 }

@@ -49,21 +49,357 @@
   color: #ffc9a3;
 }
 
-.book-detail-shop .post-thumbnail img {
-  max-width: 100%;
-  height: auto;
+.book-detail-shop .single-book-box .post-thumbnail {
   border: 1px solid #e8e8e8;
+  box-sizing: border-box;
+}
+
+.book-detail-shop .single-book-box .post-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.book-detail-shop .shop-price-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 12px;
+  margin: 0;
+  line-height: 1.15;
 }
 
 .book-detail-shop .shop-price {
-  font-size: 1.75rem;
+  font-size: 1.65rem;
   color: #ff7236;
   font-weight: 700;
+  margin: 0;
 }
 
-.book-detail-shop .rating-static .fa-star,
-.book-detail-shop .rating-static .fa-star-half-o {
-  color: #ff7236;
+.book-detail-shop .shop-price-was {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #9a9a9a;
+  text-decoration: line-through;
+  white-space: nowrap;
+}
+
+.book-detail-shop .single-book-box .entry-header ul li {
+  margin-bottom: 6px;
+}
+
+/* Đánh giá: một hàng, dùng hết chiều ngang — không dùng .rating của template (tránh chen chúc / ngắt chữ) */
+.book-detail-shop li.book-detail-rating-li {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 10px;
+  row-gap: 4px;
+  width: 100%;
+  max-width: none;
+}
+
+.book-detail-shop li.book-detail-rating-li > strong {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  color: #282828;
+}
+
+.book-detail-shop .book-detail-rating__meta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 12px;
+  flex: 1 1 auto;
+  min-width: 0;
+  color: #6b6b6b;
+}
+
+.book-detail-shop .book-detail-rating__score {
+  font-weight: 700;
+  color: #282828;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.book-detail-shop .book-detail-rating__count {
+  font-size: 13px;
+  color: #888;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .book-detail-shop .book-detail-rating__score {
+    font-size: 13px;
+  }
+
+  .book-detail-shop .book-detail-rating__count {
+    font-size: 12px;
+    white-space: normal;
+  }
+}
+
+/* Bộ chọn số lượng */
+.book-detail-shop .book-detail-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.book-detail-shop .shop-quantity-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 2px 0 0;
+}
+
+.book-detail-shop .shop-qty-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #282828;
+  margin: 0;
+}
+
+.book-detail-shop .shop-qty-control {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid #d8d8d8;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.book-detail-shop .shop-qty-btn {
+  width: 40px;
+  min-width: 40px;
+  border: none;
+  background: #f3f3f3;
+  color: #282828;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.book-detail-shop .shop-qty-btn:hover:not(:disabled) {
+  background: #e8e8e8;
+}
+
+.book-detail-shop .shop-qty-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.book-detail-shop .shop-qty-input {
+  width: 52px;
+  min-width: 52px;
+  height: 40px;
+  border: none;
+  border-left: 1px solid #d8d8d8;
+  border-right: 1px solid #d8d8d8;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: #282828;
+  -moz-appearance: textfield;
+}
+
+.book-detail-shop .shop-qty-input::-webkit-outer-spin-button,
+.book-detail-shop .shop-qty-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.book-detail-shop .shop-qty-input:disabled {
+  background: #fafafa;
+  color: #999;
+}
+
+.book-detail-shop .shop-qty-hint {
+  margin-top: 2px;
+}
+
+.book-detail-shop .book-detail-cart-form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.book-detail-shop .book-detail-cart-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.cart-table-shop .cart-line-cover {
+  width: 72px;
+  max-height: 108px;
+  object-fit: cover;
+  border: 1px solid #e8e8e8;
+  display: block;
+}
+
+.cart-table-shop tbody td {
+  vertical-align: middle;
+}
+
+/* Trang giỏ — stepper giống chi tiết (viên thuốc, nền xám nhạt hai bên) */
+.cart-page-shop .cart-qty-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 148px;
+}
+
+.cart-page-shop .cart-qty-block--center {
+  align-items: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.cart-page-shop .shop-qty-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #282828;
+  margin: 0;
+  font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  letter-spacing: 0.02em;
+}
+
+.cart-page-shop .shop-qty-control {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid #d4d4d4;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.cart-page-shop .shop-qty-btn {
+  width: 42px;
+  min-width: 42px;
+  border: none;
+  background: #efefef;
+  color: #282828;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.cart-page-shop .shop-qty-btn:hover:not(:disabled) {
+  background: #e0e0e0;
+}
+
+.cart-page-shop .shop-qty-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.cart-page-shop .shop-qty-input {
+  width: 56px;
+  min-width: 56px;
+  height: 42px;
+  border: none;
+  border-left: 1px solid #d8d8d8;
+  border-right: 1px solid #d8d8d8;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: #282828;
+  background: #fff;
+  -moz-appearance: textfield;
+}
+
+.cart-page-shop .shop-qty-input::-webkit-outer-spin-button,
+.cart-page-shop .shop-qty-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.cart-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+  margin-bottom: 4px;
+}
+
+.btn-cart-clear {
+  border: 1px solid #ddd;
+  background: #fff;
+  color: #555;
+  border-radius: 8px;
+  padding: 9px 20px;
+  font-weight: 600;
+  font-size: 13px;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.btn-cart-clear:hover,
+.btn-cart-clear:focus {
+  color: #c62828;
+  border-color: #e57373;
+  background: #fff8f8;
+}
+
+.cart-remove-form {
+  margin: 0;
+  display: inline-block;
+}
+
+.cart-remove-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 12px;
+  border: 1px solid #f0c4c4;
+  background: linear-gradient(180deg, #fff 0%, #fff8f8 100%);
+  color: #c62828;
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.15s, background 0.15s;
+  box-shadow: 0 1px 3px rgba(198, 40, 40, 0.1);
+}
+
+.cart-remove-btn:hover,
+.cart-remove-btn:focus {
+  border-color: #e57373;
+  background: linear-gradient(180deg, #ffebee 0%, #ffcdd2 40%, #ffebee 100%);
+  color: #b71c1c;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(198, 40, 40, 0.18);
+}
+
+.cart-table-shop tbody tr.cart-line-row td {
+  vertical-align: middle;
+  padding-top: 18px;
+  padding-bottom: 18px;
+}
+
+.cart-table-shop tbody tr.cart-line-row {
+  border-bottom: 2px solid rgba(255, 114, 54, 0.2);
 }
 
 .book-detail-shop .comment-box {
@@ -79,15 +415,185 @@
   margin-bottom: 6px;
 }
 
-.bookshop-grid-cover img {
+/*
+ * Cửa hàng — bìa sách cùng tỉ lệ (2:3) và cùng kích thước trong từng chế độ xem.
+ * List: flex, ảnh cột cố định; Grid: figure full width cột + aspect-ratio; Chi tiết: flex.
+ */
+:root {
+  --bookshop-cover-ratio: 2 / 3;
+  --bookshop-list-cover-w: 280px;
+}
+
+/* --- Danh sách (Shop list view) --- */
+.books-media-list .books-list .single-book-box {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+  gap: 20px;
+}
+
+.books-media-list .books-list .single-book-box .post-thumbnail {
+  flex: 0 0 var(--bookshop-list-cover-w);
+  width: var(--bookshop-list-cover-w);
+  max-width: min(var(--bookshop-list-cover-w), 42vw);
+  margin: 0;
+  display: block;
+  position: relative;
+  aspect-ratio: var(--bookshop-cover-ratio);
+  overflow: hidden;
+  background: #ececec;
+}
+
+.books-media-list .books-list .single-book-box .post-thumbnail > a {
+  display: block;
   width: 100%;
-  height: 280px;
+  height: 100%;
+}
+
+.books-media-list .books-list .single-book-box .post-thumbnail img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
+  object-position: center;
   display: block;
 }
 
+.books-media-list .books-list .single-book-box .post-detail {
+  position: relative;
+  right: auto;
+  top: auto;
+  transform: none;
+  flex: 1 1 0;
+  min-width: 0;
+  width: auto;
+  max-width: none;
+  margin: 0;
+  -webkit-box-shadow: 0 0 14px 0 rgba(0, 0, 0, 0.07);
+  -moz-box-shadow: 0 0 14px 0 rgba(0, 0, 0, 0.07);
+  box-shadow: 0 0 14px 0 rgba(0, 0, 0, 0.07);
+}
+
+@media (max-width: 991px) {
+  .books-media-list .books-list .single-book-box .post-thumbnail {
+    flex-basis: 220px;
+    width: 220px;
+    max-width: min(220px, 46vw);
+  }
+}
+
 @media (max-width: 767px) {
-  .bookshop-grid-cover img {
-    height: 220px;
+  .books-media-list .books-list .single-book-box {
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  .books-media-list .books-list .single-book-box .post-thumbnail {
+    flex: 0 0 auto;
+    width: min(280px, 88vw);
+    max-width: 100%;
+  }
+
+  .books-media-list .books-list .single-book-box .post-detail {
+    width: 100%;
+    padding: 24px 16px;
+  }
+}
+
+/* --- Lưới (Shop grid): mọi ô cùng chiều cao ảnh theo tỉ lệ --- */
+.books-media-list .books-gird ul li figure.bookshop-grid-cover {
+  aspect-ratio: var(--bookshop-cover-ratio);
+  overflow: hidden;
+  background: #ececec;
+  float: none;
+  display: block;
+  width: 100%;
+}
+
+.books-media-list .books-gird ul li figure.bookshop-grid-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+/* Ô lưới: luôn hiện nội dung + không chồng absolute như template gốc */
+.books-media-list .books-gird .single-book-box {
+  opacity: 1;
+  position: relative;
+  width: 100%;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.books-media-list .books-gird .single-book-box .post-detail {
+  position: relative;
+  left: 0;
+  right: auto;
+  top: auto;
+  transform: none;
+  width: 100%;
+  max-width: none;
+  padding: 18px 12px 22px;
+  z-index: 2;
+}
+
+.books-media-list .books-gird ul li:nth-child(3n) .single-book-box .post-detail {
+  left: 0;
+  right: auto;
+}
+
+/* --- Chi tiết sách --- */
+.book-detail-shop .booksmedia-detail-box .single-book-box {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+  gap: 28px;
+}
+
+.book-detail-shop .booksmedia-detail-box .single-book-box .post-thumbnail {
+  flex: 0 0 auto;
+  width: min(320px, 36vw);
+  max-width: 100%;
+  margin: 0;
+  display: block;
+  position: relative;
+  aspect-ratio: var(--bookshop-cover-ratio);
+  overflow: hidden;
+  background: #ececec;
+}
+
+.book-detail-shop .booksmedia-detail-box .single-book-box .post-detail {
+  position: relative;
+  right: auto;
+  top: auto;
+  transform: none;
+  flex: 1 1 0;
+  min-width: min(100%, 280px);
+  width: auto;
+  max-width: none;
+  margin: 0;
+  -webkit-box-shadow: 0 0 14px 0 rgba(0, 0, 0, 0.07);
+  -moz-box-shadow: 0 0 14px 0 rgba(0, 0, 0, 0.07);
+  box-shadow: 0 0 14px 0 rgba(0, 0, 0, 0.07);
+}
+
+@media (max-width: 767px) {
+  .book-detail-shop .booksmedia-detail-box .single-book-box {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .book-detail-shop .booksmedia-detail-box .single-book-box .post-thumbnail {
+    width: min(280px, 88vw);
+  }
+
+  .book-detail-shop .booksmedia-detail-box .single-book-box .post-detail {
+    width: 100%;
+    padding: 24px 16px;
   }
 }

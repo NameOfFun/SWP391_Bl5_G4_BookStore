@@ -18,6 +18,13 @@ namespace BookStore.Controllers
 
     public class BookController : Controller
     {
+        private const int ShopQueryMaxLength = 200;
+
+        private static readonly HashSet<string> ShopOrderWhitelist = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "newest", "title", "price_asc", "price_desc"
+        };
+
         private readonly IBookService _bookService;
         private readonly BookStoreDbContext _context;
         private readonly IWebHostEnvironment _env;
@@ -46,6 +53,25 @@ namespace BookStore.Controllers
         {
             ViewData["Title"] = "Danh sách sách";
             ViewData["LibrariaInnerHeader"] = true;
+
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                q = q.Trim();
+                if (q.Length > ShopQueryMaxLength)
+                    q = q[..ShopQueryMaxLength];
+            }
+            else
+                q = null;
+
+            if (categoryId.HasValue)
+            {
+                var categoryOk = await _context.Categories.AnyAsync(c => c.IsActive && c.CategoryId == categoryId.Value);
+                if (!categoryOk)
+                    categoryId = null;
+            }
+
+            if (string.IsNullOrWhiteSpace(order) || !ShopOrderWhitelist.Contains(order))
+                order = "newest";
 
             var all = await _bookService.GetAllAsync();
             IEnumerable<BookDto> query = all.Where(b => b.IsActive);
@@ -106,6 +132,9 @@ namespace BookStore.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Details(int id)
         {
+            if (id <= 0)
+                return NotFound();
+
             var book = await _bookService.GetByIdAsync(id);
             if (book == null) return NotFound();
 
@@ -171,6 +200,9 @@ namespace BookStore.Controllers
         [Authorize(Roles = "Admin,Staff,Manager")]
         public async Task<IActionResult> Edit(int id)
         {
+            if (id <= 0)
+                return NotFound();
+
             var book = await _bookService.GetByIdAsync(id);
             if (book == null) return NotFound();
 
@@ -184,6 +216,16 @@ namespace BookStore.Controllers
         [RequestSizeLimit(6 * 1024 * 1024)]
         public async Task<IActionResult> Edit(int id, BookDto dto, IFormFile? coverImage)
         {
+            if (id <= 0)
+                return NotFound();
+
+            if (id != dto.BookId)
+            {
+                ModelState.AddModelError(string.Empty, "Mã sách không khớp. Vui lòng thử lại.");
+                await PopulateDropdownsAsync(dto.CategoryId);
+                return View(dto);
+            }
+
             if (!ModelState.IsValid)
             {
                 await PopulateDropdownsAsync(dto.CategoryId);
@@ -217,6 +259,12 @@ namespace BookStore.Controllers
         [Authorize(Roles = "Admin,Staff,Manager")]
         public async Task<IActionResult> ChangeStatus(int id)
         {
+            if (id <= 0)
+            {
+                TempData["Error"] = "Mã sách không hợp lệ.";
+                return RedirectToAction(nameof(Index));
+            }
+
             try
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;

@@ -244,14 +244,17 @@
             </div>
         </div>
 
-        <!-- Về Chúng Tôi -->
-        <div class="nav-item-group">
-            <a class="nav-link-item @(ctrl == "About" ? "active" : "")"
-               asp-controller="About" asp-action="Index">
-                <i class="bi bi-info-circle nav-icon"></i>
-                <span class="nav-label">Về Chúng Tôi</span>
-            </a>
-        </div>
+        @if (User.IsInRole("Admin") || User.IsInRole("Staff") || User.IsInRole("Manager"))
+        {
+            <!-- Quản lý nội dung Giới thiệu / Tin (trang công khai: /About) -->
+            <div class="nav-item-group">
+                <a class="nav-link-item @(ctrl == "About" && action != "Index" && action != "Article" ? "active" : "")"
+                   asp-controller="About" asp-action="Manage">
+                    <i class="bi bi-info-circle nav-icon"></i>
+                    <span class="nav-label">Giới thiệu &amp; Tin (quản lý)</span>
+                </a>
+            </div>
+        }
 
         @if (User.IsInRole("Admin") || User.IsInRole("Manager") || User.IsInRole("Staff"))
         {

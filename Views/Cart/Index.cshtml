@@ -1,0 +1,182 @@
+@model BookStore.ViewModels.CartIndexViewModel
+@{
+    Layout = "~/Views/Shared/_LayoutAuth.cshtml";
+    var msg = TempData["CartMessage"] as string;
+    var err = TempData["CartError"] as string;
+}
+<link href="~/css/bookshop.css" rel="stylesheet" asp-append-version="true" />
+
+<section class="page-banner services-banner">
+    <div class="container">
+        <div class="banner-header">
+            <h2>Giỏ hàng</h2>
+            <span class="underline center"></span>
+            <p class="lead">@Model.TotalQuantity sản phẩm</p>
+        </div>
+        <div class="breadcrumb">
+            <ul>
+                <li><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                <li><a asp-controller="Book" asp-action="Shop">Sách</a></li>
+                <li>Giỏ hàng</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<div id="content" class="site-content">
+    <div class="container" style="padding-bottom:48px">
+        @if (!string.IsNullOrEmpty(msg))
+        {
+            <div class="alert alert-success" style="margin-top:16px">@msg</div>
+        }
+        @if (!string.IsNullOrEmpty(err))
+        {
+            <div class="alert alert-danger" style="margin-top:16px">@err</div>
+        }
+
+        @if (Model.Lines.Count == 0)
+        {
+            <p class="text-muted" style="margin-top:24px;font-size:16px">Giỏ hàng đang trống.</p>
+            <a asp-controller="Book" asp-action="Shop" class="btn btn-primary" style="margin-top:12px;background:#ff7236;border-color:#ff7236">Tiếp tục mua sắm</a>
+        }
+        else
+        {
+            <div class="cart-page-shop">
+                <div class="cart-toolbar">
+                    <a asp-controller="Book" asp-action="Shop" class="btn btn-dark-gray">Tiếp tục mua sắm</a>
+                    <form asp-action="Clear" method="post" class="cart-clear-form" style="margin:0" onsubmit="return confirm('Xóa hết tất cả sản phẩm trong giỏ hàng?');">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-default btn-cart-clear">Xóa toàn bộ giỏ</button>
+                    </form>
+                </div>
+
+                <div class="table-responsive" style="margin-top:12px">
+                    <table class="table table-bordered cart-table-shop">
+                        <thead>
+                            <tr>
+                                <th style="width:90px">&nbsp;</th>
+                                <th>Sách</th>
+                                <th style="width:120px" class="text-right">Đơn giá</th>
+                                <th style="width:200px" class="text-center">Số lượng</th>
+                                <th style="width:120px" class="text-right">Thành tiền</th>
+                                <th style="width:56px" class="text-center">&nbsp;</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var line in Model.Lines)
+                            {
+                                <tr class="cart-line-row">
+                                    <td>
+                                        <a asp-controller="Book" asp-action="Details" asp-route-id="@line.BookId">
+                                            <img src="@line.CoverUrl" alt="" class="cart-line-cover" />
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a asp-controller="Book" asp-action="Details" asp-route-id="@line.BookId" style="font-weight:600">@line.Title</a>
+                                        <div class="text-muted small">Còn @line.Stock cuốn</div>
+                                    </td>
+                                    <td class="text-right">
+                                        <span style="color:#ff7236;font-weight:700">@line.UnitPrice.ToString("N0") đ</span>
+                                        @if (line.ListPrice.HasValue)
+                                        {
+                                            <div class="text-muted" style="font-size:12px;text-decoration:line-through">@line.ListPrice.Value.ToString("N0") đ</div>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <form asp-action="Update" method="post" class="cart-line-update-form" style="margin:0">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="cartItemId" value="@line.CartItemId" />
+                                            <div class="cart-qty-block cart-qty-block--center">
+                                                <span class="shop-qty-label">Số lượng</span>
+                                                <div class="shop-qty-control">
+                                                    <button type="button" class="shop-qty-btn cart-qty-minus" aria-label="Giảm số lượng">−</button>
+                                                    <input type="number"
+                                                           name="quantity"
+                                                           class="shop-qty-input cart-qty-input"
+                                                           value="@line.Quantity"
+                                                           min="1"
+                                                           max="@line.Stock"
+                                                           aria-label="Số lượng" />
+                                                    <button type="button" class="shop-qty-btn cart-qty-plus" aria-label="Tăng số lượng">+</button>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </td>
+                                    <td class="text-right" style="font-weight:700">@line.LineTotal.ToString("N0") đ</td>
+                                    <td class="text-center">
+                                        <form asp-action="Remove" method="post" class="cart-remove-form" onsubmit="return confirm('Xóa sản phẩm này khỏi giỏ?');">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="cartItemId" value="@line.CartItemId" />
+                                            <button type="submit" class="cart-remove-btn" title="Xóa khỏi giỏ" aria-label="Xóa khỏi giỏ">
+                                                <i class="fa fa-trash-o" aria-hidden="true"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="row" style="margin-top:20px">
+                    <div class="col-sm-7 hidden-xs"></div>
+                    <div class="col-sm-5 text-right">
+                        <p style="font-size:18px;margin-bottom:12px">
+                            <strong>Tạm tính:</strong>
+                            <span style="color:#ff7236;font-size:22px;font-weight:700">@Model.Subtotal.ToString("N0") đ</span>
+                        </p>
+                        <p class="text-muted small">Thanh toán sẽ được bổ sung ở bước sau.</p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            document.querySelectorAll('.cart-line-update-form').forEach(function (form) {
+                var input = form.querySelector('.cart-qty-input');
+                if (!input) return;
+                var min = parseInt(input.getAttribute('min'), 10) || 1;
+                var max = parseInt(input.getAttribute('max'), 10) || 9999;
+
+                function clamp() {
+                    var v = parseInt(input.value, 10);
+                    if (isNaN(v)) v = min;
+                    if (v < min) v = min;
+                    if (v > max) v = max;
+                    input.value = v;
+                }
+
+                function submitForm() {
+                    clamp();
+                    form.submit();
+                }
+
+                var minus = form.querySelector('.cart-qty-minus');
+                var plus = form.querySelector('.cart-qty-plus');
+                if (minus) {
+                    minus.addEventListener('click', function () {
+                        var v = parseInt(input.value, 10);
+                        if (isNaN(v)) v = min;
+                        if (v <= min) return;
+                        input.value = v - 1;
+                        submitForm();
+                    });
+                }
+                if (plus) {
+                    plus.addEventListener('click', function () {
+                        var v = parseInt(input.value, 10);
+                        if (isNaN(v)) v = min;
+                        if (v >= max) return;
+                        input.value = v + 1;
+                        submitForm();
+                    });
+                }
+                input.addEventListener('change', submitForm);
+            });
+        })();
+    </script>
+}
