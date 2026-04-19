@@ -5,10 +5,8 @@
 @{
     string MixFilterClass(BookDto b)
     {
-        var name = b.CategoryName ?? "";
-        var kids = name.Contains("thiếu nhi", StringComparison.OrdinalIgnoreCase)
-            || name.Contains("teen", StringComparison.OrdinalIgnoreCase);
-        return kids ? "mix category-item books kids-teens" : "mix category-item books adults";
+        var cat = b.CategoryId.HasValue ? $" cat-{b.CategoryId.Value}" : "";
+        return $"mix category-item{cat}";
     }
 
     string Excerpt(string? description, int maxLen = 100)
@@ -17,6 +15,14 @@
         var t = description.Trim();
         return t.Length <= maxLen ? t : t[..maxLen].TrimEnd() + "…";
     }
+
+    // Danh mục thực sự có mặt trong danh sách sách mới — để dựng nút lọc theo dữ liệu thật.
+    var activeCategories = Model
+        .Where(b => b.CategoryId.HasValue && !string.IsNullOrWhiteSpace(b.CategoryName))
+        .GroupBy(b => b.CategoryId!.Value)
+        .Select(g => new { Id = g.Key, Name = g.First().CategoryName! })
+        .OrderBy(c => c.Name)
+        .ToList();
 }
 <!-- Start: Category Filter / New Releases (template: wwwroot/index.html) -->
 <section class="category-filter section-padding bookstore-home-new-releases">
@@ -30,15 +36,16 @@
                 </div>
             </div>
         </div>
-        <div class="filter-buttons">
-            <div class="filter btn" data-filter="all">Tất cả</div>
-            <div class="filter btn" data-filter=".adults">Người lớn</div>
-            <div class="filter btn" data-filter=".kids-teens">Thiếu nhi &amp; teen</div>
-            <div class="filter btn" data-filter=".video">Video</div>
-            <div class="filter btn" data-filter=".audio">Âm thanh</div>
-            <div class="filter btn" data-filter=".books">Sách</div>
-            <div class="filter btn" data-filter=".magazines">Tạp chí</div>
-        </div>
+        @if (activeCategories.Count > 0)
+        {
+            <div class="filter-buttons home-new-releases-filter">
+                <div class="filter btn active" data-filter="all">Tất cả</div>
+                @foreach (var c in activeCategories)
+                {
+                    <div class="filter btn" data-filter=".cat-@c.Id">@c.Name</div>
+                }
+            </div>
+        }
     </div>
     <div id="category-filter">
         <ul class="category-list">
