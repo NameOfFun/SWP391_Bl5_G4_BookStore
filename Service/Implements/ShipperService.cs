@@ -21,7 +21,7 @@ public class ShipperService : IShipperService
         var assigned   = allOrders.Where(o => o.Status == OrderStatus.Shipped).ToList();
         var delivering = allOrders.Where(o => o.Status == OrderStatus.Delivering).ToList();
         var delivered  = allOrders.Where(o => o.Status == OrderStatus.Delivered).ToList();
-        var failed     = allOrders.Where(o => o.Status == OrderStatus.Cancelled).ToList();
+        var failed     = allOrders.Where(o => o.Status == OrderStatus.DeliveryFailed).ToList();
 
         // Urgent = Assigned + Delivering, sắp xếp theo ngày cũ nhất, lấy 5 đơn
         var urgent = allOrders
@@ -106,8 +106,39 @@ public class ShipperService : IShipperService
             return (false, $"Đơn #{orderId} chưa ở trạng thái Đang giao.");
 
         order.Status = OrderStatus.Delivered;
+        order.DeliveredAt = DateTime.Now;
         await _db.SaveChangesAsync();
         return (true, $"Đơn #{orderId} đã giao thành công! 🎉");
+    }
+
+    public async Task<(bool ok, string message)> UpdateDeliveryStatusAsync(DeliveryStatusUpdateDto dto, string shipperId)
+    {
+        var order = await _db.Orders.FirstOrDefaultAsync(
+            o => o.OrderId == dto.OrderId && o.ShipperId == shipperId);
+
+        if (order is null)
+            return (false, "Không tìm thấy đơn hàng.");
+
+        if (order.Status != OrderStatus.Delivering)
+            return (false, $"Đơn #{dto.OrderId} chưa ở trạng thái Đang giao.");
+
+        if (dto.IsSuccess)
+        {
+            order.Status = OrderStatus.Delivered;
+            order.DeliveredAt = DateTime.Now;
+            order.FailedNote = dto.Note; // Dùng chung trường Note cho cả 2
+        }
+        else
+        {
+            order.Status = OrderStatus.DeliveryFailed;
+            order.FailedReason = dto.FailedReason;
+            order.FailedNote = dto.Note;
+        }
+
+        await _db.SaveChangesAsync();
+
+        var statusMsg = dto.IsSuccess ? "giao thành công" : "giao thất bại";
+        return (true, $"Đã cập nhật đơn #{dto.OrderId} là {statusMsg}.");
     }
 
     // ─── Assigned Orders List ─────────────────────────────────
@@ -189,5 +220,46 @@ public class ShipperService : IShipperService
         order.ShipperId = null;
         await _db.SaveChangesAsync();
         return (true, $"Đã từ chối đơn #{orderId} — đơn sẽ được phân bổ lại.");
+    }
+
+    public async Task<DeliveryHistoryViewModel> GetDeliveryHistoryAsync(string shipperId, string? filter)
+    {
+        var normalized = (filter ?? "all").ToLower().Trim();
+
+        // Lấy tất cả đơn Delivered + DeliveryFailed của shipper này
+        var baseQuery = _db.Orders
+            .Where(o => o.ShipperId == shipperId &&
+                        (o.Status == OrderStatus.Delivered || o.Status == OrderStatus.DeliveryFailed));
+
+        var allOrders = await baseQuery
+            .OrderByDescending(o => o.DeliveredAt ?? o.OrderDate)
+            .ToListAsync();
+
+        var totalSuccess = allOrders.Count(o => o.Status == OrderStatus.Delivered);
+        var totalFailed  = allOrders.Count(o => o.Status == OrderStatus.DeliveryFailed);
+
+        // Apply filter
+        var filtered = normalized switch
+        {
+            "success" => allOrders.Where(o => o.Status == OrderStatus.Delivered).ToList(),
+            "failed"  => allOrders.Where(o => o.Status == OrderStatus.DeliveryFailed).ToList(),
+            _         => allOrders
+        };
+
+        return new DeliveryHistoryViewModel
+        {
+            ActiveFilter = normalized,
+            TotalAll     = allOrders.Count,
+            TotalSuccess = totalSuccess,
+            TotalFailed  = totalFailed,
+            Orders = filtered.Select(o => new DeliveryHistoryItemDto
+            {
+                OrderId       = o.OrderId,
+                RecipientName = o.ShippingName ?? "—",
+                DeliveryDate  = o.DeliveredAt,
+                GrandTotal    = o.GrandTotal,
+                Status        = o.Status
+            }).ToList()
+        };
     }
 }

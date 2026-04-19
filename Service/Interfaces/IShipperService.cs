@@ -13,6 +13,9 @@ public interface IShipperService
     /// <summary>Đánh dấu đơn đã giao thành công: Delivering → Delivered.</summary>
     Task<(bool ok, string message)> MarkDeliveredAsync(int orderId, string shipperId);
 
+    /// <summary>Cập nhật kết quả giao hàng (Thành công hoặc Thất bại).</summary>
+    Task<(bool ok, string message)> UpdateDeliveryStatusAsync(DeliveryStatusUpdateDto dto, string shipperId);
+
     /// <summary>Lấy danh sách đơn Assigned + Delivering, có thể filter theo status.</summary>
     /// <param name="filter">null/"all" | "assigned" | "delivering"</param>
     Task<AssignedOrdersViewModel> GetAssignedOrdersAsync(string shipperId, string? filter);
@@ -22,4 +25,7 @@ public interface IShipperService
 
     /// <summary>Shipper từ chối đơn: Shipped → Processing (trả lại để re-assign).</summary>
     Task<(bool ok, string message)> RejectOrderAsync(int orderId, string shipperId);
+
+    /// <summary>Lấy lịch sử giao hàng (Delivered + DeliveryFailed).</summary>
+    Task<DeliveryHistoryViewModel> GetDeliveryHistoryAsync(string shipperId, string? filter);
 }

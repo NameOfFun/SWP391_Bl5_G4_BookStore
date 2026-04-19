@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using BookStore.Models;
+using BookStore.Dtos;
 
 namespace BookStore.Controllers;
 
@@ -99,5 +100,43 @@ public class ShipperController : Controller
         return ok
             ? RedirectToAction(nameof(AssignedOrders), new { filter = "all" })
             : RedirectToAction(nameof(DeliveryDetail), new { id = orderId });
+    }
+
+    // ─── POST /Shipper/UpdateStatus ───────────────────────────
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateStatus(DeliveryStatusUpdateDto dto)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null) return Challenge();
+
+        if (!ModelState.IsValid)
+        {
+            TempData["Error"] = "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.";
+            return RedirectToAction(nameof(DeliveryDetail), new { id = dto.OrderId });
+        }
+
+        var (ok, message) = await _shipperService.UpdateDeliveryStatusAsync(dto, user.Id);
+
+        TempData[ok ? "Success" : "Error"] = message;
+        
+        // Nếu thành công (dù là Giao được hay Thất bại) -> Về danh sách chung
+        return ok
+            ? RedirectToAction(nameof(AssignedOrders), new { filter = "all" })
+            : RedirectToAction(nameof(DeliveryDetail), new { id = dto.OrderId });
+    }
+
+    // ─── GET /Shipper/DeliveryHistory?filter=all|success|failed ──
+    public async Task<IActionResult> DeliveryHistory(string? filter)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null) return Challenge();
+
+        var vm = await _shipperService.GetDeliveryHistoryAsync(user.Id, filter);
+        
+        ViewData["Title"]               = "Lịch sử giao hàng";
+        ViewData["BreadcrumbParent"]    = "Shipper";
+        ViewData["BreadcrumbParentUrl"] = Url.Action("Dashboard", "Shipper");
+        
+        return View(vm);
     }
 }

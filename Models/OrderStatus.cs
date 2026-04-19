@@ -11,5 +11,7 @@ public enum OrderStatus
     Delivered  = 4,
     Cancelled  = 5,
     /// <summary>Shipper đã nhận đơn, đang trên đường giao.</summary>
-    Delivering = 6
+    Delivering = 6,
+    /// <summary>Giao hàng thất bại.</summary>
+    DeliveryFailed = 7
 }

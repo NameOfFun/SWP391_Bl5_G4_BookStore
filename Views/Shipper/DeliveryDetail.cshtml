@@ -77,6 +77,7 @@
     .dd-status-badge.shipped    { background: #e6f4ff; color: #1677ff; }
     .dd-status-badge.delivering { background: #fff7e6; color: #fa8c16; }
     .dd-status-badge.delivered  { background: #f6ffed; color: #52c41a; }
+    .dd-status-badge.failed     { background: #fff1f0; color: #f5222d; }
     .dd-status-badge.cancelled  { background: #fff1f0; color: #ff4d4f; }
 
     /* ── Info rows ── */
@@ -210,6 +211,7 @@
         OrderStatus.Shipped    => "shipped",
         OrderStatus.Delivering => "delivering",
         OrderStatus.Delivered  => "delivered",
+        OrderStatus.DeliveryFailed => "failed",
         OrderStatus.Cancelled  => "cancelled",
         _ => "shipped"
     };
@@ -217,6 +219,7 @@
         OrderStatus.Shipped    => "Chờ nhận",
         OrderStatus.Delivering => "Đang giao",
         OrderStatus.Delivered  => "Đã giao ✓",
+        OrderStatus.DeliveryFailed => "Giao thất bại ✖",
         OrderStatus.Cancelled  => "Đã hủy",
         _ => Model.Status.ToString()
     };
@@ -224,6 +227,7 @@
         OrderStatus.Shipped    => "bi-hourglass-split",
         OrderStatus.Delivering => "bi-truck",
         OrderStatus.Delivered  => "bi-check-circle-fill",
+        OrderStatus.DeliveryFailed => "bi-x-circle-fill",
         OrderStatus.Cancelled  => "bi-x-circle-fill",
         _ => "bi-circle"
     };
@@ -520,15 +524,18 @@ else if (Model.Status == OrderStatus.Shipped && hours > 12)
 
                     @if (Model.CanDeliver)
                     {
-                        <!-- Mark Delivered -->
-                        <form asp-controller="Shipper" asp-action="MarkDelivered" method="post">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="orderId" value="@Model.OrderId" />
-                            <button type="submit" class="dd-btn delivered"
-                                    onclick="return confirm('Xác nhận đã giao thành công đơn #@Model.OrderId?')">
-                                <i class="bi bi-check-circle-fill"></i> Đã giao thành công
-                            </button>
-                        </form>
+                        <!-- Update Delivery Status Modal Trigger -->
+                        <button type="button" class="dd-btn delivered"
+                                data-bs-toggle="modal" data-bs-target="#updateStatusModal">
+                            <i class="bi bi-pencil-square"></i> Cập nhật trạng thái giao
+                        </button>
+                    }
+
+                    @if (Model.Status == OrderStatus.DeliveryFailed)
+                    {
+                        <div style="text-align:center;padding:10px;color:#f5222d;font-weight:700;font-size:.9rem">
+                            <i class="bi bi-x-circle-fill me-1"></i> Giao hàng thất bại
+                        </div>
                     }
 
                     @if (Model.Status == OrderStatus.Delivered)
@@ -585,8 +592,77 @@ else if (Model.Status == OrderStatus.Shipped && hours > 12)
     </div>
 </div>
 
+<!-- ── Update Status Modal ── -->
+<div class="modal fade" id="updateStatusModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:16px; border:none; box-shadow:0 10px 30px rgba(0,0,0,0.1)">
+            <form asp-controller="Shipper" asp-action="UpdateStatus" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="OrderId" value="@Model.OrderId" />
+                
+                <div class="modal-header px-4 pt-4 border-0">
+                    <h5 class="modal-title font-weight-bold" style="font-weight:700">Cập nhật kết quả giao hàng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <div class="modal-body px-4">
+                    <div class="mb-4">
+                        <label class="form-label d-block mb-2" style="font-weight:600; font-size:0.9rem">Kết quả</label>
+                        <div class="btn-group w-100" role="group">
+                            <input type="radio" class="btn-check" name="IsSuccess" id="resSuccess" value="true" checked autocomplete="off">
+                            <label class="btn btn-outline-success py-2" for="resSuccess" style="border-radius:8px 0 0 8px; font-weight:600">
+                                <i class="bi bi-check-circle me-1"></i> Thành công
+                            </label>
+
+                            <input type="radio" class="btn-check" name="IsSuccess" id="resFailed" value="false" autocomplete="off">
+                            <label class="btn btn-outline-danger py-2" for="resFailed" style="border-radius:0 8px 8px 0; font-weight:600">
+                                <i class="bi bi-x-circle me-1"></i> Thất bại
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Failed Reasons (Visible only when Failed is selected) -->
+                    <div id="failedReasonSection" style="display:none" class="mb-3">
+                        <label class="form-label" style="font-weight:600; font-size:0.9rem">Lý do thất bại</label>
+                        <select name="FailedReason" class="form-select" style="border-radius:8px">
+                            <option value="Không liên lạc được">Không liên lạc được</option>
+                            <option value="Sai địa chỉ">Sai địa chỉ</option>
+                            <option value="Khách không nhận">Khách không nhận</option>
+                            <option value="Khác">Lý do khác...</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" style="font-weight:600; font-size:0.9rem">Ghi chú thêm</label>
+                        <textarea name="Note" class="form-control" rows="3" 
+                                  placeholder="Nhập ghi chú (ví dụ: đã gửi bảo vệ, khách hẹn lại...)" 
+                                  style="border-radius:8px"></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer px-4 pb-4 border-0 pt-0">
+                    <button type="button" class="btn btn-light py-2 px-4" data-bs-dismiss="modal" 
+                            style="border-radius:8px; font-weight:600">Bỏ qua</button>
+                    <button type="submit" class="btn btn-primary py-2 px-4" 
+                            style="border-radius:8px; font-weight:600; background:var(--dd-blue)">
+                        Xác nhận cập nhật
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
 <script>
+    // Toggle failed reason visibility
+    document.getElementsByName('IsSuccess').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const failedSection = document.getElementById('failedReasonSection');
+            failedSection.style.display = (this.value === 'false') ? 'block' : 'none';
+        });
+    });
+
     // Auto-hide toast after 4s
     document.querySelectorAll('.dd-toast').forEach(el => {
         setTimeout(() => {

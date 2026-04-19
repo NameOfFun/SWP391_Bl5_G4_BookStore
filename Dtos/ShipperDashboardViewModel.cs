@@ -16,7 +16,7 @@ public class ShipperDashboardViewModel
     /// <summary>Số đơn đã giao thành công (Delivered).</summary>
     public int DeliveredCount { get; set; }
 
-    /// <summary>Số đơn giao thất bại (Cancelled sau khi được assign).</summary>
+    /// <summary>Số đơn giao thất bại (DeliveryFailed).</summary>
     public int FailedCount { get; set; }
 
     /// <summary>3–5 đơn cần xử lý ngay, xếp theo ngày cũ nhất.</summary>
@@ -122,4 +122,26 @@ public class DeliveryItemDto
     public int Quantity { get; set; }
     public decimal UnitPrice { get; set; }
     public decimal LineTotal => UnitPrice * Quantity;
+}
+
+// ─────────────────────────────────────────────
+//  Delivery History ViewModel
+// ─────────────────────────────────────────────
+public class DeliveryHistoryViewModel
+{
+    public string ActiveFilter { get; set; } = "all";
+    public List<DeliveryHistoryItemDto> Orders { get; set; } = [];
+
+    public int TotalAll { get; set; }
+    public int TotalSuccess { get; set; }
+    public int TotalFailed { get; set; }
+}
+
+public class DeliveryHistoryItemDto
+{
+    public int OrderId { get; set; }
+    public string RecipientName { get; set; } = string.Empty;
+    public DateTime? DeliveryDate { get; set; } // Using DeliveredAt
+    public decimal GrandTotal { get; set; }
+    public OrderStatus Status { get; set; }
 }

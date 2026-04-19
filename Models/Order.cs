@@ -36,6 +36,15 @@ public class Order
     /// <summary>Ghi chú giao hàng từ khách hàng (ví dụ: "Gọi trước 30p", "Để ở bảo vệ").</summary>
     public string? DeliveryNote { get; set; }
 
+    /// <summary>Thời gian giao hàng thành công (auto).</summary>
+    public DateTime? DeliveredAt { get; set; }
+
+    /// <summary>Lý do giao hàng thất bại.</summary>
+    public string? FailedReason { get; set; }
+
+    /// <summary>Ghi chú thêm khi giao hàng thất bại hoặc thành công.</summary>
+    public string? FailedNote { get; set; }
+
     public virtual ApplicationUser? Shipper { get; set; }
 
     public virtual Voucher? Voucher { get; set; }
