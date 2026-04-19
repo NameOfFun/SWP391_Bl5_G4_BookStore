@@ -161,6 +161,19 @@ namespace BookStore.Controllers
         [RequestSizeLimit(6 * 1024 * 1024)]
         public async Task<IActionResult> Create(BookDto dto, IFormFile? coverImage)
         {
+            bool canSetPrice = User.IsInRole("Manager");
+            if (!canSetPrice)
+            {
+                dto.Price = 0;
+                dto.PromotionalPrice = null;
+                dto.PromotionalStartsAt = null;
+                dto.PromotionalEndsAt = null;
+                ModelState.Remove(nameof(BookDto.Price));
+                ModelState.Remove(nameof(BookDto.PromotionalPrice));
+                ModelState.Remove(nameof(BookDto.PromotionalStartsAt));
+                ModelState.Remove(nameof(BookDto.PromotionalEndsAt));
+            }
+
             if (!ModelState.IsValid)
             {
                 await PopulateDropdownsAsync();
@@ -214,14 +227,19 @@ namespace BookStore.Controllers
         [RequestSizeLimit(6 * 1024 * 1024)]
         public async Task<IActionResult> Edit(int id, BookDto dto, IFormFile? coverImage)
         {
-            if (id <= 0)
-                return NotFound();
-
-            if (id != dto.BookId)
+            bool canSetPrice = User.IsInRole("Manager");
+            if (!canSetPrice)
             {
-                ModelState.AddModelError(string.Empty, "Mã sách không khớp. Vui lòng thử lại.");
-                await PopulateDropdownsAsync(dto.CategoryId);
-                return View(dto);
+                var existing = await _bookService.GetByIdAsync(id);
+                if (existing == null) return NotFound();
+                dto.Price = existing.Price;
+                dto.PromotionalPrice = existing.PromotionalPrice;
+                dto.PromotionalStartsAt = existing.PromotionalStartsAt;
+                dto.PromotionalEndsAt = existing.PromotionalEndsAt;
+                ModelState.Remove(nameof(BookDto.Price));
+                ModelState.Remove(nameof(BookDto.PromotionalPrice));
+                ModelState.Remove(nameof(BookDto.PromotionalStartsAt));
+                ModelState.Remove(nameof(BookDto.PromotionalEndsAt));
             }
 
             if (!ModelState.IsValid)

@@ -1,6 +1,7 @@
 @model BookStore.Dtos.Common.BookDto
 @{
     ViewData["Title"] = "Chỉnh sửa sách";
+    bool canSetPrice = User.IsInRole("Manager");
 }
 
 <div class="container mt-4" style="max-width:860px">
@@ -44,30 +45,63 @@
                         </select>
                     </div>
 
-                    <div class="col-md-4">
-                        <label asp-for="Price" class="form-label fw-semibold">Giá bán (đ) <span class="text-danger">*</span></label>
-                        <input asp-for="Price" class="form-control" type="number" min="0" step="any" />
-                        <span asp-validation-for="Price" class="text-danger small"></span>
-                    </div>
-                    <div class="col-md-4">
-                        <label asp-for="PromotionalPrice" class="form-label fw-semibold">Giá khuyến mãi (đ)</label>
-                        <input asp-for="PromotionalPrice" class="form-control" type="number" min="0" step="any" placeholder="Để trống nếu không có" />
-                        <span asp-validation-for="PromotionalPrice" class="text-danger small"></span>
-                    </div>
+                    @if (canSetPrice)
+                    {
+                        <div class="col-md-4">
+                            <label asp-for="Price" class="form-label fw-semibold">Giá bán (đ) <span class="text-danger">*</span></label>
+                            <input asp-for="Price" class="form-control" type="number" min="0" step="any" />
+                            <span asp-validation-for="Price" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="PromotionalPrice" class="form-label fw-semibold">Giá khuyến mãi (đ)</label>
+                            <input asp-for="PromotionalPrice" class="form-control" type="number" min="0" step="any" placeholder="Để trống nếu không có" />
+                            <span asp-validation-for="PromotionalPrice" class="text-danger small"></span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Giá bán (đ)</label>
+                            <input class="form-control" type="text" value="@Model.Price.ToString("N0") đ" disabled />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Giá khuyến mãi (đ)</label>
+                            <input class="form-control" type="text" value="@(Model.PromotionalPrice.HasValue ? Model.PromotionalPrice.Value.ToString("N0") + " đ" : "Không có")" disabled />
+                        </div>
+                    }
                     <div class="col-md-4">
                         <label asp-for="Stock" class="form-label fw-semibold">Tồn kho</label>
                         <input asp-for="Stock" class="form-control" type="number" min="0" />
                         <span asp-validation-for="Stock" class="text-danger small"></span>
                     </div>
 
-                    <div class="col-md-6">
-                        <label asp-for="PromotionalStartsAt" class="form-label fw-semibold">KM từ ngày</label>
-                        <input asp-for="PromotionalStartsAt" class="form-control" type="datetime-local" />
-                    </div>
-                    <div class="col-md-6">
-                        <label asp-for="PromotionalEndsAt" class="form-label fw-semibold">KM đến ngày</label>
-                        <input asp-for="PromotionalEndsAt" class="form-control" type="datetime-local" />
-                    </div>
+                    @if (canSetPrice)
+                    {
+                        <div class="col-md-6">
+                            <label asp-for="PromotionalStartsAt" class="form-label fw-semibold">KM từ ngày</label>
+                            <input asp-for="PromotionalStartsAt" class="form-control" type="datetime-local" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="PromotionalEndsAt" class="form-label fw-semibold">KM đến ngày</label>
+                            <input asp-for="PromotionalEndsAt" class="form-control" type="datetime-local" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">KM từ ngày</label>
+                            <input class="form-control" type="text" value="@(Model.PromotionalStartsAt.HasValue ? Model.PromotionalStartsAt.Value.ToString("dd/MM/yyyy HH:mm") : "Không có")" disabled />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">KM đến ngày</label>
+                            <input class="form-control" type="text" value="@(Model.PromotionalEndsAt.HasValue ? Model.PromotionalEndsAt.Value.ToString("dd/MM/yyyy HH:mm") : "Không có")" disabled />
+                        </div>
+                        <div class="col-12">
+                            <div class="alert alert-warning py-2 mb-0">
+                                <i class="bi bi-lock me-1"></i> Giá bán và thông tin khuyến mãi chỉ Manager mới có quyền chỉnh sửa.
+                            </div>
+                        </div>
+                    }
 
                     <div class="col-12">
                         <label class="form-label fw-semibold">Ảnh bìa</label>
