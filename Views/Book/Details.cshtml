@@ -11,6 +11,10 @@
     var listPrice = Model.PromotionalPrice.HasValue ? Model.Price : (decimal?)null;
     var coverUrl = ViewBag.CoverUrl as string ?? "/images/header-slider/home-v1/header-slide.jpg";
     var isbn = $"978-604-{Model.BookId:D6}";
+    var maxQty = Math.Max(0, Model.Stock);
+    var canAddToCart = Model.Stock > 0;
+    var isLoggedIn = User.Identity?.IsAuthenticated == true;
+    var loginReturnUrl = Url.Action("Details", "Book", new { id = Model.BookId }) ?? "";
 }
 <link href="~/css/bookshop.css" rel="stylesheet" asp-append-version="true" />
 
@@ -50,30 +54,100 @@
                                             <ul>
                                                 <li><strong>Tác giả:</strong> <a href="#">@(Model.AuthorName ?? "—")</a></li>
                                                 <li><strong>ISBN:</strong> @isbn</li>
-                                                <li>
-                                                    <div class="rating rating-static">
-                                                        <strong>Đánh giá (tĩnh):</strong>
-                                                        <span class="fa fa-star"></span>
-                                                        <span class="fa fa-star"></span>
-                                                        <span class="fa fa-star"></span>
-                                                        <span class="fa fa-star"></span>
-                                                        <span class="fa fa-star-half-o"></span>
-                                                        <span style="margin-left:8px;color:#555;font-weight:600">4,5 / 5</span>
-                                                        <span style="color:#888;font-size:13px">(128 lượt đánh giá)</span>
-                                                    </div>
+                                                <li class="book-detail-rating-li">
+                                                    <strong>Đánh giá:</strong>
+                                                    <span class="book-detail-rating__meta">
+                                                        <span class="book-detail-rating__score">4,5 / 5</span>
+                                                        <span class="book-detail-rating__count">(128 lượt đánh giá)</span>
+                                                    </span>
                                                 </li>
                                                 <li><strong>Danh mục:</strong> @(Model.CategoryName ?? "—")</li>
                                                 <li><strong>Tồn kho:</strong> @Model.Stock</li>
                                             </ul>
                                         </header>
-                                        <div class="entry-content post-buttons" style="margin-top:16px">
-                                            <p class="shop-price">@effectivePrice.ToString("N0") đ</p>
-                                            @if (listPrice.HasValue)
+                                        <div class="entry-content post-buttons book-detail-actions" style="margin-top:12px">
+                                            @if (TempData["CartError"] is string cartErr && !string.IsNullOrEmpty(cartErr))
                                             {
-                                                <p class="text-muted" style="text-decoration:line-through;font-size:16px">@listPrice.Value.ToString("N0") đ</p>
+                                                <div class="alert alert-danger" style="margin-bottom:10px;padding:10px 14px">@cartErr</div>
                                             }
-                                            <a href="#" class="btn btn-primary" style="background:#ff7236;border-color:#ff7236;margin-right:8px"><i class="fa fa-shopping-cart"></i> Thêm vào giỏ (demo)</a>
-                                            <a asp-action="Shop" class="btn btn-dark-gray">Tiếp tục mua sắm</a>
+                                            <div class="shop-price-row">
+                                                <span class="shop-price">@effectivePrice.ToString("N0") đ</span>
+                                                @if (listPrice.HasValue)
+                                                {
+                                                    <span class="shop-price-was">@listPrice.Value.ToString("N0") đ</span>
+                                                }
+                                            </div>
+                                            @if (canAddToCart && isLoggedIn)
+                                            {
+                                                <form asp-controller="Cart" asp-action="Add" method="post" class="book-detail-cart-form">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="bookId" value="@Model.BookId" />
+                                                    <div class="shop-quantity-wrap">
+                                                        <label class="shop-qty-label" for="bookQty">Số lượng</label>
+                                                        <div class="shop-qty-control">
+                                                            <button type="button" class="shop-qty-btn" data-dir="-1" aria-label="Giảm số lượng">−</button>
+                                                            <input type="number"
+                                                                   name="quantity"
+                                                                   id="bookQty"
+                                                                   class="shop-qty-input"
+                                                                   value="1"
+                                                                   min="1"
+                                                                   max="@maxQty"
+                                                                   step="1" />
+                                                            <button type="button" class="shop-qty-btn" data-dir="1" aria-label="Tăng số lượng">+</button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="book-detail-cart-actions-row">
+                                                        <button type="submit" class="btn btn-primary" style="background:#ff7236;border-color:#ff7236;margin-right:8px"><i class="fa fa-shopping-cart"></i> Thêm vào giỏ</button>
+                                                        <a asp-action="Shop" class="btn btn-dark-gray">Tiếp tục mua sắm</a>
+                                                    </div>
+                                                </form>
+                                            }
+                                            else if (canAddToCart)
+                                            {
+                                                <div class="shop-quantity-wrap">
+                                                    <label class="shop-qty-label" for="bookQty">Số lượng</label>
+                                                    <div class="shop-qty-control">
+                                                        <button type="button" class="shop-qty-btn" data-dir="-1" aria-label="Giảm số lượng">−</button>
+                                                        <input type="number"
+                                                               id="bookQty"
+                                                               class="shop-qty-input"
+                                                               value="1"
+                                                               min="1"
+                                                               max="@maxQty"
+                                                               step="1" />
+                                                        <button type="button" class="shop-qty-btn" data-dir="1" aria-label="Tăng số lượng">+</button>
+                                                    </div>
+                                                    <p class="shop-qty-hint text-muted small mb-0" style="margin-top:6px">Đăng nhập để thêm sách vào giỏ hàng.</p>
+                                                </div>
+                                                <div class="book-detail-cart-actions-row">
+                                                    <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@loginReturnUrl" class="btn btn-primary" style="background:#ff7236;border-color:#ff7236;margin-right:8px"><i class="fa fa-shopping-cart"></i> Đăng nhập để mua</a>
+                                                    <a asp-action="Shop" class="btn btn-dark-gray">Tiếp tục mua sắm</a>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="shop-quantity-wrap">
+                                                    <label class="shop-qty-label" for="bookQty">Số lượng</label>
+                                                    <div class="shop-qty-control">
+                                                        <button type="button" class="shop-qty-btn" data-dir="-1" aria-label="Giảm số lượng" disabled>−</button>
+                                                        <input type="number"
+                                                               id="bookQty"
+                                                               class="shop-qty-input"
+                                                               value="0"
+                                                               min="0"
+                                                               max="@maxQty"
+                                                               step="1"
+                                                               disabled="disabled" />
+                                                        <button type="button" class="shop-qty-btn" data-dir="1" aria-label="Tăng số lượng" disabled>+</button>
+                                                    </div>
+                                                    <p class="shop-qty-hint text-muted small mb-0">Hết hàng — không thể đặt thêm.</p>
+                                                </div>
+                                                <div class="book-detail-cart-actions-row">
+                                                    <span class="btn btn-primary book-detail-cart-disabled" style="background:#ccc;border-color:#ccc;margin-right:8px;cursor:not-allowed"><i class="fa fa-shopping-cart"></i> Hết hàng</span>
+                                                    <a asp-action="Shop" class="btn btn-dark-gray">Tiếp tục mua sắm</a>
+                                                </div>
+                                            }
                                         </div>
                                     </div>
                                 </div>
@@ -139,3 +213,41 @@
         </main>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var input = document.getElementById('bookQty');
+            if (!input || input.disabled) return;
+
+            var min = parseInt(input.getAttribute('min'), 10);
+            if (isNaN(min)) min = 0;
+            var max = parseInt(input.getAttribute('max'), 10);
+            if (isNaN(max)) max = 9999;
+
+            function clamp() {
+                var v = parseInt(input.value, 10);
+                if (isNaN(v)) v = min;
+                if (v < min) v = min;
+                if (v > max) v = max;
+                input.value = v;
+            }
+
+            document.querySelectorAll('.book-detail-actions .shop-qty-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    if (btn.disabled || input.disabled) return;
+                    var d = parseInt(btn.getAttribute('data-dir'), 10);
+                    var v = parseInt(input.value, 10);
+                    if (isNaN(v)) v = min;
+                    v += d;
+                    if (v < min) v = min;
+                    if (v > max) v = max;
+                    input.value = v;
+                });
+            });
+
+            input.addEventListener('change', clamp);
+            input.addEventListener('blur', clamp);
+        })();
+    </script>
+}

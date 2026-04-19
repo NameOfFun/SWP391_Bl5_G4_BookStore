@@ -1,33 +1,42 @@
-<!-- Start: Search Section (template: wwwroot/index.html) -->
+@model BookStore.ViewModels.HomeIndexViewModel
+<!-- Start: Search Section — GET /Book/Shop (q, categoryId) -->
 <section class="search-filters">
     <div class="container">
         <div class="filter-box">
             <h3>Bạn đang tìm gì tại thư viện?</h3>
-            <form asp-controller="Book" asp-action="Index" method="get">
+            <form asp-controller="Book" asp-action="Shop" method="get">
                 <div class="col-md-4 col-sm-6">
                     <div class="form-group">
-                        <label class="sr-only" for="keywords">Từ khóa</label>
-                        <input class="form-control" placeholder="Tìm theo từ khóa" id="keywords" name="keywords" type="text" />
+                        <label class="sr-only" for="home-shop-q">Từ khóa</label>
+                        <input class="form-control"
+                               placeholder="Tìm theo tên sách"
+                               id="home-shop-q"
+                               name="q"
+                               type="search"
+                               maxlength="200"
+                               autocomplete="off" />
                     </div>
                 </div>
                 <div class="col-md-3 col-sm-6">
                     <div class="form-group">
-                        <select name="catalog" id="catalog" class="form-control">
-                            <option>Tìm trong danh mục</option>
-                            <option>Danh mục 01</option>
-                            <option>Danh mục 02</option>
-                            <option>Danh mục 03</option>
+                        <label class="sr-only" for="home-shop-cat">Danh mục</label>
+                        <select name="categoryId" id="home-shop-cat" class="form-control">
+                            <option value="">Tất cả danh mục</option>
+                            @foreach (var c in Model.ShopCategories)
+                            {
+                                <option value="@c.CategoryId">@c.Name</option>
+                            }
                         </select>
                     </div>
                 </div>
                 <div class="col-md-3 col-sm-6">
                     <div class="form-group">
-                        <select name="category" id="category" class="form-control">
-                            <option>Tất cả thể loại</option>
-                            <option>Văn học</option>
-                            <option>Kinh tế</option>
-                            <option>Kỹ năng</option>
-                            <option>Thiếu nhi</option>
+                        <label class="sr-only" for="home-shop-order">Sắp xếp</label>
+                        <select name="order" id="home-shop-order" class="form-control">
+                            <option value="newest" selected="selected">Mới nhất</option>
+                            <option value="title">Theo tên A–Z</option>
+                            <option value="price_asc">Giá tăng dần</option>
+                            <option value="price_desc">Giá giảm dần</option>
                         </select>
                     </div>
                 </div>

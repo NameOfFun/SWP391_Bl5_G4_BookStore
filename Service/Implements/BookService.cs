@@ -123,6 +123,23 @@ namespace BookStore.Service.Implements
             return ToDto(entity);
         }
 
+        public async Task<IReadOnlyList<BookDto>> GetNewReleasesForHomeAsync(int take = 12)
+        {
+            take = Math.Clamp(take, 1, 48);
+            var books = await _context.Books
+                .AsNoTracking()
+                .Where(b => b.IsActive)
+                .Include(b => b.Category)
+                .Include(b => b.Author)
+                .Include(b => b.Tags)
+                .OrderByDescending(b => b.CreatedAt ?? DateTime.MinValue)
+                .ThenByDescending(b => b.BookId)
+                .Take(take)
+                .ToListAsync();
+
+            return books.Select(ToDto).ToList();
+        }
+
         public async Task<BookDto> ChangeStatusAsync(int id, string userId)
         {
             var entity = await _context.Books

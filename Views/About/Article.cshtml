@@ -1,0 +1,90 @@
+@model BookStore.Dtos.Common.AboutDto
+@using BookStore.Helpers
+@{
+    Layout = "~/Views/Shared/_LayoutAuth.cshtml";
+    ViewData["Title"] = Model.Title;
+    ViewData["LibrariaInnerHeader"] = true;
+    var heroImg = AboutDisplayHelper.DetailHeroImage(Model.AboutId);
+    var dateStr = Model.UpdatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm");
+}
+<style>
+    .about-article-body { line-height: 1.75; color: #2f2f2f; }
+    .about-article-body img { max-width: 100%; height: auto; }
+    .about-article-body p { margin-bottom: 1em; }
+</style>
+
+<section class="page-banner news-listing-banner services-banner">
+    <div class="container">
+        <div class="banner-header">
+            <h2>@Model.Title</h2>
+            <span class="underline center"></span>
+            <p class="lead">BookStore — Tin tức &amp; giới thiệu</p>
+        </div>
+        <div class="breadcrumb">
+            <ul>
+                <li><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                <li><a asp-action="Index">Tin tức</a></li>
+                <li>@Model.Title</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<div id="content" class="site-content">
+    <div id="primary" class="content-area">
+        <main id="main" class="site-main">
+            <div class="main-news-list">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-9 col-md-push-3">
+                            <div class="news-list-detail">
+                                <div class="news-list-box">
+                                    <div class="single-news-list">
+                                        <figure>
+                                            <img src="@heroImg" alt="@Model.Title" />
+                                        </figure>
+                                        <div class="content-block">
+                                            <div class="member-info">
+                                                <div class="content_meta_category">
+                                                    <span class="arrow-right"></span>
+                                                    <span>BookStore</span>
+                                                </div>
+                                                <ul class="news-event-info">
+                                                    <li>
+                                                        <a href="#" onclick="return false;">
+                                                            <i class="fa fa-calendar"></i>
+                                                            Cập nhật: @dateStr
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                                <div class="about-article-body">
+                                                    @Html.Raw(Model.ContentHtml)
+                                                </div>
+                                                <p style="margin-top:24px">
+                                                    <a class="btn btn-dark-gray" asp-action="Index">← Quay lại danh sách</a>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="clearfix"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-md-pull-9">
+                            <aside id="secondary" class="sidebar widget-area">
+                                <div class="widget widget_text">
+                                    <h4 class="widget-title" data-control>Mục khác</h4>
+                                    <div class="textwidget">
+                                        <p><a asp-action="Index">Tất cả tin &amp; giới thiệu</a></p>
+                                        <p><a asp-controller="Book" asp-action="Shop">Cửa hàng sách</a></p>
+                                        <p><a asp-controller="Home" asp-action="Index">Trang chủ</a></p>
+                                    </div>
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>

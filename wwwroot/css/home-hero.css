@@ -195,3 +195,105 @@ body.libraria-page-home .navbar-nav > li > a {
     font-size: 14px;
   }
 }
+
+/* --- Sách mới phát hành (home): 5 bìa / hàng desktop, căn giữa, tỉ lệ 2:3 --- */
+.bookstore-home-v1 .bookstore-home-new-releases #category-filter .category-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: clamp(10px, 1.8vw, 18px);
+  width: 100%;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 14px;
+  box-sizing: border-box;
+}
+
+.bookstore-home-v1 .bookstore-home-new-releases .category-list > .category-item {
+  float: none !important;
+  box-sizing: border-box;
+}
+
+@media (min-width: 992px) {
+  .bookstore-home-v1 .bookstore-home-new-releases .category-list > .category-item:not(.bookstore-home-new-releases-empty) {
+    flex: 0 0 auto;
+    width: clamp(128px, 15.5vw, 182px) !important;
+    max-width: 182px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  .bookstore-home-v1 .bookstore-home-new-releases .category-list > .category-item:not(.bookstore-home-new-releases-empty) {
+    flex: 0 0 auto;
+    width: clamp(140px, 28vw, 200px) !important;
+    max-width: 200px;
+  }
+}
+
+@media (max-width: 767px) {
+  .bookstore-home-v1 .bookstore-home-new-releases .category-list > .category-item:not(.bookstore-home-new-releases-empty) {
+    flex: 0 0 calc(50% - clamp(10px, 2vw, 18px) / 2);
+    width: calc(50% - clamp(10px, 2vw, 18px) / 2) !important;
+    max-width: 240px;
+  }
+}
+
+.bookstore-home-v1 .bookstore-home-new-releases .bookstore-home-new-releases-empty {
+  flex: 1 1 100%;
+  width: 100% !important;
+  max-width: none !important;
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #fff;
+}
+
+.bookstore-home-v1 .bookstore-home-new-releases .category-item figure {
+  margin: 0;
+  aspect-ratio: 2 / 3;
+}
+
+.bookstore-home-v1 .bookstore-home-new-releases .category-item figure img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.bookstore-home-v1 .bookstore-home-new-releases .category-item .info-block {
+  padding: 0 10px !important;
+}
+
+.bookstore-home-v1 .bookstore-home-new-releases .category-item .info-block h4 {
+  font-size: clamp(0.8rem, 1.25vw, 0.98rem);
+  line-height: 1.2;
+  max-height: 2.4em;
+  overflow: hidden;
+}
+
+.bookstore-home-v1 .bookstore-home-new-releases .category-item .info-block .author {
+  font-size: 0.68rem;
+  line-height: 1.25;
+  margin-bottom: 2px;
+}
+
+.bookstore-home-v1 .bookstore-home-new-releases .category-item .info-block p {
+  font-size: 0.68rem !important;
+  line-height: 1.35 !important;
+  max-height: 3.1em;
+  overflow: hidden;
+  height: auto !important;
+}
+
+.bookstore-home-v1 .bookstore-home-new-releases .category-item .info-block ol {
+  margin-top: 6px !important;
+}
+
+.bookstore-home-v1 .bookstore-home-new-releases .category-item .info-block ol li {
+  margin: 0 3px !important;
+}
+
+.bookstore-home-v1 .bookstore-home-new-releases .category-item .info-block ol li i {
+  font-size: 12px !important;
+}
