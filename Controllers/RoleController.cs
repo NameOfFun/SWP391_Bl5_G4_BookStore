@@ -21,8 +21,8 @@ public class RoleController : Controller
     public async Task<IActionResult> Index()
     {
         var roles = await _roleService.GetAllAsync();
-        ViewData["Title"] = "Quản lý vai trò";
-        ViewData["BreadcrumbParent"] = "Quản lý vai trò";
+        ViewData["Title"] = "Tài Khoản và Vai Trò";
+        ViewData["BreadcrumbParent"] = "Tài Khoản và Vai Trò";
         ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "Role");
         return View(roles);
     }
@@ -31,7 +31,7 @@ public class RoleController : Controller
     public IActionResult Create()
     {
         ViewData["Title"] = "Thêm vai trò mới";
-        ViewData["BreadcrumbParent"] = "Quản lý vai trò";
+        ViewData["BreadcrumbParent"] = "Tài Khoản và Vai Trò";
         ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "Role");
         return View(new CreateRoleDto());
     }
@@ -43,7 +43,7 @@ public class RoleController : Controller
         if (!ModelState.IsValid)
         {
             ViewData["Title"] = "Thêm vai trò mới";
-            ViewData["BreadcrumbParent"] = "Quản lý vai trò";
+            ViewData["BreadcrumbParent"] = "Tài Khoản và Vai Trò";
             ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "Role");
             return View(dto);
         }
@@ -59,7 +59,7 @@ public class RoleController : Controller
         {
             ModelState.AddModelError(string.Empty, ex.Message);
             ViewData["Title"] = "Thêm vai trò mới";
-            ViewData["BreadcrumbParent"] = "Quản lý vai trò";
+            ViewData["BreadcrumbParent"] = "Tài Khoản và Vai Trò";
             ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "Role");
             return View(dto);
         }
@@ -78,7 +78,7 @@ public class RoleController : Controller
         }
 
         ViewData["Title"] = $"Chỉnh sửa vai trò: {dto.Name}";
-        ViewData["BreadcrumbParent"] = "Quản lý vai trò";
+        ViewData["BreadcrumbParent"] = "Tài Khoản và Vai Trò";
         ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "Role");
         return View(dto);
     }
@@ -106,7 +106,7 @@ public class RoleController : Controller
         if (!ModelState.IsValid)
         {
             ViewData["Title"] = $"Chỉnh sửa vai trò: {dto.Name}";
-            ViewData["BreadcrumbParent"] = "Quản lý vai trò";
+            ViewData["BreadcrumbParent"] = "Tài Khoản và Vai Trò";
             ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "Role");
             return View(dto);
         }
@@ -127,7 +127,7 @@ public class RoleController : Controller
         {
             ModelState.AddModelError(string.Empty, ex.Message);
             ViewData["Title"] = $"Chỉnh sửa vai trò: {dto.Name}";
-            ViewData["BreadcrumbParent"] = "Quản lý vai trò";
+            ViewData["BreadcrumbParent"] = "Tài Khoản và Vai Trò";
             ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "Role");
             return View(dto);
         }
