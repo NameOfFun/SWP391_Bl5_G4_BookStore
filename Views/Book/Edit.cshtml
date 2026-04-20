@@ -81,11 +81,12 @@
                     {
                         <div class="col-md-6">
                             <label asp-for="PromotionalStartsAt" class="form-label fw-semibold">KM từ ngày</label>
-                            <input asp-for="PromotionalStartsAt" class="form-control" type="datetime-local" />
+                            <input asp-for="PromotionalStartsAt" id="promoStart" class="form-control" type="datetime-local" />
                         </div>
                         <div class="col-md-6">
                             <label asp-for="PromotionalEndsAt" class="form-label fw-semibold">KM đến ngày</label>
-                            <input asp-for="PromotionalEndsAt" class="form-control" type="datetime-local" />
+                            <input asp-for="PromotionalEndsAt" id="promoEnd" class="form-control" type="datetime-local" />
+                            <span id="promoDateError" class="text-danger small d-none">Ngày kết thúc phải sau ngày bắt đầu.</span>
                         </div>
                     }
                     else
@@ -179,6 +180,25 @@
                 }
             }
             urlInput.addEventListener('input', showUrlPreview);
+        })();
+
+        (function () {
+            var start = document.getElementById('promoStart');
+            var end = document.getElementById('promoEnd');
+            var err = document.getElementById('promoDateError');
+            if (!start || !end) return;
+
+            function validate() {
+                if (start.value && end.value && end.value <= start.value) {
+                    err.classList.remove('d-none');
+                    end.setCustomValidity('invalid');
+                } else {
+                    err.classList.add('d-none');
+                    end.setCustomValidity('');
+                }
+            }
+            start.addEventListener('change', validate);
+            end.addEventListener('change', validate);
         })();
     </script>
 }

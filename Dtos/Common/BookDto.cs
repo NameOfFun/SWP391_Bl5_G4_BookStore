@@ -14,17 +14,17 @@ namespace BookStore.Dtos.Common
         public string? Description { get; set; }
 
         [Required(ErrorMessage = "Giá không được để trống")]
-        [Range(0, 999999999, ErrorMessage = "Giá phải lớn hơn hoặc bằng 0")]
+        [Range(0, 999999999, ErrorMessage = "Giá phải từ 0 đến 999.999.999")]
         public decimal Price { get; set; }
 
-        [Range(0, 999999999, ErrorMessage = "Giá khuyến mãi phải lớn hơn hoặc bằng 0")]
+        [Range(0, 999999999, ErrorMessage = "Giá khuyến mãi phải từ 0 đến 999.999.999")]
         public decimal? PromotionalPrice { get; set; }
 
         public DateTime? PromotionalStartsAt { get; set; }
 
         public DateTime? PromotionalEndsAt { get; set; }
 
-        [Range(0, int.MaxValue, ErrorMessage = "Tồn kho phải lớn hơn hoặc bằng 0")]
+        [Range(0, 999999, ErrorMessage = "Tồn kho phải từ 0 đến 999.999")]
         public int Stock { get; set; }
 
         public int? CategoryId { get; set; }
