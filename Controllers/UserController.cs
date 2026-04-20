@@ -18,15 +18,20 @@ public class UserController : Controller
         _logger = logger;
     }
 
+    private void SetUserViewData(string title)
+    {
+        ViewData["Title"] = title;
+        ViewData["BreadcrumbParent"] = "Tài Khoản và Vai Trò";
+        ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "User");
+    }
+
     [HttpGet]
     public async Task<IActionResult> Index()
     {
         try
         {
             var users = await _userService.GetAllUsersAsync();
-            ViewData["Title"] = "Quản lý người dùng";
-            ViewData["BreadcrumbParent"] = "Quản lý người dùng";
-            ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "User");
+            SetUserViewData("Quản lý người dùng");
             ViewBag.AllRolesForFilter = await _userService.GetAllRolesForFilterAsync();
             return View(users);
         }
@@ -45,9 +50,7 @@ public class UserController : Controller
         {
             AvailableRoles = await _userService.GetAvailableRolesAsync()
         };
-        ViewData["Title"] = "Thêm người dùng mới";
-        ViewData["BreadcrumbParent"] = "Quản lý người dùng";
-        ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "User");
+        SetUserViewData("Thêm người dùng mới");
         return View(dto);
     }
 
@@ -58,9 +61,7 @@ public class UserController : Controller
         if (!ModelState.IsValid)
         {
             dto.AvailableRoles = await _userService.GetAvailableRolesAsync();
-            ViewData["Title"] = "Thêm người dùng mới";
-            ViewData["BreadcrumbParent"] = "Quản lý người dùng";
-            ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "User");
+            SetUserViewData("Thêm người dùng mới");
             return View(dto);
         }
 
@@ -75,9 +76,7 @@ public class UserController : Controller
         {
             ModelState.AddModelError(string.Empty, ex.Message);
             dto.AvailableRoles = await _userService.GetAvailableRolesAsync();
-            ViewData["Title"] = "Thêm người dùng mới";
-            ViewData["BreadcrumbParent"] = "Quản lý người dùng";
-            ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "User");
+            SetUserViewData("Thêm người dùng mới");
             return View(dto);
         }
     }
@@ -88,9 +87,7 @@ public class UserController : Controller
         try
         {
             var dto = await _userService.GetUserForEditAsync(id);
-            ViewData["Title"] = "Chỉnh sửa người dùng";
-            ViewData["BreadcrumbParent"] = "Quản lý người dùng";
-            ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "User");
+            SetUserViewData("Chỉnh sửa người dùng");
             return View(dto);
         }
         catch (InvalidOperationException ex)
@@ -107,9 +104,7 @@ public class UserController : Controller
         if (!ModelState.IsValid)
         {
             dto.AvailableRoles = await _userService.GetAvailableRolesAsync();
-            ViewData["Title"] = "Chỉnh sửa người dùng";
-            ViewData["BreadcrumbParent"] = "Quản lý người dùng";
-            ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "User");
+            SetUserViewData("Chỉnh sửa người dùng");
             return View(dto);
         }
 
@@ -129,9 +124,7 @@ public class UserController : Controller
         {
             ModelState.AddModelError(string.Empty, ex.Message);
             dto.AvailableRoles = await _userService.GetAvailableRolesAsync();
-            ViewData["Title"] = "Chỉnh sửa người dùng";
-            ViewData["BreadcrumbParent"] = "Quản lý người dùng";
-            ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "User");
+            SetUserViewData("Chỉnh sửa người dùng");
             return View(dto);
         }
     }

@@ -2,8 +2,8 @@
 @using Microsoft.AspNetCore.Mvc.Rendering
 @model IReadOnlyList<UserListDto>
 @{
-    ViewData["Title"] = "Danh sách người dùng";
-    ViewData["BreadcrumbParent"] = "Quản lý người dùng";
+    ViewData["Title"] = "Quản lý người dùng";
+    ViewData["BreadcrumbParent"] = "Tài Khoản và Vai Trò";
     ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "User");
     var allRoles = (ViewBag.AllRolesForFilter as List<SelectListItem>) ?? new List<SelectListItem>();
 }
@@ -147,7 +147,7 @@
 }
 
 <div class="book-management-header">
-    <h4>Danh sách người dùng</h4>
+    <h4>Quản lý người dùng</h4>
     <a asp-action="Create" class="btn btn-primary btn-add-new">
         <i class="bi bi-plus-lg"></i> Thêm người dùng
     </a>

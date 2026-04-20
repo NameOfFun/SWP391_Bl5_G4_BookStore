@@ -2,84 +2,90 @@
 @model CreateUserDto
 @{
     ViewData["Title"] = "Thêm người dùng mới";
+    ViewData["BreadcrumbParent"] = "Tài Khoản và Vai Trò";
+    ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "User");
 }
 
-<div class="container mt-4" style="max-width:700px">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a asp-action="Index">Quản lý Người dùng</a></li>
-            <li class="breadcrumb-item active">Thêm mới</li>
-        </ol>
-    </nav>
+<style>
+    .form-card { background:#fff; border:1px solid #e8e8e8; border-radius:10px; overflow:hidden; max-width:760px; margin:0 auto; }
+    .form-card-header { padding:16px 24px; border-bottom:1px solid #e8e8e8; }
+    .form-card-header h5 { font-weight:600; font-size:1rem; color:#1a1a2e; margin:0; }
+    .form-card-body { padding:24px; }
+    .field-label { font-size:.8rem; font-weight:500; color:#595959; margin-bottom:5px; }
+    .form-control, .form-select { font-size:.875rem; border-radius:6px; border-color:#d9d9d9; }
+    .form-control:focus, .form-select:focus { border-color:#1677ff; box-shadow:0 0 0 .2rem rgba(22,119,255,.15); }
+    .field-hint { font-size:.775rem; color:#8c8c8c; margin-top:4px; }
+    .form-divider { border:none; border-top:1px solid #f0f0f0; margin:20px 0; }
+    .section-title { font-size:.8125rem; font-weight:600; color:#595959; text-transform:uppercase; letter-spacing:.04em; margin-bottom:12px; }
+    .btn-save { background-color:#1677ff; border-color:#1677ff; font-size:.875rem; padding:7px 20px; border-radius:6px; }
+    .btn-save:hover { background-color:#0958d9; border-color:#0958d9; }
+    .btn-cancel { font-size:.875rem; padding:7px 16px; border-radius:6px; }
+</style>
 
-    <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0"><i class="bi bi-person-plus me-2"></i>Thêm người dùng mới</h5>
-        </div>
-        <div class="card-body">
-            <form asp-action="Create" method="post">
-                @Html.AntiForgeryToken()
-                <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3"></div>
+<div class="book-management-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <h4 style="font-weight:600;font-size:1.25rem;color:#1a1a2e;margin:0">Thêm người dùng mới</h4>
+</div>
 
-                <div class="row g-3">
-                    <div class="col-12">
-                        <label asp-for="FullName" class="form-label fw-semibold">
-                            Họ và tên <span class="text-danger">*</span>
-                        </label>
-                        <input asp-for="FullName" class="form-control" placeholder="Nhập họ và tên..." />
-                        <span asp-validation-for="FullName" class="text-danger small"></span>
-                    </div>
+<div class="form-card">
+    <div class="form-card-header">
+        <h5>Thông tin người dùng</h5>
+    </div>
+    <div class="form-card-body">
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3" style="font-size:.875rem;border-radius:6px"></div>
 
-                    <div class="col-md-6">
-                        <label asp-for="Email" class="form-label fw-semibold">
-                            Email <span class="text-danger">*</span>
-                        </label>
-                        <input asp-for="Email" class="form-control" placeholder="example@email.com" />
-                        <span asp-validation-for="Email" class="text-danger small"></span>
-                    </div>
+            <div class="mb-3">
+                <label class="field-label">Họ và tên <span class="text-danger">*</span></label>
+                <input asp-for="FullName" class="form-control" placeholder="Nhập họ và tên..." />
+                <span asp-validation-for="FullName" class="text-danger" style="font-size:.775rem"></span>
+            </div>
 
-                    <div class="col-md-6">
-                        <label asp-for="PhoneNumber" class="form-label fw-semibold">Số điện thoại</label>
-                        <input asp-for="PhoneNumber" class="form-control" placeholder="0xxxxxxxxx" />
-                        <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label asp-for="Password" class="form-label fw-semibold">
-                            Mật khẩu <span class="text-danger">*</span>
-                        </label>
-                        <input asp-for="Password" type="password" class="form-control" placeholder="Tối thiểu 6 ký tự" />
-                        <span asp-validation-for="Password" class="text-danger small"></span>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label asp-for="ConfirmPassword" class="form-label fw-semibold">
-                            Xác nhận mật khẩu <span class="text-danger">*</span>
-                        </label>
-                        <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Nhập lại mật khẩu" />
-                        <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
-                    </div>
-
-                    <div class="col-12">
-                        <label asp-for="SelectedRole" class="form-label fw-semibold">
-                            Vai trò <span class="text-danger">*</span>
-                        </label>
-                        <select asp-for="SelectedRole" asp-items="Model.AvailableRoles" class="form-select">
-                            <option value="">-- Chọn vai trò --</option>
-                        </select>
-                        <span asp-validation-for="SelectedRole" class="text-danger small"></span>
-                    </div>
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="field-label">Email <span class="text-danger">*</span></label>
+                    <input asp-for="Email" class="form-control" placeholder="example@email.com" />
+                    <span asp-validation-for="Email" class="text-danger" style="font-size:.775rem"></span>
                 </div>
-
-                <hr class="my-4" />
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary px-4">
-                        <i class="bi bi-floppy me-1"></i> Lưu
-                    </button>
-                    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+                <div class="col-md-6">
+                    <label class="field-label">Số điện thoại</label>
+                    <input asp-for="PhoneNumber" class="form-control" placeholder="0xxxxxxxxx" />
+                    <span asp-validation-for="PhoneNumber" class="text-danger" style="font-size:.775rem"></span>
                 </div>
-            </form>
-        </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="field-label">Vai trò <span class="text-danger">*</span></label>
+                <select asp-for="SelectedRole" asp-items="Model.AvailableRoles" class="form-select">
+                    <option value="">-- Chọn vai trò --</option>
+                </select>
+                <span asp-validation-for="SelectedRole" class="text-danger" style="font-size:.775rem"></span>
+            </div>
+
+            <hr class="form-divider" />
+            <div class="section-title">Mật khẩu</div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="field-label">Mật khẩu <span class="text-danger">*</span></label>
+                    <input asp-for="Password" type="password" class="form-control" placeholder="Tối thiểu 6 ký tự" />
+                    <span asp-validation-for="Password" class="text-danger" style="font-size:.775rem"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="field-label">Xác nhận mật khẩu <span class="text-danger">*</span></label>
+                    <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Nhập lại mật khẩu" />
+                    <span asp-validation-for="ConfirmPassword" class="text-danger" style="font-size:.775rem"></span>
+                </div>
+            </div>
+
+            <hr class="form-divider" />
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-save">
+                    <i class="bi bi-floppy me-1"></i> Lưu
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary btn-cancel">Hủy</a>
+            </div>
+        </form>
     </div>
 </div>
 

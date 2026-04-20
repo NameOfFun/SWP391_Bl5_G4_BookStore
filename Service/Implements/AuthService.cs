@@ -3,7 +3,6 @@ using BookStore.Models;
 using BookStore.Service.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel;
 
 namespace BookStore.Service.Implements;
 
@@ -50,18 +49,18 @@ public class AuthService : IAuthService
             return new LoginResultDto { Succeeded = false, ErrorMessage = "Email hoặc mật khẩu không đúng." };
         }
 
+        // Status is checked after sign-in so the lockout counter still increments on bad credentials
         if (!user.Status)
         {
             await _signInManager.SignOutAsync();
             return new LoginResultDto { Succeeded = false, ErrorMessage = "Tài khoản đã bị vô hiệu hóa." };
         }
 
-        // Check if user's role is deactivated
         var userRoles = await _userManager.GetRolesAsync(user);
         if (userRoles.Count > 0)
         {
-            var role = await _roleManager.FindByNameAsync(userRoles[0]);
-            if (role is ApplicationRole appRole && !appRole.Status)
+            var appRole = await _roleManager.FindByNameAsync(userRoles[0]) as ApplicationRole;
+            if (appRole != null && !appRole.Status)
             {
                 await _signInManager.SignOutAsync();
                 return new LoginResultDto { Succeeded = false, ErrorMessage = "Vai trò tài khoản đã bị vô hiệu hóa." };
@@ -72,6 +71,7 @@ public class AuthService : IAuthService
         {
             Succeeded = true,
             ReturnUrl = model.ReturnUrl ?? "/",
+            Role = userRoles.FirstOrDefault()
         };
     }
 
