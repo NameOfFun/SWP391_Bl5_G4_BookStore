@@ -136,7 +136,7 @@ namespace BookStore.Controllers
             var book = await _bookService.GetByIdAsync(id);
             if (book == null) return NotFound();
 
-            var canManage = User.IsInRole("Admin") || User.IsInRole("Staff") || User.IsInRole("Manager");
+            var canManage = User.IsInRole("Staff") || User.IsInRole("Manager");
             if (!book.IsActive && !canManage)
                 return NotFound();
 
@@ -272,7 +272,7 @@ namespace BookStore.Controllers
 
         // POST: /Book/ChangeStatus/5
         [HttpPost, ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin,Staff,Manager")]
+        [Authorize(Roles = "Staff,Manager")]
         public async Task<IActionResult> ChangeStatus(int id)
         {
             if (id <= 0)
