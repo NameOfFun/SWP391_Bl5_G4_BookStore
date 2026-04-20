@@ -42,5 +42,13 @@ namespace BookStore.Dtos.Common
         public string? AuthorName { get; set; }
         public List<string> TagNames { get; set; } = new();
         public DateTime? CreatedAt { get; set; }
+
+        // Computed: true khi khuyến mãi có giá trị và nằm trong khoảng thời gian hiện tại
+        public bool IsPromoActive =>
+            PromotionalPrice.HasValue
+            && (!PromotionalStartsAt.HasValue || PromotionalStartsAt.Value <= DateTime.Now)
+            && (!PromotionalEndsAt.HasValue || PromotionalEndsAt.Value >= DateTime.Now);
+
+        public decimal EffectivePrice => IsPromoActive ? PromotionalPrice!.Value : Price;
     }
 }

@@ -81,8 +81,8 @@ namespace BookStore.Controllers
 
             query = order switch
             {
-                "price_asc" => query.OrderBy(b => b.PromotionalPrice ?? b.Price),
-                "price_desc" => query.OrderByDescending(b => b.PromotionalPrice ?? b.Price),
+                "price_asc" => query.OrderBy(b => b.EffectivePrice),
+                "price_desc" => query.OrderByDescending(b => b.EffectivePrice),
                 "title" => query.OrderBy(b => b.Title),
                 _ => query.OrderByDescending(b => b.CreatedAt ?? DateTime.MinValue)
             };

@@ -2,7 +2,7 @@
 @inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment Env
 @{
     var cover = BookCoverHelper.ResolveCoverPath(Env, Model.BookId, Model.ImageUrl);
-    var price = Model.PromotionalPrice ?? Model.Price;
+    var price = Model.EffectivePrice;
     var isbn = $"978-604-{Model.BookId:D6}";
 }
 <li>
