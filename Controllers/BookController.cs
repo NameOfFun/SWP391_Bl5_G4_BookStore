@@ -5,7 +5,6 @@ using BookStore.Service.Interfaces;
 using BookStore.ViewModels;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -158,8 +157,7 @@ namespace BookStore.Controllers
         // POST: /Book/Create
         [HttpPost, ValidateAntiForgeryToken]
         [Authorize(Roles = "Staff,Manager")]
-        [RequestSizeLimit(6 * 1024 * 1024)]
-        public async Task<IActionResult> Create(BookDto dto, IFormFile? coverImage)
+        public async Task<IActionResult> Create(BookDto dto)
         {
             bool canSetPrice = User.IsInRole("Manager");
             if (!canSetPrice)
@@ -183,18 +181,7 @@ namespace BookStore.Controllers
             try
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-                if (coverImage != null && coverImage.Length > 0)
-                    dto.ImageUrl = null;
-
-                var created = await _bookService.CreateAsync(dto, userId);
-
-                if (coverImage != null && coverImage.Length > 0)
-                {
-                    var path = await BookCoverHelper.SaveUploadedCoverAsync(_env, created.BookId, coverImage);
-                    created.ImageUrl = path;
-                    await _bookService.UpdateAsync(created.BookId, created, userId);
-                }
-
+                await _bookService.CreateAsync(dto, userId);
                 TempData["Success"] = "Thêm sách thành công";
                 return RedirectToAction(nameof(Index));
             }
@@ -224,8 +211,7 @@ namespace BookStore.Controllers
         // POST: /Book/Edit/5
         [HttpPost, ValidateAntiForgeryToken]
         [Authorize(Roles = "Staff,Manager")]
-        [RequestSizeLimit(6 * 1024 * 1024)]
-        public async Task<IActionResult> Edit(int id, BookDto dto, IFormFile? coverImage)
+        public async Task<IActionResult> Edit(int id, BookDto dto)
         {
             bool canSetPrice = User.IsInRole("Manager");
             if (!canSetPrice)
@@ -251,9 +237,6 @@ namespace BookStore.Controllers
             try
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-                if (coverImage != null && coverImage.Length > 0)
-                    dto.ImageUrl = await BookCoverHelper.SaveUploadedCoverAsync(_env, id, coverImage);
-
                 await _bookService.UpdateAsync(id, dto, userId);
                 TempData["Success"] = "Cập nhật sách thành công";
                 return RedirectToAction(nameof(Index));
