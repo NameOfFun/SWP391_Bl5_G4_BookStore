@@ -50,6 +50,12 @@ public class AuthService : IAuthService
             return new LoginResultDto { Succeeded = false, ErrorMessage = "Email hoặc mật khẩu không đúng." };
         }
 
+        if (!user.Status)
+        {
+            await _signInManager.SignOutAsync();
+            return new LoginResultDto { Succeeded = false, ErrorMessage = "Tài khoản đã bị vô hiệu hóa." };
+        }
+
         // Check if user's role is deactivated
         var userRoles = await _userManager.GetRolesAsync(user);
         if (userRoles.Count > 0)

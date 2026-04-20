@@ -152,15 +152,8 @@ public class UserService : IUserService
         user.PhoneNumber = dto.PhoneNumber;
         user.Status = dto.IsActive;
 
-        if (!dto.IsActive)
-        {
-            user.LockoutEnabled = true;
-            user.LockoutEnd = DateTimeOffset.MaxValue;
-        }
-        else
-        {
+        if (dto.IsActive && user.LockoutEnd == DateTimeOffset.MaxValue)
             user.LockoutEnd = null;
-        }
 
         var updateResult = await _userManager.UpdateAsync(user);
         if (!updateResult.Succeeded)
@@ -199,13 +192,12 @@ public class UserService : IUserService
         if (user.Status)
         {
             user.Status = false;
-            user.LockoutEnabled = true;
-            user.LockoutEnd = DateTimeOffset.MaxValue;
         }
         else
         {
             user.Status = true;
-            user.LockoutEnd = null;
+            if (user.LockoutEnd == DateTimeOffset.MaxValue)
+                user.LockoutEnd = null;
         }
 
         await _userManager.UpdateAsync(user);
