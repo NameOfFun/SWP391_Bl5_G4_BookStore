@@ -39,7 +39,7 @@ namespace BookStore.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
-            if (User.IsInRole("Admin") || User.IsInRole("Staff") || User.IsInRole("Manager"))
+            if (User.IsInRole("Staff") || User.IsInRole("Manager"))
                 return View(await _bookService.GetAllAsync());
             return RedirectToAction(nameof(Shop));
         }
@@ -84,7 +84,7 @@ namespace BookStore.Controllers
                 "price_asc" => query.OrderBy(b => b.EffectivePrice),
                 "price_desc" => query.OrderByDescending(b => b.EffectivePrice),
                 "title" => query.OrderBy(b => b.Title),
-                _ => query.OrderByDescending(b => b.CreatedAt ?? DateTime.MinValue)
+                 _ => query.OrderByDescending(b => b.CreatedAt ?? DateTime.MinValue)
             };
 
             var list = query.ToList();
@@ -148,7 +148,7 @@ namespace BookStore.Controllers
 
         // GET: /Book/Create
         [HttpGet]
-        [Authorize(Roles = "Admin,Staff,Manager")]
+        [Authorize(Roles = "Staff,Manager")]
         public async Task<IActionResult> Create()
         {
             await PopulateDropdownsAsync();
@@ -157,7 +157,7 @@ namespace BookStore.Controllers
 
         // POST: /Book/Create
         [HttpPost, ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin,Staff,Manager")]
+        [Authorize(Roles = "Staff,Manager")]
         [RequestSizeLimit(6 * 1024 * 1024)]
         public async Task<IActionResult> Create(BookDto dto, IFormFile? coverImage)
         {
@@ -208,7 +208,7 @@ namespace BookStore.Controllers
 
         // GET: /Book/Edit/5
         [HttpGet]
-        [Authorize(Roles = "Admin,Staff,Manager")]
+        [Authorize(Roles = "Staff,Manager")]
         public async Task<IActionResult> Edit(int id)
         {
             if (id <= 0)
