@@ -25,18 +25,20 @@
                 <div class="row g-3">
                     <div class="col-12">
                         <label asp-for="Title" class="form-label fw-semibold">Tiêu đề <span class="text-danger">*</span></label>
-                        <input asp-for="Title" class="form-control" />
+                        <input asp-for="Title" class="form-control" maxlength="100" />
                         <span asp-validation-for="Title" class="text-danger small"></span>
                     </div>
 
                     <div class="col-12">
                         <label asp-for="Description" class="form-label fw-semibold">Mô tả</label>
-                        <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                        <textarea asp-for="Description" class="form-control" rows="4" maxlength="255"></textarea>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
                     </div>
 
                     <div class="col-md-6">
                         <label asp-for="AuthorName" class="form-label fw-semibold">Tác giả</label>
-                        <input asp-for="AuthorName" class="form-control" placeholder="Nhập tên tác giả..." />
+                        <input asp-for="AuthorName" class="form-control" placeholder="Nhập tên tác giả..." maxlength="100" />
+                        <span asp-validation-for="AuthorName" class="text-danger small"></span>
                     </div>
                     <div class="col-md-6">
                         <label asp-for="CategoryId" class="form-label fw-semibold">Danh mục</label>
@@ -106,7 +108,8 @@
                     <div class="col-12">
                         <label class="form-label fw-semibold">Ảnh bìa</label>
                         <label asp-for="ImageUrl" class="form-label small">Đường dẫn / URL ảnh</label>
-                        <input asp-for="ImageUrl" class="form-control" id="imageUrlInput" placeholder="https://..." />
+                        <input asp-for="ImageUrl" class="form-control" id="imageUrlInput" placeholder="https://..." maxlength="255" />
+                        <span asp-validation-for="ImageUrl" class="text-danger small"></span>
                         <div id="imagePreview" class="mt-2 @(string.IsNullOrEmpty(Model.ImageUrl) ? "d-none" : "")">
                             <img id="previewImg" src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "" : Url.Content(Model.ImageUrl))" alt="Xem trước" class="rounded border"
                                  style="max-height:180px;object-fit:contain;" />
@@ -158,7 +161,6 @@
     <script>
         (function () {
             var urlInput = document.getElementById('imageUrlInput');
-            var fileInput = document.getElementById('coverImage');
             var preview = document.getElementById('imagePreview');
             var img = document.getElementById('previewImg');
             function resolveImgUrl(u) {
@@ -169,22 +171,14 @@
             }
             function showUrlPreview() {
                 var url = urlInput.value.trim();
-                if (url && (!fileInput.files || !fileInput.files.length)) {
+                if (url) {
                     img.src = resolveImgUrl(url);
                     preview.classList.remove('d-none');
-                } else if (!fileInput.files || !fileInput.files.length) {
+                } else {
                     preview.classList.add('d-none');
                 }
             }
             urlInput.addEventListener('input', showUrlPreview);
-            fileInput.addEventListener('change', function () {
-                if (this.files && this.files[0]) {
-                    img.src = URL.createObjectURL(this.files[0]);
-                    preview.classList.remove('d-none');
-                } else {
-                    showUrlPreview();
-                }
-            });
         })();
     </script>
 }

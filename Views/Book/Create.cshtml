@@ -25,7 +25,7 @@
                     @* Tiêu đề *@
                     <div class="col-12">
                         <label asp-for="Title" class="form-label fw-semibold">Tiêu đề <span class="text-danger">*</span></label>
-                        <input asp-for="Title" class="form-control" placeholder="Nhập tiêu đề sách..." />
+                        <input asp-for="Title" class="form-control" placeholder="Nhập tiêu đề sách..." maxlength="100" />
                         <span asp-validation-for="Title" class="text-danger small"></span>
                     </div>
 
@@ -33,13 +33,15 @@
                     <div class="col-12">
                         <label asp-for="Description" class="form-label fw-semibold">Mô tả</label>
                         <textarea asp-for="Description" class="form-control" rows="4"
-                                  placeholder="Nhập mô tả ngắn về sách..."></textarea>
+                                  placeholder="Nhập mô tả ngắn về sách..." maxlength="255"></textarea>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
                     </div>
 
                     @* Tác giả & Danh mục *@
                     <div class="col-md-6">
                         <label asp-for="AuthorName" class="form-label fw-semibold">Tác giả</label>
-                        <input asp-for="AuthorName" class="form-control" placeholder="Nhập tên tác giả..." />
+                        <input asp-for="AuthorName" class="form-control" placeholder="Nhập tên tác giả..." maxlength="100" />
+                        <span asp-validation-for="AuthorName" class="text-danger small"></span>
                     </div>
                     <div class="col-md-6">
                         <label asp-for="CategoryId" class="form-label fw-semibold">Danh mục</label>
@@ -105,7 +107,8 @@
                         <label class="form-label fw-semibold">Ảnh bìa</label>
                         <p class="small text-muted mb-2">Dán link ảnh trên internet (URL).</p>
                         <label asp-for="ImageUrl" class="form-label small">Đường dẫn / URL ảnh</label>
-                        <input asp-for="ImageUrl" class="form-control" placeholder="https://..." id="imageUrlInput" />
+                        <input asp-for="ImageUrl" class="form-control" placeholder="https://..." id="imageUrlInput" maxlength="255" />
+                        <span asp-validation-for="ImageUrl" class="text-danger small"></span>
                         <div id="imagePreview" class="mt-2 d-none">
                             <img id="previewImg" src="" alt="Xem trước" class="rounded border"
                                  style="max-height:180px;object-fit:contain;" />

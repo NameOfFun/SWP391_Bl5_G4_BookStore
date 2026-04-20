@@ -7,9 +7,10 @@ namespace BookStore.Dtos.Common
         public int BookId { get; set; }
 
         [Required(ErrorMessage = "Tiêu đề không được để trống")]
-        [MaxLength(500, ErrorMessage = "Tiêu đề tối đa 500 ký tự")]
+        [MaxLength(100, ErrorMessage = "Tiêu đề tối đa 100 ký tự")]
         public string Title { get; set; } = null!;
 
+        [MaxLength(255, ErrorMessage = "Mô tả tối đa 255 ký tự")]
         public string? Description { get; set; }
 
         [Required(ErrorMessage = "Giá không được để trống")]
@@ -30,6 +31,7 @@ namespace BookStore.Dtos.Common
 
         public int? AuthorId { get; set; }
 
+        [MaxLength(255, ErrorMessage = "URL ảnh tối đa 255 ký tự")]
         public string? ImageUrl { get; set; }
 
         public bool IsActive { get; set; } = true;
@@ -39,6 +41,8 @@ namespace BookStore.Dtos.Common
 
         // Read-only display helpers
         public string? CategoryName { get; set; }
+
+        [MaxLength(100, ErrorMessage = "Tên tác giả tối đa 100 ký tự")]
         public string? AuthorName { get; set; }
         public List<string> TagNames { get; set; } = new();
         public DateTime? CreatedAt { get; set; }
