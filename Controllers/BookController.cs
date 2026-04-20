@@ -223,7 +223,7 @@ namespace BookStore.Controllers
 
         // POST: /Book/Edit/5
         [HttpPost, ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin,Staff,Manager")]
+        [Authorize(Roles = "Staff,Manager")]
         [RequestSizeLimit(6 * 1024 * 1024)]
         public async Task<IActionResult> Edit(int id, BookDto dto, IFormFile? coverImage)
         {
