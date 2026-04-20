@@ -296,11 +296,7 @@
                 <div class="nav-submenu @(ctrl == "User" || ctrl == "Role" ? "open" : "")" id="submenu-user">
                     <a class="nav-link-item @(ctrl == "User" && action == "Index" ? "active" : "")"
                        asp-controller="User" asp-action="Index">
-                        <span class="nav-label">Danh sách người dùng</span>
-                    </a>
-                    <a class="nav-link-item @(ctrl == "User" && action == "Create" ? "active" : "")"
-                       asp-controller="User" asp-action="Create">
-                        <span class="nav-label">Thêm người dùng</span>
+                        <span class="nav-label">Quản lý người dùng</span>
                     </a>
                     <a class="nav-link-item @(ctrl == "Role" ? "active" : "")"
                        asp-controller="Role" asp-action="Index">

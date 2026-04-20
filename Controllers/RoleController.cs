@@ -85,6 +85,22 @@ public class RoleController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ToggleActive(string id)
+    {
+        try
+        {
+            await _roleService.ToggleActiveAsync(id);
+            TempData["Success"] = "Cập nhật trạng thái vai trò thành công.";
+        }
+        catch (InvalidOperationException ex)
+        {
+            TempData["Error"] = ex.Message;
+        }
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(string id, UpdateRoleDto dto)
     {
         if (!ModelState.IsValid)
