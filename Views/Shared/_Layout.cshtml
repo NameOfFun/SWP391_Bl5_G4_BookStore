@@ -306,6 +306,18 @@
             </div>
         }
 
+        <!-- Quản Lý Voucher -->
+        @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+        {
+            <div class="nav-item-group">
+                <a class="nav-link-item @(ctrl == "Voucher" ? "active" : "")"
+                   asp-controller="Voucher" asp-action="Index">
+                    <i class="bi bi-ticket-perforated nav-icon"></i>
+                    <span class="nav-label">Quản lý Voucher</span>
+                </a>
+            </div>
+        }
+
         <!-- Quản Lý Giao Hàng (Shipper) -->
         @if (User.IsInRole("Shipper"))
         {
