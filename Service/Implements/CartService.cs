@@ -2,7 +2,6 @@ using BookStore.Helpers;
 using BookStore.Models;
 using BookStore.Service.Interfaces;
 using BookStore.ViewModels;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookStore.Service.Implements;
@@ -10,12 +9,10 @@ namespace BookStore.Service.Implements;
 public class CartService : ICartService
 {
     private readonly BookStoreDbContext _db;
-    private readonly IWebHostEnvironment _env;
 
-    public CartService(BookStoreDbContext db, IWebHostEnvironment env)
+    public CartService(BookStoreDbContext db)
     {
         _db = db;
-        _env = env;
     }
 
     public async Task<int> GetTotalItemQuantityAsync(string userId)
@@ -76,7 +73,7 @@ public class CartService : ICartService
                 CartItemId = item.CartItemId,
                 BookId = book.BookId,
                 Title = book.Title ?? "Sách",
-                CoverUrl = BookCoverHelper.ResolveCoverPath(_env, book.BookId, book.ImageUrl),
+                CoverUrl = BookCoverHelper.ResolveCoverPath(book.ImageUrl),
                 UnitPrice = unit,
                 ListPrice = PricingHelper.GetDisplayListPrice(book),
                 Quantity = item.Quantity,

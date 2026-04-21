@@ -3,7 +3,6 @@ using BookStore.Helpers;
 using BookStore.Models;
 using BookStore.Service.Interfaces;
 using BookStore.ViewModels;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -24,13 +23,11 @@ namespace BookStore.Controllers
 
         private readonly IBookService _bookService;
         private readonly BookStoreDbContext _context;
-        private readonly IWebHostEnvironment _env;
 
-        public BookController(IBookService bookService, BookStoreDbContext context, IWebHostEnvironment env)
+        public BookController(IBookService bookService, BookStoreDbContext context)
         {
             _bookService = bookService;
             _context = context;
-            _env = env;
         }
 
         // GET: /Book — chỉ quản trị; khách chuyển sang Shop
@@ -141,7 +138,7 @@ namespace BookStore.Controllers
 
             ViewData["Title"] = book.Title;
             ViewData["LibrariaInnerHeader"] = true;
-            ViewBag.CoverUrl = BookCoverHelper.ResolveCoverPath(_env, book.BookId, book.ImageUrl);
+            ViewBag.CoverUrl = BookCoverHelper.ResolveCoverPath(book.ImageUrl);
             return View(book);
         }
 
