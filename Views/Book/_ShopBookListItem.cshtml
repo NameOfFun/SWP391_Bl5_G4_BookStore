@@ -1,7 +1,6 @@
 @model BookStore.Dtos.Common.BookDto
-@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment Env
 @{
-    var cover = BookCoverHelper.ResolveCoverPath(Env, Model.BookId, Model.ImageUrl);
+    var cover = BookCoverHelper.ResolveCoverPath(Model.ImageUrl);
     var price = Model.EffectivePrice;
     var oldPrice = Model.IsPromoActive ? Model.Price : (decimal?)null;
     var excerpt = Model.Description;

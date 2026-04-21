@@ -112,7 +112,7 @@
                         <input asp-for="ImageUrl" class="form-control" id="imageUrlInput" placeholder="https://..." maxlength="255" />
                         <span asp-validation-for="ImageUrl" class="text-danger small"></span>
                         <div id="imagePreview" class="mt-2 @(string.IsNullOrEmpty(Model.ImageUrl) ? "d-none" : "")">
-                            <img id="previewImg" src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "" : Url.Content(Model.ImageUrl))" alt="Xem trước" class="rounded border"
+                            <img id="previewImg" src="@(Model.ImageUrl ?? "")" alt="Xem trước" class="rounded border"
                                  style="max-height:180px;object-fit:contain;" />
                         </div>
                     </div>
@@ -164,16 +164,10 @@
             var urlInput = document.getElementById('imageUrlInput');
             var preview = document.getElementById('imagePreview');
             var img = document.getElementById('previewImg');
-            function resolveImgUrl(u) {
-                if (!u) return '';
-                if (u.startsWith('http://') || u.startsWith('https://')) return u;
-                if (u.startsWith('~/')) return u.replace('~', '');
-                return u;
-            }
             function showUrlPreview() {
                 var url = urlInput.value.trim();
                 if (url) {
-                    img.src = resolveImgUrl(url);
+                    img.src = url;
                     preview.classList.remove('d-none');
                 } else {
                     preview.classList.add('d-none');
