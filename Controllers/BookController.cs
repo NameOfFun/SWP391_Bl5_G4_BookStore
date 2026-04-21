@@ -5,7 +5,6 @@ using BookStore.Service.Interfaces;
 using BookStore.ViewModels;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -13,9 +12,7 @@ using System.Security.Claims;
 
 namespace BookStore.Controllers
 {
-
     [Authorize(Roles = "Staff,Manager")]
-
     public class BookController : Controller
     {
         private const int ShopQueryMaxLength = 200;
@@ -41,7 +38,7 @@ namespace BookStore.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
-            if (User.IsInRole("Admin") || User.IsInRole("Staff") || User.IsInRole("Manager"))
+            if (User.IsInRole("Staff") || User.IsInRole("Manager"))
                 return View(await _bookService.GetAllAsync());
             return RedirectToAction(nameof(Shop));
         }
@@ -83,10 +80,10 @@ namespace BookStore.Controllers
 
             query = order switch
             {
-                "price_asc" => query.OrderBy(b => b.PromotionalPrice ?? b.Price),
-                "price_desc" => query.OrderByDescending(b => b.PromotionalPrice ?? b.Price),
+                "price_asc" => query.OrderBy(b => b.EffectivePrice),
+                "price_desc" => query.OrderByDescending(b => b.EffectivePrice),
                 "title" => query.OrderBy(b => b.Title),
-                _ => query.OrderByDescending(b => b.CreatedAt ?? DateTime.MinValue)
+                 _ => query.OrderByDescending(b => b.CreatedAt ?? DateTime.MinValue)
             };
 
             var list = query.ToList();
@@ -138,7 +135,7 @@ namespace BookStore.Controllers
             var book = await _bookService.GetByIdAsync(id);
             if (book == null) return NotFound();
 
-            var canManage = User.IsInRole("Admin") || User.IsInRole("Staff") || User.IsInRole("Manager");
+            var canManage = User.IsInRole("Staff") || User.IsInRole("Manager");
             if (!book.IsActive && !canManage)
                 return NotFound();
 
@@ -150,7 +147,7 @@ namespace BookStore.Controllers
 
         // GET: /Book/Create
         [HttpGet]
-        [Authorize(Roles = "Admin,Staff,Manager")]
+        [Authorize(Roles = "Staff,Manager")]
         public async Task<IActionResult> Create()
         {
             await PopulateDropdownsAsync();
@@ -159,10 +156,22 @@ namespace BookStore.Controllers
 
         // POST: /Book/Create
         [HttpPost, ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin,Staff,Manager")]
-        [RequestSizeLimit(6 * 1024 * 1024)]
-        public async Task<IActionResult> Create(BookDto dto, IFormFile? coverImage)
+        [Authorize(Roles = "Staff,Manager")]
+        public async Task<IActionResult> Create(BookDto dto)
         {
+            bool canSetPrice = User.IsInRole("Manager");
+            if (!canSetPrice)
+            {
+                dto.Price = 0;
+                dto.PromotionalPrice = null;
+                dto.PromotionalStartsAt = null;
+                dto.PromotionalEndsAt = null;
+                ModelState.Remove(nameof(BookDto.Price));
+                ModelState.Remove(nameof(BookDto.PromotionalPrice));
+                ModelState.Remove(nameof(BookDto.PromotionalStartsAt));
+                ModelState.Remove(nameof(BookDto.PromotionalEndsAt));
+            }
+
             if (!ModelState.IsValid)
             {
                 await PopulateDropdownsAsync();
@@ -172,18 +181,7 @@ namespace BookStore.Controllers
             try
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-                if (coverImage != null && coverImage.Length > 0)
-                    dto.ImageUrl = null;
-
-                var created = await _bookService.CreateAsync(dto, userId);
-
-                if (coverImage != null && coverImage.Length > 0)
-                {
-                    var path = await BookCoverHelper.SaveUploadedCoverAsync(_env, created.BookId, coverImage);
-                    created.ImageUrl = path;
-                    await _bookService.UpdateAsync(created.BookId, created, userId);
-                }
-
+                await _bookService.CreateAsync(dto, userId);
                 TempData["Success"] = "Thêm sách thành công";
                 return RedirectToAction(nameof(Index));
             }
@@ -197,7 +195,7 @@ namespace BookStore.Controllers
 
         // GET: /Book/Edit/5
         [HttpGet]
-        [Authorize(Roles = "Admin,Staff,Manager")]
+        [Authorize(Roles = "Staff,Manager")]
         public async Task<IActionResult> Edit(int id)
         {
             if (id <= 0)
@@ -212,18 +210,22 @@ namespace BookStore.Controllers
 
         // POST: /Book/Edit/5
         [HttpPost, ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin,Staff,Manager")]
-        [RequestSizeLimit(6 * 1024 * 1024)]
-        public async Task<IActionResult> Edit(int id, BookDto dto, IFormFile? coverImage)
+        [Authorize(Roles = "Staff,Manager")]
+        public async Task<IActionResult> Edit(int id, BookDto dto)
         {
-            if (id <= 0)
-                return NotFound();
-
-            if (id != dto.BookId)
+            bool canSetPrice = User.IsInRole("Manager");
+            if (!canSetPrice)
             {
-                ModelState.AddModelError(string.Empty, "Mã sách không khớp. Vui lòng thử lại.");
-                await PopulateDropdownsAsync(dto.CategoryId);
-                return View(dto);
+                var existing = await _bookService.GetByIdAsync(id);
+                if (existing == null) return NotFound();
+                dto.Price = existing.Price;
+                dto.PromotionalPrice = existing.PromotionalPrice;
+                dto.PromotionalStartsAt = existing.PromotionalStartsAt;
+                dto.PromotionalEndsAt = existing.PromotionalEndsAt;
+                ModelState.Remove(nameof(BookDto.Price));
+                ModelState.Remove(nameof(BookDto.PromotionalPrice));
+                ModelState.Remove(nameof(BookDto.PromotionalStartsAt));
+                ModelState.Remove(nameof(BookDto.PromotionalEndsAt));
             }
 
             if (!ModelState.IsValid)
@@ -235,9 +237,6 @@ namespace BookStore.Controllers
             try
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-                if (coverImage != null && coverImage.Length > 0)
-                    dto.ImageUrl = await BookCoverHelper.SaveUploadedCoverAsync(_env, id, coverImage);
-
                 await _bookService.UpdateAsync(id, dto, userId);
                 TempData["Success"] = "Cập nhật sách thành công";
                 return RedirectToAction(nameof(Index));
@@ -256,7 +255,7 @@ namespace BookStore.Controllers
 
         // POST: /Book/ChangeStatus/5
         [HttpPost, ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin,Staff,Manager")]
+        [Authorize(Roles = "Staff,Manager")]
         public async Task<IActionResult> ChangeStatus(int id)
         {
             if (id <= 0)

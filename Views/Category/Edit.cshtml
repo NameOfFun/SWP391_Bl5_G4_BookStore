@@ -17,12 +17,14 @@
                 <form asp-action="Edit" asp-route-id="@Model.CategoryId" method="post">
                     @Html.AntiForgeryToken()
 
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" style="font-size:.85rem"></div>
+
                     <div class="mb-3">
                         <label asp-for="Name" class="form-label" style="font-size:.875rem;font-weight:500;color:#595959">
                             Tên Danh Mục <span class="text-danger">*</span>
                         </label>
                         <input asp-for="Name" class="form-control" style="border-radius:6px;font-size:.875rem"
-                               placeholder="Nhập tên danh mục..." />
+                               placeholder="Nhập tên danh mục..." maxlength="100" />
                         <span asp-validation-for="Name" class="text-danger" style="font-size:.8rem"></span>
                     </div>
 
@@ -32,7 +34,7 @@
                         </label>
                         <textarea asp-for="Description" class="form-control" rows="3"
                                   style="border-radius:6px;font-size:.875rem;resize:none"
-                                  placeholder="Mô tả ngắn về danh mục (tuỳ chọn)..."></textarea>
+                                  placeholder="Mô tả ngắn về danh mục (tuỳ chọn)..." maxlength="255"></textarea>
                         <span asp-validation-for="Description" class="text-danger" style="font-size:.8rem"></span>
                     </div>
 

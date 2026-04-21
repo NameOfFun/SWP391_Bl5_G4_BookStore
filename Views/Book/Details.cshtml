@@ -4,11 +4,8 @@
     Layout = "~/Views/Shared/_LayoutAuth.cshtml";
     ViewData["Title"] = Model.Title;
 
-    var effectivePrice = Model.PromotionalPrice.HasValue
-        && Model.PromotionalStartsAt <= DateTime.UtcNow
-        && (!Model.PromotionalEndsAt.HasValue || Model.PromotionalEndsAt >= DateTime.UtcNow)
-        ? Model.PromotionalPrice.Value : Model.Price;
-    var listPrice = Model.PromotionalPrice.HasValue ? Model.Price : (decimal?)null;
+    var effectivePrice = Model.EffectivePrice;
+    var listPrice = Model.IsPromoActive ? Model.Price : (decimal?)null;
     var coverUrl = ViewBag.CoverUrl as string ?? "/images/header-slider/home-v1/header-slide.jpg";
     var isbn = $"978-604-{Model.BookId:D6}";
     var maxQty = Math.Max(0, Model.Stock);

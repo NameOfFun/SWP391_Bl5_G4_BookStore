@@ -32,13 +32,18 @@ namespace BookStore.Service.Implements
 
         public async Task<BookTagDto> CreateAsync(BookTagDto dto, string userId)
         {
-            var name = (dto.Name ?? string.Empty).Trim();
-            if (string.IsNullOrWhiteSpace(name))
+            var normalized = NormalizeName(dto.Name);
+            if (normalized == null)
                 throw new ArgumentException("Tên tag không được để trống");
+
+            var duplicate = await _context.BookTags.AsNoTracking()
+                .AnyAsync(t => t.Name == normalized);
+            if (duplicate)
+                throw new ArgumentException($"Tag \"{normalized}\" đã tồn tại.");
 
             var entity = new BookTag
             {
-                Name = name,
+                Name = normalized,
                 IsActive = true,
                 UpdatedByUserId = userId
             };
@@ -55,16 +60,29 @@ namespace BookStore.Service.Implements
             if (entity == null)
                 throw new InvalidOperationException($"Không tìm thấy tag có Id = {id}.");
 
-            var name = (dto.Name ?? string.Empty).Trim();
-            if (string.IsNullOrWhiteSpace(name))
+            var normalized = NormalizeName(dto.Name);
+            if (normalized == null)
                 throw new ArgumentException("Tên tag không được để trống");
 
-            entity.Name = name;
+            var duplicate = await _context.BookTags.AsNoTracking()
+                .AnyAsync(t => t.Name == normalized && t.TagId != id);
+            if (duplicate)
+                throw new ArgumentException($"Tag \"{normalized}\" đã tồn tại.");
+
+            entity.Name = normalized;
             entity.UpdatedByUserId = userId;
 
             await _context.SaveChangesAsync();
 
             return ToDto(entity);
+        }
+
+        // Strips leading '#' characters, trims whitespace, then prepends a single '#'.
+        // Returns null if the result would be empty after stripping.
+        private static string? NormalizeName(string? raw)
+        {
+            var trimmed = (raw ?? string.Empty).TrimStart('#').Trim();
+            return string.IsNullOrEmpty(trimmed) ? null : "#" + trimmed;
         }
 
         public async Task<BookTagDto> ToggleStatusAsync(int id, string userId)

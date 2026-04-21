@@ -22,8 +22,11 @@
                             Tên Tag <span class="text-danger">*</span>
                         </label>
                         <input asp-for="Name" class="form-control" style="border-radius:6px;font-size:.875rem"
-                               placeholder="Nhập tên tag..." />
+                               placeholder="Nhập tên tag (vd: LậpTrình, TiểuThuyết...)" />
                         <span asp-validation-for="Name" class="text-danger" style="font-size:.8rem"></span>
+                        <div class="mt-1" style="font-size:.78rem;color:#8c8c8c">
+                            <i class="bi bi-info-circle me-1"></i>Hệ thống sẽ tự động thêm <strong>#</strong> vào trước tên tag. Tối đa 99 ký tự.
+                        </div>
                     </div>
 
                     <div class="mb-4 p-3 rounded" style="background:#fafafa;border:1px solid #f0f0f0">

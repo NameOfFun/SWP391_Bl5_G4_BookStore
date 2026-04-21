@@ -2,8 +2,8 @@
 @inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment Env
 @{
     var cover = BookCoverHelper.ResolveCoverPath(Env, Model.BookId, Model.ImageUrl);
-    var price = Model.PromotionalPrice ?? Model.Price;
-    var oldPrice = Model.PromotionalPrice.HasValue ? Model.Price : (decimal?)null;
+    var price = Model.EffectivePrice;
+    var oldPrice = Model.IsPromoActive ? Model.Price : (decimal?)null;
     var excerpt = Model.Description;
     if (!string.IsNullOrEmpty(excerpt) && excerpt.Length > 220)
         excerpt = excerpt[..220] + "…";
