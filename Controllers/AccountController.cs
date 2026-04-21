@@ -197,16 +197,16 @@ public class AccountController : Controller
             return View(model);
         }
 
-        user.Name = model.Name;
-        user.PhoneNumber = model.PhoneNumber;
-        user.Address = model.Address;
-        var result = await _userManager.UpdateAsync(user);
+        var result = await _authService.UpdateProfileAsync(user.Id, model);
 
         if (!result.Succeeded)
         {
-            foreach(var error in result.Errors)
+            if (result.Errors != null)
             {
-                ModelState.AddModelError(string.Empty, error.Description);
+                foreach(var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error);
+                }
             }
             ViewBag.CurrentAvatar = user.Avatar;
             return View(model);
@@ -241,12 +241,19 @@ public class AccountController : Controller
             return RedirectToAction("Login");
         }
 
-        var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+        var result = await _authService.ChangePasswordAsync(user.Id, model);
         if (!result.Succeeded)
         {
-            foreach (var error in result.Errors)
+            if (result.Errors != null)
             {
-                ModelState.AddModelError(string.Empty, error.Description);
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error);
+                }
+            }
+            else if (!string.IsNullOrEmpty(result.ErrorMessage))
+            {
+                ModelState.AddModelError(string.Empty, result.ErrorMessage);
             }
             return View(model);
         }

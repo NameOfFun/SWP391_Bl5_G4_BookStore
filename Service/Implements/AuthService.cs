@@ -202,7 +202,18 @@ public class AuthService : IAuthService
         {
             return new ProfileResultDto {Succeeded = false, ErrorMessage = "Không tìm thấy người dùng." };
         }
+        //Validate pass moi k trung pass cu
+        var isSamePassword = await _userManager.CheckPasswordAsync(user, model.NewPassword);
+        if(isSamePassword)
+        {
+            return new ProfileResultDto
+            {
+                Succeeded = false,
+                ErrorMessage = "Mật khẩu mới không được trùng với mật khẩu hiện tại"
+            };
+        }
 
+        //Change password
         var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
         if(!result.Succeeded)
         {
