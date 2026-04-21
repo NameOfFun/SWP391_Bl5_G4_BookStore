@@ -59,10 +59,18 @@ namespace BookStore.Controllers
             if (!ModelState.IsValid)
                 return View(dto);
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-            await _bookTagService.CreateAsync(dto, userId);
-            TempData["Success"] = "Thêm tag thành công";
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+                await _bookTagService.CreateAsync(dto, userId);
+                TempData["Success"] = "Thêm tag thành công";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (ArgumentException ex)
+            {
+                ModelState.AddModelError(nameof(dto.Name), ex.Message);
+                return View(dto);
+            }
         }
 
         [HttpGet]
@@ -79,10 +87,18 @@ namespace BookStore.Controllers
             if (!ModelState.IsValid)
                 return View(dto);
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-            await _bookTagService.UpdateAsync(id, dto, userId);
-            TempData["Success"] = "Cập nhật tag thành công";
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+                await _bookTagService.UpdateAsync(id, dto, userId);
+                TempData["Success"] = "Cập nhật tag thành công";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (ArgumentException ex)
+            {
+                ModelState.AddModelError(nameof(dto.Name), ex.Message);
+                return View(dto);
+            }
         }
 
         [HttpPost, ValidateAntiForgeryToken]

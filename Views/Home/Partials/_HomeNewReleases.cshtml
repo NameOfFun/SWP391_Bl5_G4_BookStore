@@ -1,5 +1,4 @@
 @model IReadOnlyList<BookStore.Dtos.Common.BookDto>
-@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment Env
 @using BookStore.Dtos.Common
 @using BookStore.Helpers
 @{
@@ -59,7 +58,7 @@
             {
                 foreach (var book in Model)
                 {
-                    var cover = BookCoverHelper.ResolveCoverPath(Env, book.BookId, book.ImageUrl);
+                    var cover = BookCoverHelper.ResolveCoverPath(book.ImageUrl);
                     var isbn = $"978-604-{book.BookId:D6}";
                     var excerpt = Excerpt(book.Description);
                     var price = book.PromotionalPrice ?? book.Price;

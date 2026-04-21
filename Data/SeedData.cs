@@ -72,8 +72,19 @@ public static class SeedData
 
     public static void SeedCatalog(BookStoreDbContext db)
     {
-        // Redundant as we now use ShipperSeedData with HasData in migrations.
-        // Keeping the method signature to avoid breaking Program.cs, but it can be empty or removed.
+        if (!db.Categories.Any()) SeedCategories(db);
+
+        var existingTags = db.BookTags.Select(t => t.Name).ToHashSet();
+        var allTagNames = new[] { "#songcunglichsu", "#lichsuthegioi", "#lichsuvietnam", "#kinhdien", "#hottrend", "#bestseller", "#kinhdi" };
+        var missingTags = allTagNames.Where(n => !existingTags.Contains(n)).Select(n => new BookTag { Name = n, IsActive = true }).ToList();
+        if (missingTags.Count > 0) { db.BookTags.AddRange(missingTags); db.SaveChanges(); }
+
+        var existingAuthors = db.Authors.Select(a => a.Name).ToHashSet();
+        var allAuthorNames = new[] { "Thiên Giang Trần Kim", "John Barrow", "Ngô Sĩ Liên", "Fredick Bacman", "Paulo Coelho", "José Mauro de Vasconcelos", "Hector Malot", "Emma Hạ My", "Doo Vandenis", "Shindo Gonai", "Hồng Nương Tử" };
+        var missingAuthors = allAuthorNames.Where(n => !existingAuthors.Contains(n)).Select(n => new Author { Name = n, IsActive = true }).ToList();
+        if (missingAuthors.Count > 0) { db.Authors.AddRange(missingAuthors); db.SaveChanges(); }
+
+        if (db.Books.Count() < 11) SeedBooks(db);
     }
 
     private static void SeedCategories(BookStoreDbContext db)
@@ -82,38 +93,6 @@ public static class SeedData
             new Category { Name = "Lịch sử", IsActive = true },
             new Category { Name = "Văn Học", IsActive = true },
             new Category { Name = "Kinh Dị", IsActive = true }
-        );
-        db.SaveChanges();
-    }
-
-    private static void SeedBookTags(BookStoreDbContext db)
-    {
-        db.BookTags.AddRange(
-            new BookTag { Name = "#songcunglichsu", IsActive = true },
-            new BookTag { Name = "#lichsuthegioi",  IsActive = true },
-            new BookTag { Name = "#lichsuvietnam",  IsActive = true },
-            new BookTag { Name = "#kinhdien",       IsActive = true },
-            new BookTag { Name = "#hottrend",       IsActive = true },
-            new BookTag { Name = "#bestseller",     IsActive = true },
-            new BookTag { Name = "#kinhdi",         IsActive = true }
-        );
-        db.SaveChanges();
-    }
-
-    private static void SeedAuthors(BookStoreDbContext db)
-    {
-        db.Authors.AddRange(
-            new Author { Name = "Thiên Giang Trần Kim",     IsActive = true },
-            new Author { Name = "John Barrow",              IsActive = true },
-            new Author { Name = "Ngô Sĩ Liên",             IsActive = true },
-            new Author { Name = "Fredick Bacman",           IsActive = true },
-            new Author { Name = "Paul Coelho",              IsActive = true },
-            new Author { Name = "José Mauro de Vasconcelos",IsActive = true },
-            new Author { Name = "Hector Malot",             IsActive = true },
-            new Author { Name = "Emma Hạ My",              IsActive = true },
-            new Author { Name = "Doo Vandenis",             IsActive = true },
-            new Author { Name = "Shindo Gonai",             IsActive = true },
-            new Author { Name = "Hồng Nương Tử",           IsActive = true }
         );
         db.SaveChanges();
     }
@@ -137,7 +116,7 @@ public static class SeedData
         var aBarrow     = db.Authors.First(a => a.Name == "John Barrow");
         var aNgoSiLien  = db.Authors.First(a => a.Name == "Ngô Sĩ Liên");
         var aBackman    = db.Authors.First(a => a.Name == "Fredick Bacman");
-        var aCoelho     = db.Authors.First(a => a.Name == "Paul Coelho");
+        var aCoelho     = db.Authors.First(a => a.Name == "Paulo Coelho");
         var aVasconcelos= db.Authors.First(a => a.Name == "José Mauro de Vasconcelos");
         var aMalot      = db.Authors.First(a => a.Name == "Hector Malot");
         var aEmma       = db.Authors.First(a => a.Name == "Emma Hạ My");

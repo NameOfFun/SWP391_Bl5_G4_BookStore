@@ -1,6 +1,7 @@
 @model BookStore.Dtos.Common.BookDto
 @{
     ViewData["Title"] = "Chỉnh sửa sách";
+    bool canSetPrice = User.IsInRole("Manager");
 }
 
 <div class="container mt-4" style="max-width:860px">
@@ -16,7 +17,7 @@
             <h5 class="mb-0"><i class="bi bi-pencil-square me-2"></i>Chỉnh sửa sách</h5>
         </div>
         <div class="card-body">
-            <form asp-action="Edit" asp-route-id="@Model.BookId" method="post" enctype="multipart/form-data">
+            <form asp-action="Edit" asp-route-id="@Model.BookId" method="post">
                 @Html.AntiForgeryToken()
                 <input type="hidden" asp-for="BookId" />
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3"></div>
@@ -24,18 +25,20 @@
                 <div class="row g-3">
                     <div class="col-12">
                         <label asp-for="Title" class="form-label fw-semibold">Tiêu đề <span class="text-danger">*</span></label>
-                        <input asp-for="Title" class="form-control" />
+                        <input asp-for="Title" class="form-control" maxlength="100" />
                         <span asp-validation-for="Title" class="text-danger small"></span>
                     </div>
 
                     <div class="col-12">
                         <label asp-for="Description" class="form-label fw-semibold">Mô tả</label>
-                        <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                        <textarea asp-for="Description" class="form-control" rows="4" maxlength="255"></textarea>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
                     </div>
 
                     <div class="col-md-6">
                         <label asp-for="AuthorName" class="form-label fw-semibold">Tác giả</label>
-                        <input asp-for="AuthorName" class="form-control" placeholder="Nhập tên tác giả..." />
+                        <input asp-for="AuthorName" class="form-control" placeholder="Nhập tên tác giả..." maxlength="100" />
+                        <span asp-validation-for="AuthorName" class="text-danger small"></span>
                     </div>
                     <div class="col-md-6">
                         <label asp-for="CategoryId" class="form-label fw-semibold">Danh mục</label>
@@ -44,37 +47,72 @@
                         </select>
                     </div>
 
-                    <div class="col-md-4">
-                        <label asp-for="Price" class="form-label fw-semibold">Giá bán (đ) <span class="text-danger">*</span></label>
-                        <input asp-for="Price" class="form-control" type="number" min="0" step="any" />
-                        <span asp-validation-for="Price" class="text-danger small"></span>
-                    </div>
-                    <div class="col-md-4">
-                        <label asp-for="PromotionalPrice" class="form-label fw-semibold">Giá khuyến mãi (đ)</label>
-                        <input asp-for="PromotionalPrice" class="form-control" type="number" min="0" step="any" placeholder="Để trống nếu không có" />
-                        <span asp-validation-for="PromotionalPrice" class="text-danger small"></span>
-                    </div>
+                    @if (canSetPrice)
+                    {
+                        <div class="col-md-4">
+                            <label asp-for="Price" class="form-label fw-semibold">Giá bán (đ) <span class="text-danger">*</span></label>
+                            <input asp-for="Price" class="form-control" type="number" min="0" step="any" />
+                            <span asp-validation-for="Price" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="PromotionalPrice" class="form-label fw-semibold">Giá khuyến mãi (đ)</label>
+                            <input asp-for="PromotionalPrice" class="form-control" type="number" min="0" step="any" placeholder="Để trống nếu không có" />
+                            <span asp-validation-for="PromotionalPrice" class="text-danger small"></span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Giá bán (đ)</label>
+                            <input class="form-control" type="text" value="@Model.Price.ToString("N0") đ" disabled />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Giá khuyến mãi (đ)</label>
+                            <input class="form-control" type="text" value="@(Model.PromotionalPrice.HasValue ? Model.PromotionalPrice.Value.ToString("N0") + " đ" : "Không có")" disabled />
+                        </div>
+                    }
                     <div class="col-md-4">
                         <label asp-for="Stock" class="form-label fw-semibold">Tồn kho</label>
                         <input asp-for="Stock" class="form-control" type="number" min="0" />
                         <span asp-validation-for="Stock" class="text-danger small"></span>
                     </div>
 
-                    <div class="col-md-6">
-                        <label asp-for="PromotionalStartsAt" class="form-label fw-semibold">KM từ ngày</label>
-                        <input asp-for="PromotionalStartsAt" class="form-control" type="datetime-local" />
-                    </div>
-                    <div class="col-md-6">
-                        <label asp-for="PromotionalEndsAt" class="form-label fw-semibold">KM đến ngày</label>
-                        <input asp-for="PromotionalEndsAt" class="form-control" type="datetime-local" />
-                    </div>
+                    @if (canSetPrice)
+                    {
+                        <div class="col-md-6">
+                            <label asp-for="PromotionalStartsAt" class="form-label fw-semibold">KM từ ngày</label>
+                            <input asp-for="PromotionalStartsAt" id="promoStart" class="form-control" type="datetime-local" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="PromotionalEndsAt" class="form-label fw-semibold">KM đến ngày</label>
+                            <input asp-for="PromotionalEndsAt" id="promoEnd" class="form-control" type="datetime-local" />
+                            <span id="promoDateError" class="text-danger small d-none">Ngày kết thúc phải sau ngày bắt đầu.</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">KM từ ngày</label>
+                            <input class="form-control" type="text" value="@(Model.PromotionalStartsAt.HasValue ? Model.PromotionalStartsAt.Value.ToString("dd/MM/yyyy HH:mm") : "Không có")" disabled />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">KM đến ngày</label>
+                            <input class="form-control" type="text" value="@(Model.PromotionalEndsAt.HasValue ? Model.PromotionalEndsAt.Value.ToString("dd/MM/yyyy HH:mm") : "Không có")" disabled />
+                        </div>
+                        <div class="col-12">
+                            <div class="alert alert-warning py-2 mb-0">
+                                <i class="bi bi-lock me-1"></i> Giá bán và thông tin khuyến mãi chỉ Manager mới có quyền chỉnh sửa.
+                            </div>
+                        </div>
+                    }
 
                     <div class="col-12">
                         <label class="form-label fw-semibold">Ảnh bìa</label>
                         <label asp-for="ImageUrl" class="form-label small">Đường dẫn / URL ảnh</label>
-                        <input asp-for="ImageUrl" class="form-control" id="imageUrlInput" placeholder="https://..." />
+                        <input asp-for="ImageUrl" class="form-control" id="imageUrlInput" placeholder="https://..." maxlength="255" />
+                        <span asp-validation-for="ImageUrl" class="text-danger small"></span>
                         <div id="imagePreview" class="mt-2 @(string.IsNullOrEmpty(Model.ImageUrl) ? "d-none" : "")">
-                            <img id="previewImg" src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "" : Url.Content(Model.ImageUrl))" alt="Xem trước" class="rounded border"
+                            <img id="previewImg" src="@(Model.ImageUrl ?? "")" alt="Xem trước" class="rounded border"
                                  style="max-height:180px;object-fit:contain;" />
                         </div>
                     </div>
@@ -124,33 +162,37 @@
     <script>
         (function () {
             var urlInput = document.getElementById('imageUrlInput');
-            var fileInput = document.getElementById('coverImage');
             var preview = document.getElementById('imagePreview');
             var img = document.getElementById('previewImg');
-            function resolveImgUrl(u) {
-                if (!u) return '';
-                if (u.startsWith('http://') || u.startsWith('https://')) return u;
-                if (u.startsWith('~/')) return u.replace('~', '');
-                return u;
-            }
             function showUrlPreview() {
                 var url = urlInput.value.trim();
-                if (url && (!fileInput.files || !fileInput.files.length)) {
-                    img.src = resolveImgUrl(url);
+                if (url) {
+                    img.src = url;
                     preview.classList.remove('d-none');
-                } else if (!fileInput.files || !fileInput.files.length) {
+                } else {
                     preview.classList.add('d-none');
                 }
             }
             urlInput.addEventListener('input', showUrlPreview);
-            fileInput.addEventListener('change', function () {
-                if (this.files && this.files[0]) {
-                    img.src = URL.createObjectURL(this.files[0]);
-                    preview.classList.remove('d-none');
+        })();
+
+        (function () {
+            var start = document.getElementById('promoStart');
+            var end = document.getElementById('promoEnd');
+            var err = document.getElementById('promoDateError');
+            if (!start || !end) return;
+
+            function validate() {
+                if (start.value && end.value && end.value <= start.value) {
+                    err.classList.remove('d-none');
+                    end.setCustomValidity('invalid');
                 } else {
-                    showUrlPreview();
+                    err.classList.add('d-none');
+                    end.setCustomValidity('');
                 }
-            });
+            }
+            start.addEventListener('change', validate);
+            end.addEventListener('change', validate);
         })();
     </script>
 }

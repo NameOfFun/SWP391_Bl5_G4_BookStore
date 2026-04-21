@@ -57,14 +57,20 @@ namespace BookStore.Controllers
         public async Task<IActionResult> Create(CategoryDto dto)
         {
             if (!ModelState.IsValid)
+                return View(dto);
+
+            try
             {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+                await _categoryService.CreateAsync(dto, userId);
+                TempData["Success"] = "Thêm danh mục thành công";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (ArgumentException ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
                 return View(dto);
             }
-
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-            await _categoryService.CreateAsync(dto, userId);
-            TempData["Success"] = "Thêm danh mục thành công";
-            return RedirectToAction(nameof(Index));
         }
 
         [HttpGet]
@@ -79,24 +85,42 @@ namespace BookStore.Controllers
         public async Task<IActionResult> Edit(int id, CategoryDto dto)
         {
             if (!ModelState.IsValid)
+                return View(dto);
+
+            try
             {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+                await _categoryService.UpdateAsync(id, dto, userId);
+                TempData["Success"] = "Cập nhật danh mục thành công";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (ArgumentException ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
                 return View(dto);
             }
-
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-            await _categoryService.UpdateAsync(id, dto, userId);
-            TempData["Success"] = "Cập nhật danh mục thành công";
-            return RedirectToAction(nameof(Index));
+            catch (InvalidOperationException ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> ToggleStatus(int id)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-            var result = await _categoryService.ToggleStatusAsync(id, userId);
-            TempData["Success"] = result.IsActive
-                ? "Đã kích hoạt danh mục"
-                : "Đã vô hiệu hóa danh mục";
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+                var result = await _categoryService.ToggleStatusAsync(id, userId);
+                TempData["Success"] = result.IsActive
+                    ? "Đã kích hoạt danh mục"
+                    : "Đã vô hiệu hóa danh mục";
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["Error"] = ex.Message;
+            }
             return RedirectToAction(nameof(Index));
         }
     }

@@ -360,7 +360,7 @@
             @foreach (var book in Model)
             {
                 stt++;
-                var price = book.PromotionalPrice.HasValue ? book.PromotionalPrice.Value : book.Price;
+                var price = book.EffectivePrice;
                 <tr class="book-row"
                     data-title="@book.Title.ToLower()"
                     data-author="@(book.AuthorName ?? "")"
@@ -406,12 +406,12 @@
                         }
                     </td>
                     <td class="text-end">
-                        @if (book.PromotionalPrice.HasValue)
+                        @if (book.IsPromoActive)
                         {
                             <span class="text-decoration-line-through text-muted" style="font-size:.8rem">
                                 @book.Price.ToString("N0")đ
                             </span><br />
-                            <span class="text-danger fw-semibold">@book.PromotionalPrice.Value.ToString("N0")đ</span>
+                            <span class="text-danger fw-semibold">@book.PromotionalPrice!.Value.ToString("N0")đ</span>
                         }
                         else
                         {
