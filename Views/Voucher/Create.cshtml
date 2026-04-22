@@ -1,0 +1,143 @@
+@model BookStore.Dtos.Admin.Voucher.CreateVoucherDto
+@{
+    ViewData["Title"] = "Thêm Voucher";
+    ViewData["BreadcrumbParent"] = "Quản lý Voucher";
+    ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "Voucher");
+}
+
+<div class="d-flex align-items-center mb-4">
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm me-3" style="border-radius:6px;font-size:.85rem;padding:5px 12px">
+        <i class="bi bi-arrow-left me-1"></i>Quay lại
+    </a>
+    <div>
+        <h4 class="mb-0 fw-600" style="font-size:1.15rem;color:#262626">Thêm Voucher</h4>
+        <p class="text-muted mb-0" style="font-size:.85rem">Tạo mã giảm giá mới</p>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm" style="border-radius:10px;max-width:680px">
+    <div class="card-body p-4">
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger border-0" style="border-radius:8px;font-size:.875rem">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <div asp-validation-summary="All"></div>
+            </div>
+        }
+
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+
+            <!-- Mã voucher -->
+            <div class="mb-3">
+                <label class="form-label fw-500" style="font-size:.875rem">Mã voucher <span class="text-danger">*</span></label>
+                <div class="input-group">
+                    <input asp-for="Code" class="form-control" style="font-size:.875rem;text-transform:uppercase"
+                           placeholder="VD: SALE2026" maxlength="50" id="voucherCode" />
+                    <button type="button" class="btn btn-outline-secondary" style="font-size:.85rem;border-radius:0 6px 6px 0" onclick="generateCode()">
+                        <i class="bi bi-shuffle me-1"></i>Tạo mã
+                    </button>
+                </div>
+                <span asp-validation-for="Code" class="text-danger" style="font-size:.8rem"></span>
+                <div class="form-text" style="font-size:.78rem">Chữ hoa và số, 4–50 ký tự</div>
+            </div>
+
+            <!-- Mô tả -->
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label fw-500" style="font-size:.875rem">Mô tả</label>
+                <textarea asp-for="Description" class="form-control" rows="2" style="font-size:.875rem"
+                          placeholder="Mô tả ngắn về voucher (tuỳ chọn)"></textarea>
+                <span asp-validation-for="Description" class="text-danger" style="font-size:.8rem"></span>
+            </div>
+
+            <!-- Loại giảm giá -->
+            <div class="mb-3">
+                <label class="form-label fw-500" style="font-size:.875rem">Loại giảm giá <span class="text-danger">*</span></label>
+                <div class="d-flex gap-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" asp-for="DiscountType" value="P" id="typePercent" onchange="updateDiscountLabel()" />
+                        <label class="form-check-label" for="typePercent" style="font-size:.875rem">Phần trăm (%)</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" asp-for="DiscountType" value="F" id="typeFixed" onchange="updateDiscountLabel()" />
+                        <label class="form-check-label" for="typeFixed" style="font-size:.875rem">Số tiền cố định (đ)</label>
+                    </div>
+                </div>
+                <span asp-validation-for="DiscountType" class="text-danger" style="font-size:.8rem"></span>
+            </div>
+
+            <!-- Giá trị giảm -->
+            <div class="mb-3">
+                <label asp-for="DiscountValue" class="form-label fw-500" style="font-size:.875rem" id="discountLabel">
+                    Giá trị giảm <span class="text-danger">*</span>
+                </label>
+                <div class="input-group">
+                    <input asp-for="DiscountValue" type="number" class="form-control" style="font-size:.875rem"
+                           step="0.01" min="0.01" placeholder="0" />
+                    <span class="input-group-text" id="discountSuffix" style="font-size:.875rem">%</span>
+                </div>
+                <span asp-validation-for="DiscountValue" class="text-danger" style="font-size:.8rem"></span>
+            </div>
+
+            <!-- Đơn hàng tối thiểu -->
+            <div class="mb-3">
+                <label asp-for="MinOrderAmount" class="form-label fw-500" style="font-size:.875rem">Đơn hàng tối thiểu (đ)</label>
+                <input asp-for="MinOrderAmount" type="number" class="form-control" style="font-size:.875rem"
+                       step="1000" min="0" placeholder="Không giới hạn" />
+                <span asp-validation-for="MinOrderAmount" class="text-danger" style="font-size:.8rem"></span>
+            </div>
+
+            <!-- Ngày hiệu lực -->
+            <div class="row mb-3">
+                <div class="col-6">
+                    <label asp-for="ValidFrom" class="form-label fw-500" style="font-size:.875rem">Ngày bắt đầu</label>
+                    <input asp-for="ValidFrom" type="date" class="form-control" style="font-size:.875rem" />
+                    <span asp-validation-for="ValidFrom" class="text-danger" style="font-size:.8rem"></span>
+                </div>
+                <div class="col-6">
+                    <label asp-for="ValidTo" class="form-label fw-500" style="font-size:.875rem">Ngày kết thúc</label>
+                    <input asp-for="ValidTo" type="date" class="form-control" style="font-size:.875rem" />
+                    <span asp-validation-for="ValidTo" class="text-danger" style="font-size:.8rem"></span>
+                </div>
+            </div>
+
+            <!-- Giới hạn lượt dùng -->
+            <div class="mb-4">
+                <label asp-for="UsageLimit" class="form-label fw-500" style="font-size:.875rem">Giới hạn lượt dùng</label>
+                <input asp-for="UsageLimit" type="number" class="form-control" style="font-size:.875rem"
+                       min="1" placeholder="Không giới hạn" />
+                <span asp-validation-for="UsageLimit" class="text-danger" style="font-size:.8rem"></span>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary" style="border-radius:6px;font-size:.875rem;padding:8px 24px">
+                    <i class="bi bi-check-lg me-1"></i>Thêm voucher
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary" style="border-radius:6px;font-size:.875rem;padding:8px 20px">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function generateCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 8; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            document.getElementById('voucherCode').value = code;
+        }
+
+        function updateDiscountLabel() {
+            const isPercent = document.getElementById('typePercent').checked;
+            document.getElementById('discountSuffix').textContent = isPercent ? '%' : 'đ';
+        }
+
+        // Init on load
+        document.addEventListener('DOMContentLoaded', updateDiscountLabel);
+    </script>
+}
