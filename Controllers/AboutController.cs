@@ -6,6 +6,7 @@ using System.Security.Claims;
 
 namespace BookStore.Controllers
 {
+    [Authorize(Roles = "Staff")]
     public class AboutController : Controller
     {
         private readonly IAboutService _aboutService;
@@ -75,7 +76,7 @@ namespace BookStore.Controllers
             return RedirectToAction(nameof(Manage));
         }
 
-        [Authorize(Roles = "Admin,Staff,Manager")]
+        [Authorize(Roles = "Staff,Manager")]
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
@@ -88,7 +89,7 @@ namespace BookStore.Controllers
             return View(about);
         }
 
-        [Authorize(Roles = "Admin,Staff,Manager")]
+        [Authorize(Roles = "Staff,Manager")]
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, AboutDto dto)
         {
@@ -112,7 +113,7 @@ namespace BookStore.Controllers
             return RedirectToAction(nameof(Manage));
         }
 
-        [Authorize(Roles = "Admin,Staff,Manager")]
+        [Authorize(Roles = "Staff,Manager")]
         [HttpGet]
         public async Task<IActionResult> Delete(int id)
         {
@@ -125,7 +126,7 @@ namespace BookStore.Controllers
             return View(about);
         }
 
-        [Authorize(Roles = "Admin,Staff,Manager")]
+        [Authorize(Roles = "Staff,Manager")]
         [HttpPost, ActionName("Delete"), ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {

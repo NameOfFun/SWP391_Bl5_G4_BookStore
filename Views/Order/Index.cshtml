@@ -1,0 +1,251 @@
+@model IReadOnlyList<BookStore.Dtos.Common.OrderListItemDto>
+@using BookStore.Models
+@{
+    ViewData["Title"] = "Quản Lý Đơn Hàng";
+    ViewData["BreadcrumbParent"] = "Quản Lý";
+
+    int page       = (int)(ViewData["Page"] ?? 1);
+    int totalPages = (int)(ViewData["TotalPages"] ?? 1);
+    int totalCount = (int)(ViewData["TotalCount"] ?? 0);
+    int pageSize   = (int)(ViewData["PageSize"] ?? 10);
+    string? search = ViewData["Search"]?.ToString();
+    string? status = ViewData["Status"]?.ToString();
+}
+
+@functions {
+    string StatusLabel(OrderStatus s) => s switch
+    {
+        OrderStatus.Pending => "Chờ xác nhận",
+        OrderStatus.Confirmed => "Đã xác nhận",
+        OrderStatus.Processing => "Đang xử lý",
+        OrderStatus.Shipped => "Đã giao shipper",
+        OrderStatus.Delivering => "Đang giao",
+        OrderStatus.Delivered => "Đã giao",
+        OrderStatus.Cancelled => "Đã hủy",
+        OrderStatus.DeliveryFailed => "Giao thất bại",
+        _ => s.ToString()
+    };
+
+    (string bg, string fg, string border) StatusStyle(OrderStatus s) => s switch
+    {
+        OrderStatus.Pending        => ("#fffbe6", "#faad14", "#ffe58f"),
+        OrderStatus.Confirmed      => ("#e6f4ff", "#1677ff", "#91caff"),
+        OrderStatus.Processing     => ("#f9f0ff", "#722ed1", "#d3adf7"),
+        OrderStatus.Shipped        => ("#e6fffb", "#13c2c2", "#87e8de"),
+        OrderStatus.Delivering     => ("#f0f5ff", "#2f54eb", "#adc6ff"),
+        OrderStatus.Delivered      => ("#f6ffed", "#52c41a", "#b7eb8f"),
+        OrderStatus.Cancelled      => ("#fff2f0", "#ff4d4f", "#ffccc7"),
+        OrderStatus.DeliveryFailed => ("#fff2f0", "#ff4d4f", "#ffccc7"),
+        _                          => ("#fafafa", "#595959", "#d9d9d9")
+    };
+}
+
+<style>
+    .pagination-area {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 16px;
+        border-top: 1px solid #f0f0f0;
+        font-size: 0.875rem;
+        color: #595959;
+    }
+    .pagination-info { color: #595959; }
+    .pagination-controls { display: flex; gap: 4px; align-items: center; }
+    .page-btn {
+        min-width: 32px; height: 32px;
+        border: 1px solid #d9d9d9; background: #fff; color: #262626;
+        border-radius: 6px; font-size: 0.8125rem; cursor: pointer;
+        display: inline-flex; align-items: center; justify-content: center;
+        padding: 0 8px; transition: all .15s; text-decoration: none;
+    }
+    .page-btn:hover:not(.disabled) { border-color: #1677ff; color: #1677ff; }
+    .page-btn.active { background: #1677ff; border-color: #1677ff; color: #fff; }
+    .page-btn.disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+    .page-btn-ellipsis {
+        min-width: 32px; height: 32px;
+        display: inline-flex; align-items: center; justify-content: center;
+        font-size: 0.8125rem; color: #8c8c8c;
+    }
+</style>
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h4 class="mb-0 fw-600" style="font-size:1.15rem;color:#262626">Quản Lý Đơn Hàng</h4>
+        <p class="text-muted mb-0" style="font-size:.85rem">Xác nhận, xử lý và theo dõi đơn của khách hàng</p>
+    </div>
+</div>
+
+<!-- Bộ lọc -->
+<div class="card border-0 shadow-sm mb-3" style="border-radius:10px">
+    <div class="card-body py-3 px-4">
+        <form method="get" asp-action="Index" class="row g-2 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label mb-1" style="font-size:.8rem;font-weight:500;color:#595959">Tìm kiếm</label>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white border-end-0" style="border-radius:6px 0 0 6px">
+                        <i class="bi bi-search text-muted" style="font-size:.85rem"></i>
+                    </span>
+                    <input type="text" name="search" value="@search"
+                           class="form-control border-start-0" style="border-radius:0 6px 6px 0;font-size:.875rem"
+                           placeholder="Mã đơn, tên hoặc SĐT người nhận..." />
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label mb-1" style="font-size:.8rem;font-weight:500;color:#595959">Trạng thái</label>
+                <select name="status" class="form-select form-select-sm" style="border-radius:6px;font-size:.875rem">
+                    <option value="" selected="@(string.IsNullOrEmpty(status))">Tất cả</option>
+                    @foreach (var sv in Enum.GetValues<OrderStatus>())
+                    {
+                        <option value="@sv" selected="@(status == sv.ToString())">@StatusLabel(sv)</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-auto">
+                <button type="submit" class="btn btn-primary btn-sm" style="border-radius:6px;font-size:.875rem;padding:6px 16px">
+                    <i class="bi bi-funnel me-1"></i>Lọc
+                </button>
+                @if (!string.IsNullOrEmpty(search) || !string.IsNullOrEmpty(status))
+                {
+                    <a asp-action="Index" class="btn btn-outline-secondary btn-sm ms-1" style="border-radius:6px;font-size:.875rem;padding:6px 14px">
+                        <i class="bi bi-x-lg me-1"></i>Xóa lọc
+                    </a>
+                }
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert" style="border-radius:8px;font-size:.875rem">
+        <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert" style="border-radius:8px;font-size:.875rem">
+        <i class="bi bi-exclamation-circle-fill me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card border-0 shadow-sm" style="border-radius:10px">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" style="font-size:.875rem">
+                <thead style="background:#fafafa;border-bottom:1px solid #f0f0f0">
+                    <tr>
+                        <th class="px-4 py-3 text-muted fw-500" style="width:80px">Mã</th>
+                        <th class="py-3 text-muted fw-500">Khách hàng</th>
+                        <th class="py-3 text-muted fw-500" style="width:140px">Ngày đặt</th>
+                        <th class="py-3 text-muted fw-500 text-center" style="width:80px">SL</th>
+                        <th class="py-3 text-muted fw-500 text-end" style="width:130px">Tổng tiền</th>
+                        <th class="py-3 text-muted fw-500" style="width:150px">Thanh toán</th>
+                        <th class="py-3 text-muted fw-500" style="width:140px">Trạng thái</th>
+                        <th class="py-3 text-muted fw-500 text-end pe-4" style="width:100px">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox" style="font-size:2rem;display:block;margin-bottom:8px"></i>
+                                Chưa có đơn hàng nào
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var o in Model)
+                    {
+                        var st = StatusStyle(o.Status);
+                        <tr>
+                            <td class="px-4 fw-600" style="color:#1677ff">#@o.OrderId</td>
+                            <td>
+                                <div class="fw-500" style="color:#262626">@o.CustomerName</div>
+                                <div class="text-muted small">@o.CustomerPhone</div>
+                            </td>
+                            <td class="text-muted">@o.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td class="text-center">@o.ItemCount</td>
+                            <td class="text-end" style="color:#ff7236;font-weight:600">@o.GrandTotal.ToString("N0") đ</td>
+                            <td>
+                                <div>@o.PaymentMethod</div>
+                                <div class="text-muted small">@o.PaymentStatus</div>
+                            </td>
+                            <td>
+                                <span class="badge rounded-pill"
+                                      style="background:@st.bg;color:@st.fg;border:1px solid @st.border;font-size:.78rem;font-weight:500;padding:4px 10px">
+                                    <i class="bi bi-circle-fill me-1" style="font-size:.5rem"></i>@StatusLabel(o.Status)
+                                </span>
+                            </td>
+                            <td class="text-end pe-4">
+                                <a asp-action="Details" asp-route-id="@o.OrderId"
+                                   class="btn btn-sm btn-outline-primary" style="border-radius:6px;font-size:.8rem;padding:4px 10px" title="Xem / thao tác">
+                                    <i class="bi bi-eye"></i> Chi tiết
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination-area">
+            <span class="pagination-info">
+                @if (totalCount == 0)
+                {
+                    <text>Không có bản ghi nào</text>
+                }
+                else
+                {
+                    <text>Hiển thị @((page - 1) * pageSize + 1)–@(Math.Min(page * pageSize, totalCount)) của @totalCount bản ghi</text>
+                }
+            </span>
+
+            <div class="pagination-controls">
+                @{
+                    int startPage = Math.Max(1, page - 2);
+                    int endPage   = Math.Min(totalPages, startPage + 4);
+                    if (endPage - startPage < 4)
+                        startPage = Math.Max(1, endPage - 4);
+                }
+
+                <a class="page-btn @(page <= 1 ? "disabled" : "")"
+                   asp-action="Index" asp-route-page="@(page - 1)"
+                   asp-route-search="@search" asp-route-status="@status">Trước</a>
+
+                @if (startPage > 1)
+                {
+                    <a class="page-btn" asp-action="Index" asp-route-page="1"
+                       asp-route-search="@search" asp-route-status="@status">1</a>
+                    @if (startPage > 2)
+                    {
+                        <span class="page-btn-ellipsis">…</span>
+                    }
+                }
+
+                @for (int p = startPage; p <= endPage; p++)
+                {
+                    <a class="page-btn @(p == page ? "active" : "")"
+                       asp-action="Index" asp-route-page="@p"
+                       asp-route-search="@search" asp-route-status="@status">@p</a>
+                }
+
+                @if (endPage < totalPages)
+                {
+                    @if (endPage < totalPages - 1)
+                    {
+                        <span class="page-btn-ellipsis">…</span>
+                    }
+                    <a class="page-btn" asp-action="Index" asp-route-page="@totalPages"
+                       asp-route-search="@search" asp-route-status="@status">@totalPages</a>
+                }
+
+                <a class="page-btn @(page >= totalPages ? "disabled" : "")"
+                   asp-action="Index" asp-route-page="@(page + 1)"
+                   asp-route-search="@search" asp-route-status="@status">Sau</a>
+            </div>
+        </div>
+    </div>
+</div>

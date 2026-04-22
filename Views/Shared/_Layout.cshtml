@@ -283,6 +283,18 @@
             </div>
         }
 
+        <!-- Quản Lý Đơn Hàng -->
+        @if (User.IsInRole("Admin") || User.IsInRole("Manager") || User.IsInRole("Staff"))
+        {
+            <div class="nav-item-group">
+                <a class="nav-link-item @(ctrl == "Order" ? "active" : "")"
+                   asp-controller="Order" asp-action="Index">
+                    <i class="bi bi-receipt nav-icon"></i>
+                    <span class="nav-label">Quản Lý Đơn Hàng</span>
+                </a>
+            </div>
+        }
+
         <!-- Quản Lý Người Dùng -->
         @if (User.IsInRole("Admin"))
         {

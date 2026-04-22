@@ -4,7 +4,6 @@
     Layout = "~/Views/Shared/_LayoutAuth.cshtml";
     ViewData["Title"] = Model.Title;
     ViewData["LibrariaInnerHeader"] = true;
-    var heroImg = AboutDisplayHelper.DetailHeroImage(Model.AboutId);
     var dateStr = Model.UpdatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm");
 }
 <style>
@@ -40,9 +39,6 @@
                             <div class="news-list-detail">
                                 <div class="news-list-box">
                                     <div class="single-news-list">
-                                        <figure>
-                                            <img src="@heroImg" alt="@Model.Title" />
-                                        </figure>
                                         <div class="content-block">
                                             <div class="member-info">
                                                 <div class="content_meta_category">

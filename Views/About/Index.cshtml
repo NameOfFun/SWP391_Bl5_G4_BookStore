@@ -1,4 +1,4 @@
-﻿@model IReadOnlyList<BookStore.Dtos.Common.AboutDto>
+@model IReadOnlyList<BookStore.Dtos.Common.AboutDto>
 @using BookStore.Helpers
 @{
     Layout = "~/Views/Shared/_LayoutAuth.cshtml";
@@ -6,6 +6,11 @@
     ViewData["LibrariaInnerHeader"] = true;
     var recent = Model.Take(5).ToList();
 }
+
+<style>
+    .single-news-list .content-block { float: none; width: 100%; }
+    .widget_recent_entries ul li { padding-left: 0; }
+</style>
 
 <section class="page-banner news-listing-banner services-banner">
     <div class="container">
@@ -40,16 +45,10 @@
                             {
                                 @foreach (var item in Model)
                                 {
-                                    var img = AboutDisplayHelper.ListingImage(item.AboutId);
                                     var summary = AboutDisplayHelper.PlainTextSummary(item.ContentHtml);
                                     var dateStr = item.UpdatedAt.ToLocalTime().ToString("dd/MM/yyyy");
                                     <div class="news-list-box">
                                         <div class="single-news-list">
-                                            <figure>
-                                                <a asp-action="Article" asp-route-id="@item.AboutId">
-                                                    <img src="@img" alt="@item.Title" />
-                                                </a>
-                                            </figure>
                                             <div class="content-block">
                                                 <div class="member-info">
                                                     <div class="content_meta_category">
@@ -91,11 +90,7 @@
                                         {
                                             foreach (var item in recent)
                                             {
-                                                var thumb = AboutDisplayHelper.ListingImage(item.AboutId);
                                                 <li>
-                                                    <figure>
-                                                        <img src="@thumb" alt="@item.Title" />
-                                                    </figure>
                                                     <a asp-action="Article" asp-route-id="@item.AboutId">@item.Title</a>
                                                     <span><i class="fa fa-calendar"></i> &nbsp; @item.UpdatedAt.ToLocalTime().ToString("dd/MM/yyyy")</span>
                                                     <div class="clearfix"></div>

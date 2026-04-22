@@ -17,12 +17,14 @@
                 <form asp-action="Create" method="post">
                     @Html.AntiForgeryToken()
 
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3" style="font-size:.875rem"></div>
+
                     <div class="mb-3">
                         <label asp-for="ImageUrl" class="form-label" style="font-size:.875rem;font-weight:500;color:#595959">
                             URL Hình Ảnh <span class="text-danger">*</span>
                         </label>
                         <input asp-for="ImageUrl" class="form-control" style="border-radius:6px;font-size:.875rem"
-                               placeholder="https://..." oninput="previewImage(this.value)" />
+                               placeholder="https://..." maxlength="255" oninput="previewImage(this.value)" />
                         <span asp-validation-for="ImageUrl" class="text-danger" style="font-size:.8rem"></span>
                     </div>
 
@@ -37,7 +39,7 @@
                             Chữ trên slider (tuỳ chọn)
                         </label>
                         <textarea asp-for="Caption" class="form-control" rows="4" style="border-radius:6px;font-size:.875rem"
-                                  placeholder="Nhiều dòng: dòng 1 = phụ đề nhỏ, dòng 2 = tiêu đề chính, từ dòng 3 = mô tả."></textarea>
+                                  maxlength="255" placeholder="Nhiều dòng: dòng 1 = phụ đề nhỏ, dòng 2 = tiêu đề chính, từ dòng 3 = mô tả."></textarea>
                         <div class="form-text" style="font-size:.78rem">Trang chủ hiển thị theo thứ tự dòng. Chỉ một dòng = chỉ tiêu đề chính.</div>
                         <span asp-validation-for="Caption" class="text-danger" style="font-size:.8rem"></span>
                     </div>
@@ -47,7 +49,7 @@
                             Đường Dẫn Khi Click
                         </label>
                         <input asp-for="LinkUrl" class="form-control" style="border-radius:6px;font-size:.875rem"
-                               placeholder="https://... (tuỳ chọn)" />
+                               maxlength="255" placeholder="https://... (tuỳ chọn)" />
                         <span asp-validation-for="LinkUrl" class="text-danger" style="font-size:.8rem"></span>
                     </div>
 

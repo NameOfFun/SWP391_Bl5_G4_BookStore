@@ -1,0 +1,85 @@
+@model BookStore.Dtos.Common.OrderDetailDto
+@{
+    Layout = "~/Views/Shared/_LayoutAuth.cshtml";
+}
+<link href="~/css/bookshop.css" rel="stylesheet" asp-append-version="true" />
+
+<section class="page-banner services-banner">
+    <div class="container">
+        <div class="banner-header">
+            <h2>Đặt hàng thành công</h2>
+            <span class="underline center"></span>
+            <p class="lead">Mã đơn: <strong>#@Model.OrderId</strong></p>
+        </div>
+        <div class="breadcrumb">
+            <ul>
+                <li><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                <li><a asp-controller="Order" asp-action="MyOrders">Đơn hàng của tôi</a></li>
+                <li>Đơn #@Model.OrderId</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<div id="content" class="site-content">
+    <div class="container" style="padding-bottom:48px">
+        <div class="alert alert-success" style="margin-top:16px">
+            <i class="fa fa-check-circle"></i>
+            Cảm ơn bạn đã đặt hàng! Đơn của bạn đang chờ nhân viên xác nhận. Bạn có thể theo dõi trạng thái tại <a asp-controller="Order" asp-action="MyOrders">Đơn hàng của tôi</a>.
+        </div>
+
+        <div class="row">
+            <div class="col-md-7">
+                <h4>Thông tin giao hàng</h4>
+                <table class="table">
+                    <tr><th style="width:160px">Người nhận</th><td>@Model.ShippingName</td></tr>
+                    <tr><th>Số điện thoại</th><td>@Model.ShippingPhone</td></tr>
+                    <tr><th>Địa chỉ</th><td>@Model.ShippingAddress</td></tr>
+                    @if (!string.IsNullOrEmpty(Model.DeliveryNote))
+                    {
+                        <tr><th>Ghi chú</th><td>@Model.DeliveryNote</td></tr>
+                    }
+                    <tr><th>Phương thức</th><td>@Model.PaymentMethod</td></tr>
+                    <tr><th>Thanh toán</th><td>@Model.PaymentStatus</td></tr>
+                </table>
+            </div>
+            <div class="col-md-5">
+                <h4>Tóm tắt</h4>
+                <table class="table">
+                    <tr><th>Ngày đặt</th><td>@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</td></tr>
+                    <tr><th>Tạm tính</th><td>@Model.SubTotal.ToString("N0") đ</td></tr>
+                    <tr><th>Giảm giá</th><td>@Model.DiscountAmount.ToString("N0") đ</td></tr>
+                    <tr><th>Tổng cộng</th><td style="color:#ff7236;font-weight:700;font-size:18px">@Model.GrandTotal.ToString("N0") đ</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <h4>Các sản phẩm</h4>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Sách</th>
+                    <th class="text-right">Đơn giá</th>
+                    <th class="text-center">Số lượng</th>
+                    <th class="text-right">Thành tiền</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var it in Model.Items)
+                {
+                    <tr>
+                        <td>@it.Title</td>
+                        <td class="text-right">@it.UnitPrice.ToString("N0") đ</td>
+                        <td class="text-center">@it.Quantity</td>
+                        <td class="text-right">@it.LineTotal.ToString("N0") đ</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div style="margin-top:16px">
+            <a asp-controller="Book" asp-action="Shop" class="btn btn-primary" style="background:#ff7236;border-color:#ff7236">Tiếp tục mua sắm</a>
+            <a asp-controller="Order" asp-action="MyOrders" class="btn btn-default">Đơn hàng của tôi</a>
+        </div>
+    </div>
+</div>
