@@ -1,0 +1,103 @@
+@model IReadOnlyList<BookStore.Dtos.Common.OrderListItemDto>
+@using BookStore.Models
+@{
+    Layout = "~/Views/Shared/_LayoutAuth.cshtml";
+}
+<link href="~/css/bookshop.css" rel="stylesheet" asp-append-version="true" />
+
+@functions {
+    string StatusLabel(OrderStatus s) => s switch
+    {
+        OrderStatus.Pending => "Chờ xác nhận",
+        OrderStatus.Confirmed => "Đã xác nhận",
+        OrderStatus.Processing => "Đang xử lý",
+        OrderStatus.Shipped => "Đã giao shipper",
+        OrderStatus.Delivering => "Đang giao",
+        OrderStatus.Delivered => "Đã giao",
+        OrderStatus.Cancelled => "Đã hủy",
+        OrderStatus.DeliveryFailed => "Giao thất bại",
+        _ => s.ToString()
+    };
+
+    string StatusColor(OrderStatus s) => s switch
+    {
+        OrderStatus.Pending => "#faad14",
+        OrderStatus.Confirmed => "#1677ff",
+        OrderStatus.Processing => "#722ed1",
+        OrderStatus.Shipped => "#13c2c2",
+        OrderStatus.Delivering => "#2f54eb",
+        OrderStatus.Delivered => "#52c41a",
+        OrderStatus.Cancelled => "#ff4d4f",
+        OrderStatus.DeliveryFailed => "#ff4d4f",
+        _ => "#8c8c8c"
+    };
+}
+
+<section class="page-banner services-banner">
+    <div class="container">
+        <div class="banner-header">
+            <h2>Đơn hàng của tôi</h2>
+            <span class="underline center"></span>
+            <p class="lead">@Model.Count đơn</p>
+        </div>
+        <div class="breadcrumb">
+            <ul>
+                <li><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                <li>Đơn hàng của tôi</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<div id="content" class="site-content">
+    <div class="container" style="padding-bottom:48px">
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success" style="margin-top:16px">@TempData["Success"]</div>
+        }
+
+        @if (Model.Count == 0)
+        {
+            <p class="text-muted" style="margin-top:24px;font-size:16px">Bạn chưa có đơn hàng nào.</p>
+            <a asp-controller="Book" asp-action="Shop" class="btn btn-primary" style="background:#ff7236;border-color:#ff7236">Bắt đầu mua sắm</a>
+        }
+        else
+        {
+            <div class="table-responsive" style="margin-top:16px">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Mã đơn</th>
+                            <th>Ngày đặt</th>
+                            <th class="text-center">Số lượng</th>
+                            <th class="text-right">Tổng tiền</th>
+                            <th>Thanh toán</th>
+                            <th>Trạng thái</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var o in Model)
+                        {
+                            <tr>
+                                <td><strong>#@o.OrderId</strong></td>
+                                <td>@o.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td class="text-center">@o.ItemCount</td>
+                                <td class="text-right" style="color:#ff7236;font-weight:600">@o.GrandTotal.ToString("N0") đ</td>
+                                <td>@o.PaymentMethod / @o.PaymentStatus</td>
+                                <td>
+                                    <span style="display:inline-block;padding:3px 10px;border-radius:10px;background:@StatusColor(o.Status);color:#fff;font-size:12px">
+                                        @StatusLabel(o.Status)
+                                    </span>
+                                </td>
+                                <td>
+                                    <a asp-action="MyDetail" asp-route-id="@o.OrderId" class="btn btn-xs btn-default">Chi tiết</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
