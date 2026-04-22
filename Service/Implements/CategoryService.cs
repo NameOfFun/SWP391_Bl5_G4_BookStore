@@ -36,6 +36,11 @@ namespace BookStore.Service.Implements
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentException("Tên danh mục không được để trống");
 
+            var duplicate = await _context.Categories
+                .AnyAsync(c => c.Name.ToLower() == name.ToLower());
+            if (duplicate)
+                throw new ArgumentException("Tên danh mục đã tồn tại");
+
             var entity = new Category
             {
                 Name = name,
@@ -59,6 +64,11 @@ namespace BookStore.Service.Implements
             var name = (dto.Name ?? string.Empty).Trim();
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentException("Tên danh mục không được để trống");
+
+            var duplicate = await _context.Categories
+                .AnyAsync(c => c.Name.ToLower() == name.ToLower() && c.CategoryId != id);
+            if (duplicate)
+                throw new ArgumentException("Tên danh mục đã tồn tại");
 
             entity.Name = name;
             entity.Description = dto.Description?.Trim();

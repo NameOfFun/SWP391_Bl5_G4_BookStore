@@ -1,5 +1,4 @@
 @model List<BookStore.ViewModels.CategoryBooksGroup>
-@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment Env
 @{
     Layout = "~/Views/Shared/_LayoutAuth.cshtml";
     ViewData["Title"] = "Sách theo danh mục";
@@ -49,7 +48,7 @@
                         @foreach (var b in g.Books)
                         {
                             r++;
-                            var cover = BookCoverHelper.ResolveCoverPath(Env, b.BookId, b.ImageUrl);
+                            var cover = BookCoverHelper.ResolveCoverPath(b.ImageUrl);
                             var price = b.PromotionalPrice ?? b.Price;
                             <tr>
                                 <td>@r</td>

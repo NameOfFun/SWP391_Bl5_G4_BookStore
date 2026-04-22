@@ -45,6 +45,10 @@ namespace BookStore.Service.Implements
             if (string.IsNullOrWhiteSpace(title))
                 throw new ArgumentException("Tiêu đề không được để trống");
 
+            if (dto.PromotionalStartsAt.HasValue && dto.PromotionalEndsAt.HasValue
+                && dto.PromotionalStartsAt.Value >= dto.PromotionalEndsAt.Value)
+                throw new ArgumentException("Ngày bắt đầu khuyến mãi phải trước ngày kết thúc.");
+
             var authorId = await ResolveAuthorIdAsync(dto.AuthorName, userId);
 
             var entity = new Book
@@ -92,6 +96,10 @@ namespace BookStore.Service.Implements
             var title = (dto.Title ?? string.Empty).Trim();
             if (string.IsNullOrWhiteSpace(title))
                 throw new ArgumentException("Tiêu đề không được để trống", nameof(dto));
+
+            if (dto.PromotionalStartsAt.HasValue && dto.PromotionalEndsAt.HasValue
+                && dto.PromotionalStartsAt.Value >= dto.PromotionalEndsAt.Value)
+                throw new ArgumentException("Ngày bắt đầu khuyến mãi phải trước ngày kết thúc.");
 
             var authorId = await ResolveAuthorIdAsync(dto.AuthorName, userId);
 

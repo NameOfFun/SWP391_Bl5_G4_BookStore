@@ -125,7 +125,15 @@
                             <strong>Tạm tính:</strong>
                             <span style="color:#ff7236;font-size:22px;font-weight:700">@Model.Subtotal.ToString("N0") đ</span>
                         </p>
-                        <p class="text-muted small">Thanh toán sẽ được bổ sung ở bước sau.</p>
+                        <a asp-controller="Order" asp-action="Checkout"
+                           class="btn btn-primary btn-lg"
+                           style="background:#ff7236;border-color:#ff7236;padding:10px 28px;font-weight:600">
+                            <i class="fa fa-credit-card" aria-hidden="true"></i>
+                            Tiến hành thanh toán
+                        </a>
+                        <div style="margin-top:8px">
+                            <a asp-controller="Order" asp-action="MyOrders" class="text-muted small">Xem đơn hàng của tôi</a>
+                        </div>
                     </div>
                 </div>
             </div>
