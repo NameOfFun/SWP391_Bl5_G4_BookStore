@@ -45,6 +45,9 @@ public class Order
     /// <summary>Ghi chú thêm khi giao hàng thất bại hoặc thành công.</summary>
     public string? FailedNote { get; set; }
 
+    /// <summary>Ảnh minh chứng giao hàng (POD).</summary>
+    public string? ProofOfDeliveryImage { get; set; }
+
     public virtual ApplicationUser? Shipper { get; set; }
 
     public virtual Voucher? Voucher { get; set; }

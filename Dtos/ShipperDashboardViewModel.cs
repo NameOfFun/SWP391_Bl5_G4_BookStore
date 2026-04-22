@@ -85,12 +85,14 @@ public class DeliveryDetailViewModel
     public int OrderId { get; set; }
     public DateTime OrderDate { get; set; }
     public OrderStatus Status { get; set; }
+    public DateTime? DeliveredAt { get; set; }
 
     // ── Người nhận ─────────────────────────────
     public string RecipientName { get; set; } = string.Empty;
     public string RecipientPhone { get; set; } = string.Empty;
     public string RecipientAddress { get; set; } = string.Empty;
     public string? DeliveryNote { get; set; }
+    public string? ProofOfDeliveryImage { get; set; }
 
     // ── Sản phẩm ───────────────────────────────
     public List<DeliveryItemDto> Items { get; set; } = [];
@@ -144,6 +146,7 @@ public class DeliveryHistoryItemDto
     public DateTime? DeliveryDate { get; set; } // Using DeliveredAt
     public decimal GrandTotal { get; set; }
     public OrderStatus Status { get; set; }
+    public string? ProofOfDeliveryImage { get; set; }
 }
 
 // ─────────────────────────────────────────────

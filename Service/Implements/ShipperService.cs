@@ -66,12 +66,14 @@ public class ShipperService : IShipperService
             OrderId   = order.OrderId,
             OrderDate = order.OrderDate,
             Status    = order.Status,
+            DeliveredAt = order.DeliveredAt,
 
             // Người nhận
             RecipientName    = order.ShippingName    ?? "—",
             RecipientPhone   = order.ShippingPhone   ?? "—",
             RecipientAddress = order.ShippingAddress ?? "—",
             DeliveryNote     = order.DeliveryNote,
+            ProofOfDeliveryImage = order.ProofOfDeliveryImage,
 
             // Sản phẩm
             Items = order.Details.Select(d => new DeliveryItemDto
@@ -127,6 +129,7 @@ public class ShipperService : IShipperService
             order.Status = OrderStatus.Delivered;
             order.DeliveredAt = DateTime.Now;
             order.FailedNote = dto.Note; // Dùng chung trường Note cho cả 2
+            order.ProofOfDeliveryImage = dto.ProofImagePath;
         }
         else
         {
@@ -258,7 +261,8 @@ public class ShipperService : IShipperService
                 RecipientName = o.ShippingName ?? "—",
                 DeliveryDate  = o.DeliveredAt,
                 GrandTotal    = o.GrandTotal,
-                Status        = o.Status
+                Status        = o.Status,
+                ProofOfDeliveryImage = o.ProofOfDeliveryImage
             }).ToList()
         };
     }
@@ -375,7 +379,8 @@ public class ShipperService : IShipperService
                 RecipientName = o.ShippingName ?? "—",
                 DeliveryDate  = o.DeliveredAt,
                 GrandTotal    = o.GrandTotal,
-                Status        = o.Status
+                Status        = o.Status,
+                ProofOfDeliveryImage = o.ProofOfDeliveryImage
             }).ToList();
 
         if (!string.IsNullOrEmpty(shipperId))

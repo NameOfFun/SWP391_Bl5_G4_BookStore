@@ -80,6 +80,16 @@
     }
     .dh-btn-view:hover { background: var(--dh-blue); color: #fff; }
 
+    .dh-btn-pod {
+        width: 36px; height: 36px; border-radius: 10px;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: #f6ffed; color: #52c41a; cursor: pointer;
+        transition: all .2s; border: none; margin-right: 5px;
+    }
+    .dh-btn-pod:hover { background: #52c41a; color: #fff; }
+    
+    .pod-modal-img { width: 100%; border-radius: 12px; }
+
     .dh-empty { padding: 80px 40px; text-align: center; color: #bfbfbf; }
     .dh-empty i { font-size: 3.5rem; display: block; margin-bottom: 15px; }
 </style>
@@ -152,7 +162,14 @@
                             <td style="text-align: right">
                                 <span class="dh-amount">@order.GrandTotal.ToString("N0")₫</span>
                             </td>
-                            <td style="text-align: center">
+                             <td style="text-align: center; white-space: nowrap">
+                                @if (!string.IsNullOrEmpty(order.ProofOfDeliveryImage))
+                                {
+                                    <button type="button" class="dh-btn-pod" title="Xem minh chứng"
+                                            onclick="showPodModal('@order.ProofOfDeliveryImage', '@order.OrderId')">
+                                        <i class="bi bi-camera"></i>
+                                    </button>
+                                }
                                 <a asp-controller="Shipper" asp-action="DeliveryDetail" asp-route-id="@order.OrderId" 
                                    class="dh-btn-view" title="Xem chi tiết đơn #@order.OrderId">
                                     <i class="bi bi-arrow-right-short" style="font-size: 1.4rem"></i>
@@ -165,3 +182,27 @@
         </div>
     }
 </div>
+<!-- Modal Xem Minh Chứng -->
+<div class="modal fade" id="podModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px; border: none">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="podModalTitle">Minh chứng đơn hàng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <img id="podModalImg" src="" class="pod-modal-img" alt="POD" />
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function showPodModal(imgUrl, orderId) {
+        document.getElementById('podModalImg').src = imgUrl;
+        document.getElementById('podModalTitle').innerText = 'Minh chứng đơn hàng #' + orderId;
+        new bootstrap.Modal(document.getElementById('podModal')).show();
+    }
+</script>
+}

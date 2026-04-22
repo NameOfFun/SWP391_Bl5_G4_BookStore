@@ -118,6 +118,32 @@ public class ShipperController : Controller
             return RedirectToAction(nameof(DeliveryDetail), new { id = dto.OrderId });
         }
 
+        // Xử lý upload ảnh nếu có
+        if (dto.ProofImage != null && dto.ProofImage.Length > 0)
+        {
+            try 
+            {
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "pod");
+                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+                var fileName = $"POD_{dto.OrderId}_{DateTime.Now:yyyyMMddHHmmss}{Path.GetExtension(dto.ProofImage.FileName)}";
+                var filePath = Path.Combine(uploadsFolder, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await dto.ProofImage.CopyToAsync(stream);
+                }
+                
+                dto.ProofImagePath = $"/uploads/pod/{fileName}";
+            }
+            catch (Exception ex)
+            {
+                // Log error if needed
+                TempData["Error"] = "Có lỗi xảy ra khi lưu ảnh minh chứng.";
+                return RedirectToAction(nameof(DeliveryDetail), new { id = dto.OrderId });
+            }
+        }
+
         var (ok, message) = await _shipperService.UpdateDeliveryStatusAsync(dto, user.Id);
 
         TempData[ok ? "Success" : "Error"] = message;
