@@ -133,7 +133,7 @@ public class AccountController : Controller
     public async Task<IActionResult> Profile()
     {
         var user = await _userManager.GetUserAsync(User);
-        if(user == null)
+        if (user == null)
         {
             return RedirectToAction("Login");
         }
@@ -153,7 +153,7 @@ public class AccountController : Controller
 
     //Load Form Edit
     [HttpGet]
-    [Authorize] 
+    [Authorize]
     public async Task<IActionResult> EditProfile()
     {
         var user = await _userManager.GetUserAsync(User);
@@ -178,7 +178,7 @@ public class AccountController : Controller
     public async Task<IActionResult> EditProfile(EditProfileDto model)
     {
         var user = await _userManager.GetUserAsync(User);
-        if(user == null)
+        if (user == null)
         {
             return RedirectToAction("Login");
         }
@@ -189,16 +189,16 @@ public class AccountController : Controller
             return View(model);
         }
 
-        user.Name = model.Name;
-        user.PhoneNumber = model.PhoneNumber;
-        user.Address = model.Address;
-        var result = await _userManager.UpdateAsync(user);
+        var result = await _authService.UpdateProfileAsync(user.Id, model);
 
         if (!result.Succeeded)
         {
-            foreach(var error in result.Errors)
+            if (result.Errors != null)
             {
-                ModelState.AddModelError(string.Empty, error.Description);
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error);
+                }
             }
             ViewBag.CurrentAvatar = user.Avatar;
             return View(model);
@@ -228,17 +228,24 @@ public class AccountController : Controller
             return View(model);
         }
         var user = await _userManager.GetUserAsync(User);
-        if( user == null)
+        if (user == null)
         {
             return RedirectToAction("Login");
         }
 
-        var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+        var result = await _authService.ChangePasswordAsync(user.Id, model);
         if (!result.Succeeded)
         {
-            foreach (var error in result.Errors)
+            if (result.Errors != null)
             {
-                ModelState.AddModelError(string.Empty, error.Description);
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error);
+                }
+            }
+            else if (!string.IsNullOrEmpty(result.ErrorMessage))
+            {
+                ModelState.AddModelError(string.Empty, result.ErrorMessage);
             }
             return View(model);
         }
@@ -315,5 +322,73 @@ public class AccountController : Controller
         }
 
         return RedirectToAction("EditProfile");
+    }
+
+    //Forgot PassWord
+    [HttpGet]
+    [AllowAnonymous]
+    public IActionResult ForgotPassword()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    [AllowAnonymous]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ForgotPassword(ForgotPasswordDto model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+        var result = await _authService.ForgotPasswordAsync(model);
+
+        TempData["SuccessMessage"] = "Nếu email tồn tại trong hệ thống, bạn sẽ nhận được liên kết đặt lại mật khẩu";
+        return RedirectToAction("Login");
+    }
+
+    [HttpGet]
+    [AllowAnonymous]
+    public IActionResult ResetPassword(string? email, string? token)
+    {
+        if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(token))
+        {
+            return RedirectToAction("Login");
+        }
+        var model = new ResetPasswordDto
+        {
+            Email = email,
+            Token = token
+        };
+        return View(model);
+    }
+    [HttpPost]
+    [AllowAnonymous]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ResetPassword(ResetPasswordDto model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+        var result = await _authService.ResetPasswordAsync(model);
+
+        if (!result.Succeeded)
+        {
+            if (result.Errors != null)
+            {
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error);
+                }
+            }
+            else if (!string.IsNullOrEmpty(result.ErrorMessage))
+            {
+                ModelState.AddModelError(string.Empty, result.ErrorMessage);
+            }
+            return View(model);
+        }
+        TempData["SuccessMessage"] = "Đặt lại mật khẩu thành công! Vui lòng đăng nhập với mật khẩu mới.";
+        return RedirectToAction("Login");
     }
 }

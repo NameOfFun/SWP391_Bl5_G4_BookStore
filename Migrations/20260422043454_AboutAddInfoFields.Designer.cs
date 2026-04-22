@@ -4,6 +4,7 @@ using BookStore.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BookStore.Migrations
 {
     [DbContext(typeof(BookStoreDbContext))]
-    partial class BookStoreDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260422043454_AboutAddInfoFields")]
+    partial class AboutAddInfoFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,9 +33,28 @@ namespace BookStore.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AboutId"));
 
+                    b.Property<string>("Address")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
                     b.Property<string>("ContentHtml")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<int?>("EstablishedYear")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Intro")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.Property<string>("RoleId")
                         .HasColumnType("nvarchar(450)");
@@ -49,6 +71,10 @@ namespace BookStore.Migrations
 
                     b.Property<string>("UpdatedByUserId")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("WorkingHours")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.HasKey("AboutId");
 
@@ -112,7 +138,7 @@ namespace BookStore.Migrations
                         new
                         {
                             Id = "c781ad2b-1123-4f24-9b88-12c5b74681fb",
-                            CreatedDate = new DateTime(2026, 4, 22, 23, 28, 54, 778, DateTimeKind.Local).AddTicks(9532),
+                            CreatedDate = new DateTime(2026, 4, 22, 11, 34, 54, 251, DateTimeKind.Local).AddTicks(236),
                             IsSystemRole = false,
                             Name = "Customer",
                             NormalizedName = "CUSTOMER",
@@ -121,7 +147,7 @@ namespace BookStore.Migrations
                         new
                         {
                             Id = "s781ad2b-1123-4f24-9b88-12c5b74681fc",
-                            CreatedDate = new DateTime(2026, 4, 22, 23, 28, 54, 778, DateTimeKind.Local).AddTicks(9559),
+                            CreatedDate = new DateTime(2026, 4, 22, 11, 34, 54, 251, DateTimeKind.Local).AddTicks(251),
                             IsSystemRole = false,
                             Name = "Shipper",
                             NormalizedName = "SHIPPER",
@@ -221,7 +247,7 @@ namespace BookStore.Migrations
                             Id = "3781ad2b-1123-4f24-9b88-12c5b74681f9",
                             AccessFailedCount = 0,
                             ConcurrencyStamp = "C1",
-                            CreatedAt = new DateTime(2026, 4, 22, 23, 28, 54, 778, DateTimeKind.Local).AddTicks(9828),
+                            CreatedAt = new DateTime(2026, 4, 22, 11, 34, 54, 251, DateTimeKind.Local).AddTicks(406),
                             Email = "customer@test.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
@@ -240,7 +266,7 @@ namespace BookStore.Migrations
                             Id = "a781ad2b-1123-4f24-9b88-12c5b74681fa",
                             AccessFailedCount = 0,
                             ConcurrencyStamp = "C2",
-                            CreatedAt = new DateTime(2026, 4, 22, 23, 28, 54, 778, DateTimeKind.Local).AddTicks(9839),
+                            CreatedAt = new DateTime(2026, 4, 22, 11, 34, 54, 251, DateTimeKind.Local).AddTicks(415),
                             Email = "shipper@test.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
@@ -798,9 +824,6 @@ namespace BookStore.Migrations
                     b.Property<string>("PaymentStatus")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("ProofOfDeliveryImage")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ShipperId")
                         .HasColumnType("nvarchar(450)");

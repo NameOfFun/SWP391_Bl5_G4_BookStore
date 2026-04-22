@@ -11,15 +11,18 @@ public class AuthService : IAuthService
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly RoleManager<ApplicationRole> _roleManager;
+    private readonly IEmailService _emailService; 
 
     public AuthService(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
-        RoleManager<ApplicationRole> roleManager)
+        RoleManager<ApplicationRole> roleManager,
+        IEmailService emailService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _roleManager = roleManager;
+        _emailService = emailService;
     }
 
     public async Task<LoginResultDto> LoginAsync(LoginDto model)
@@ -208,7 +211,18 @@ public class AuthService : IAuthService
         {
             return new ProfileResultDto {Succeeded = false, ErrorMessage = "Không tìm thấy người dùng." };
         }
+        //Validate pass moi k trung pass cu
+        var isSamePassword = await _userManager.CheckPasswordAsync(user, model.NewPassword);
+        if(isSamePassword)
+        {
+            return new ProfileResultDto
+            {
+                Succeeded = false,
+                ErrorMessage = "Mật khẩu mới không được trùng với mật khẩu hiện tại"
+            };
+        }
 
+        //Change password
         var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
         if(!result.Succeeded)
         {
@@ -216,5 +230,59 @@ public class AuthService : IAuthService
             return new ProfileResultDto { Succeeded = false, Errors = errors };
         }
         return new ProfileResultDto { Succeeded = true };
+    }
+
+    public async Task<ForgotPasswordResultDto> ForgotPasswordAsync(ForgotPasswordDto model)
+    {
+        var user = await _userManager.FindByEmailAsync(model.Email);
+
+        if(user == null)
+        {
+            return new ForgotPasswordResultDto
+            {
+                Succeeded = true,
+            };
+        }
+
+        //Tao token 
+
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user); //Gui email + link reset
+
+        // Tạo URL reset (điều chỉnh domain theo môi trường)
+        var resetLink = $"https://localhost:7159/Account/ResetPassword?email={Uri.EscapeDataString(user.Email ?? "")}&token={Uri.EscapeDataString(token)}";
+
+        // Gửi email
+        await _emailService.SendPasswordResetEmailAsync(user.Email!, resetLink);
+
+        return new ForgotPasswordResultDto
+        {
+            Succeeded = true
+        };
+
+    }
+
+    public async Task<ResetPasswordResultDto> ResetPasswordAsync(ResetPasswordDto model)
+    {
+        var user = await _userManager.FindByEmailAsync(model.Email);
+        if( user == null )
+        {
+            return new ResetPasswordResultDto
+            {
+                Succeeded = false,
+                ErrorMessage = "Email không tồn tại"
+            };
+        }
+
+        var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+        if (!result.Succeeded)
+        {
+            var errors = result.Errors.Select(e => e.Description).ToList();
+            return new ResetPasswordResultDto
+            {
+                Succeeded = false,
+                Errors = errors
+            };
+        }
+        return new ResetPasswordResultDto { Succeeded = true };
     }
 }
