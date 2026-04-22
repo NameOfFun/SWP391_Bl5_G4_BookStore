@@ -7,7 +7,7 @@ using BookStore.Dtos;
 
 namespace BookStore.Controllers;
 
-[Authorize(Roles = "Shipper")]
+[Authorize]
 public class ShipperController : Controller
 {
     private readonly IShipperService _shipperService;
@@ -20,6 +20,7 @@ public class ShipperController : Controller
     }
 
     // ─── GET /Shipper/Dashboard ───────────────────────────────
+    [Authorize(Roles = "Shipper")]
     public async Task<IActionResult> Dashboard()
     {
         var user = await _userManager.GetUserAsync(User);
@@ -33,6 +34,7 @@ public class ShipperController : Controller
     }
 
     // ─── GET /Shipper/AssignedOrders?filter=all|assigned|delivering ──
+    [Authorize(Roles = "Shipper")]
     public async Task<IActionResult> AssignedOrders(string? filter)
     {
         var user = await _userManager.GetUserAsync(User);
@@ -72,6 +74,7 @@ public class ShipperController : Controller
     }
 
     // ─── GET /Shipper/DeliveryDetail/{id} ─────────────────────
+    [Authorize(Roles = "Shipper")]
     public async Task<IActionResult> DeliveryDetail(int id)
     {
         var user = await _userManager.GetUserAsync(User);
@@ -126,6 +129,7 @@ public class ShipperController : Controller
     }
 
     // ─── GET /Shipper/DeliveryHistory?filter=all|success|failed ──
+    [Authorize(Roles = "Shipper")]
     public async Task<IActionResult> DeliveryHistory(string? filter)
     {
         var user = await _userManager.GetUserAsync(User);
@@ -134,6 +138,37 @@ public class ShipperController : Controller
         var vm = await _shipperService.GetDeliveryHistoryAsync(user.Id, filter);
         
         ViewData["Title"]               = "Lịch sử giao hàng";
+        ViewData["BreadcrumbParent"]    = "Shipper";
+        ViewData["BreadcrumbParentUrl"] = Url.Action("Dashboard", "Shipper");
+        
+        return View(vm);
+    }
+
+    // ─── GET /Shipper/ManagePerformance ───────────────────────
+    [Authorize(Roles = "Manager,Admin")]
+    public async Task<IActionResult> ManagePerformance(string? shipperId)
+    {
+        var vm = string.IsNullOrEmpty(shipperId)
+            ? await _shipperService.GetManagementPerformanceAsync()
+            : await _shipperService.GetShipperPerformanceAsync(shipperId);
+        
+        ViewData["Title"]               = string.IsNullOrEmpty(shipperId) ? "Quản lý Hiệu suất Shipper" : $"Hiệu suất: {vm.SelectedShipperName}";
+        ViewData["BreadcrumbParent"]    = "Shipper";
+        ViewData["BreadcrumbParentUrl"] = Url.Action("Dashboard", "Shipper");
+        
+        return View(vm);
+    }
+
+    // ─── GET /Shipper/MyPerformance ───────────────────────────
+    [Authorize(Roles = "Shipper")]
+    public async Task<IActionResult> MyPerformance()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null) return Challenge();
+
+        var vm = await _shipperService.GetShipperPerformanceAsync(user.Id);
+        
+        ViewData["Title"]               = "Hiệu suất Cá nhân";
         ViewData["BreadcrumbParent"]    = "Shipper";
         ViewData["BreadcrumbParentUrl"] = Url.Action("Dashboard", "Shipper");
         

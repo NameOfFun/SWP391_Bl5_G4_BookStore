@@ -28,4 +28,10 @@ public interface IShipperService
 
     /// <summary>Lấy lịch sử giao hàng (Delivered + DeliveryFailed).</summary>
     Task<DeliveryHistoryViewModel> GetDeliveryHistoryAsync(string shipperId, string? filter);
+
+    /// <summary>Lấy thống kê hiệu suất cho Manager (toàn bộ shipper).</summary>
+    Task<ShipperPerformanceViewModel> GetManagementPerformanceAsync();
+
+    /// <summary>Lấy thống kê hiệu suất cá nhân cho một shipper cụ thể.</summary>
+    Task<ShipperPerformanceViewModel> GetShipperPerformanceAsync(string shipperId);
 }

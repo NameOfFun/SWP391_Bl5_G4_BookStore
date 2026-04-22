@@ -262,4 +262,127 @@ public class ShipperService : IShipperService
             }).ToList()
         };
     }
+
+    // ─── Performance Analytics ────────────────────────────────
+    public async Task<ShipperPerformanceViewModel> GetManagementPerformanceAsync()
+    {
+        return await BuildPerformanceViewModelAsync(null);
+    }
+
+    public async Task<ShipperPerformanceViewModel> GetShipperPerformanceAsync(string shipperId)
+    {
+        return await BuildPerformanceViewModelAsync(shipperId);
+    }
+
+    private async Task<ShipperPerformanceViewModel> BuildPerformanceViewModelAsync(string? shipperId)
+    {
+        var now   = DateTime.Now;
+        var today = now.Date;
+        var startOfWeek  = today.AddDays(-(int)today.DayOfWeek);
+        var startOfMonth = new DateTime(today.Year, today.Month, 1);
+
+        // Lấy tất cả đơn hàng đã assign (Shipped, Delivering, Delivered, DeliveryFailed)
+        var query = _db.Orders.AsQueryable();
+        if (!string.IsNullOrEmpty(shipperId))
+        {
+            query = query.Where(o => o.ShipperId == shipperId);
+        }
+        else
+        {
+            // Nếu là Management (null), chỉ lấy những đơn đã có Shipper
+            query = query.Where(o => o.ShipperId != null);
+        }
+
+        // Chỉ lấy các trạng thái liên quan đến việc giao hàng
+        var deliveryStatuses = new[] { OrderStatus.Delivered, OrderStatus.DeliveryFailed, OrderStatus.Delivering, OrderStatus.Shipped };
+        var allOrders = await query
+            .Where(o => deliveryStatuses.Contains(o.Status))
+            .Include(o => o.Shipper)
+            .ToListAsync();
+
+        var deliveredOrders = allOrders.Where(o => o.Status == OrderStatus.Delivered).ToList();
+        var failedOrders    = allOrders.Where(o => o.Status == OrderStatus.DeliveryFailed).ToList();
+
+        // 1. Tổng quan
+        var vm = new ShipperPerformanceViewModel
+        {
+            SelectedShipperId = shipperId,
+            TotalOrders      = allOrders.Count,
+            SuccessfulOrders = deliveredOrders.Count,
+            FailedOrders     = failedOrders.Count,
+            TotalCodRevenue  = deliveredOrders
+                .Where(o => o.PaymentMethod != null && o.PaymentMethod.Equals("COD", StringComparison.OrdinalIgnoreCase))
+                .Sum(o => o.GrandTotal),
+            
+            OrdersToday      = allOrders.Count(o => o.OrderDate.Date == today),
+            OrdersThisWeek   = allOrders.Count(o => o.OrderDate >= startOfWeek),
+            OrdersThisMonth  = allOrders.Count(o => o.OrderDate >= startOfMonth)
+        };
+
+        // 2. Daily Stats (7 ngày gần nhất cho biểu đồ)
+        var last7Days = Enumerable.Range(0, 7)
+            .Select(i => today.AddDays(-i))
+            .OrderBy(d => d)
+            .ToList();
+
+        vm.DailyStats = last7Days.Select(d => new TimeStatsDto
+        {
+            Date    = d,
+            Count   = allOrders.Count(o => o.OrderDate.Date == d),
+            Revenue = allOrders
+                .Where(o => o.OrderDate.Date == d && o.Status == OrderStatus.Delivered)
+                .Sum(o => o.GrandTotal)
+        }).ToList();
+
+        // 3. Chart Data (Thành công vs Thất bại theo ngày)
+        vm.ChartData.Labels = last7Days.Select(d => d.ToString("dd/MM")).ToList();
+        vm.ChartData.SuccessCounts = last7Days.Select(d => 
+            allOrders.Count(o => o.OrderDate.Date == d && o.Status == OrderStatus.Delivered)).ToList();
+        vm.ChartData.FailedCounts = last7Days.Select(d => 
+            allOrders.Count(o => o.OrderDate.Date == d && o.Status == OrderStatus.DeliveryFailed)).ToList();
+
+        // 4. Shipper List & Selected Name
+        // Lấy danh sách TOÀN BỘ đơn hàng đã assign để có đủ list shipper ngay cả khi đang filter một người
+        var allDeliveryOrders = await _db.Orders
+            .Where(o => o.ShipperId != null && deliveryStatuses.Contains(o.Status))
+            .Include(o => o.Shipper)
+            .ToListAsync();
+
+        vm.ShipperList = allDeliveryOrders
+            .GroupBy(o => o.ShipperId)
+            .Select(g => new ShipperAnalyticDto
+            {
+                ShipperId      = g.Key!,
+                ShipperName    = g.First().Shipper?.Name ?? "N/A",
+                TotalAssigned  = g.Count(),
+                TotalDelivered = g.Count(o => o.Status == OrderStatus.Delivered),
+                TotalFailed    = g.Count(o => o.Status == OrderStatus.DeliveryFailed),
+                CodCollected   = g.Where(o => o.Status == OrderStatus.Delivered && 
+                                             o.PaymentMethod != null && 
+                                             o.PaymentMethod.Equals("COD", StringComparison.OrdinalIgnoreCase))
+                                  .Sum(o => o.GrandTotal)
+            })
+            .OrderByDescending(s => s.TotalDelivered)
+            .ToList();
+
+        // 5. Recent Orders (Chi tiết các đơn hàng)
+        vm.RecentOrders = allOrders
+            .OrderByDescending(o => o.OrderDate)
+            .Take(10)
+            .Select(o => new DeliveryHistoryItemDto
+            {
+                OrderId       = o.OrderId,
+                RecipientName = o.ShippingName ?? "—",
+                DeliveryDate  = o.DeliveredAt,
+                GrandTotal    = o.GrandTotal,
+                Status        = o.Status
+            }).ToList();
+
+        if (!string.IsNullOrEmpty(shipperId))
+        {
+            vm.SelectedShipperName = vm.ShipperList.FirstOrDefault(s => s.ShipperId == shipperId)?.ShipperName;
+        }
+
+        return vm;
+    }
 }
