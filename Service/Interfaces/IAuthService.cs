@@ -14,4 +14,7 @@ public interface IAuthService
     Task<ProfileResultDto> UpdateProfileAsync(string userId, EditProfileDto model);
     Task<ProfileResultDto> UpdateAvatarAsync(string userId, string avatarUrl);
     Task<ProfileResultDto> ChangePasswordAsync(string userId, ChangePasswordDto model);
+
+    Task<ForgotPasswordResultDto> ForgotPasswordAsync(ForgotPasswordDto model);
+    Task<ResetPasswordResultDto> ResetPasswordAsync(ResetPasswordDto model);
 }
