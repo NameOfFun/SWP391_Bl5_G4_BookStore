@@ -1,0 +1,266 @@
+@model BookStore.Dtos.Common.OrderDetailDto
+@using BookStore.Models
+@using BookStore.Dtos.Common
+@{
+    ViewData["Title"] = $"Đơn #{Model.OrderId}";
+    var shippers = (ViewData["Shippers"] as IReadOnlyList<ShipperOptionDto>) ?? new List<ShipperOptionDto>();
+}
+
+@functions {
+    string StatusLabel(OrderStatus s) => s switch
+    {
+        OrderStatus.Pending => "Chờ xác nhận",
+        OrderStatus.Confirmed => "Đã xác nhận",
+        OrderStatus.Processing => "Đang xử lý",
+        OrderStatus.Shipped => "Đã giao shipper",
+        OrderStatus.Delivering => "Đang giao",
+        OrderStatus.Delivered => "Đã giao",
+        OrderStatus.Cancelled => "Đã hủy",
+        OrderStatus.DeliveryFailed => "Giao thất bại",
+        _ => s.ToString()
+    };
+
+    (string bg, string fg, string border) StatusStyle(OrderStatus s) => s switch
+    {
+        OrderStatus.Pending        => ("#fffbe6", "#faad14", "#ffe58f"),
+        OrderStatus.Confirmed      => ("#e6f4ff", "#1677ff", "#91caff"),
+        OrderStatus.Processing     => ("#f9f0ff", "#722ed1", "#d3adf7"),
+        OrderStatus.Shipped        => ("#e6fffb", "#13c2c2", "#87e8de"),
+        OrderStatus.Delivering     => ("#f0f5ff", "#2f54eb", "#adc6ff"),
+        OrderStatus.Delivered      => ("#f6ffed", "#52c41a", "#b7eb8f"),
+        OrderStatus.Cancelled      => ("#fff2f0", "#ff4d4f", "#ffccc7"),
+        OrderStatus.DeliveryFailed => ("#fff2f0", "#ff4d4f", "#ffccc7"),
+        _                          => ("#fafafa", "#595959", "#d9d9d9")
+    };
+}
+
+@{
+    var st = StatusStyle(Model.Status);
+    bool canConfirm = Model.Status == OrderStatus.Pending;
+    bool canProcess = Model.Status == OrderStatus.Confirmed;
+    bool canAssign  = Model.Status == OrderStatus.Processing;
+    bool canCancel  = Model.Status == OrderStatus.Pending
+                   || Model.Status == OrderStatus.Confirmed
+                   || Model.Status == OrderStatus.Processing;
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h4 class="mb-0 fw-600" style="font-size:1.15rem;color:#262626">Đơn hàng #@Model.OrderId</h4>
+        <p class="text-muted mb-0" style="font-size:.85rem">Đặt lúc @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
+    </div>
+    <span class="badge rounded-pill" style="background:@st.bg;color:@st.fg;border:1px solid @st.border;font-size:.85rem;font-weight:500;padding:6px 14px">
+        <i class="bi bi-circle-fill me-1" style="font-size:.5rem"></i>@StatusLabel(Model.Status)
+    </span>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert" style="border-radius:8px;font-size:.875rem">
+        <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert" style="border-radius:8px;font-size:.875rem">
+        <i class="bi bi-exclamation-circle-fill me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row g-3">
+    <!-- Cột trái: thông tin đơn -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm mb-3" style="border-radius:10px">
+            <div class="card-body">
+                <h5 class="fw-600 mb-3" style="font-size:1rem">Khách hàng & giao hàng</h5>
+                <dl class="row mb-0" style="font-size:.9rem">
+                    <dt class="col-sm-3 text-muted fw-500">Người nhận</dt>
+                    <dd class="col-sm-9">@Model.ShippingName</dd>
+
+                    <dt class="col-sm-3 text-muted fw-500">Số điện thoại</dt>
+                    <dd class="col-sm-9">@Model.ShippingPhone</dd>
+
+                    <dt class="col-sm-3 text-muted fw-500">Địa chỉ</dt>
+                    <dd class="col-sm-9">@Model.ShippingAddress</dd>
+
+                    @if (!string.IsNullOrEmpty(Model.DeliveryNote))
+                    {
+                        <dt class="col-sm-3 text-muted fw-500">Ghi chú</dt>
+                        <dd class="col-sm-9">@Model.DeliveryNote</dd>
+                    }
+
+                    <dt class="col-sm-3 text-muted fw-500">Email KH</dt>
+                    <dd class="col-sm-9">@Model.CustomerEmail</dd>
+
+                    @if (!string.IsNullOrEmpty(Model.ShipperName))
+                    {
+                        <dt class="col-sm-3 text-muted fw-500">Shipper</dt>
+                        <dd class="col-sm-9"><i class="bi bi-truck me-1"></i>@Model.ShipperName</dd>
+                    }
+
+                    @if (Model.DeliveredAt.HasValue)
+                    {
+                        <dt class="col-sm-3 text-muted fw-500">Giao lúc</dt>
+                        <dd class="col-sm-9">@Model.DeliveredAt.Value.ToString("dd/MM/yyyy HH:mm")</dd>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.FailedReason))
+                    {
+                        <dt class="col-sm-3 text-muted fw-500">Lý do lỗi</dt>
+                        <dd class="col-sm-9 text-danger">@Model.FailedReason</dd>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.FailedNote))
+                    {
+                        <dt class="col-sm-3 text-muted fw-500">Ghi chú lỗi</dt>
+                        <dd class="col-sm-9">@Model.FailedNote</dd>
+                    }
+                </dl>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm" style="border-radius:10px">
+            <div class="card-body p-0">
+                <div class="p-3 border-bottom">
+                    <h5 class="fw-600 mb-0" style="font-size:1rem">Sản phẩm trong đơn</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0" style="font-size:.875rem">
+                        <thead style="background:#fafafa">
+                            <tr>
+                                <th class="px-3 py-2 text-muted fw-500">Sách</th>
+                                <th class="py-2 text-muted fw-500 text-end" style="width:140px">Đơn giá</th>
+                                <th class="py-2 text-muted fw-500 text-center" style="width:100px">SL</th>
+                                <th class="py-2 text-muted fw-500 text-end pe-3" style="width:140px">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var it in Model.Items)
+                            {
+                                <tr>
+                                    <td class="px-3">@it.Title</td>
+                                    <td class="text-end">@it.UnitPrice.ToString("N0") đ</td>
+                                    <td class="text-center">@it.Quantity</td>
+                                    <td class="text-end pe-3 fw-500">@it.LineTotal.ToString("N0") đ</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot style="background:#fafafa">
+                            <tr>
+                                <th colspan="3" class="px-3 py-2 text-end text-muted fw-500">Tạm tính</th>
+                                <th class="text-end pe-3 fw-500">@Model.SubTotal.ToString("N0") đ</th>
+                            </tr>
+                            <tr>
+                                <th colspan="3" class="px-3 py-2 text-end text-muted fw-500">Giảm giá</th>
+                                <th class="text-end pe-3 fw-500">@Model.DiscountAmount.ToString("N0") đ</th>
+                            </tr>
+                            <tr>
+                                <th colspan="3" class="px-3 py-2 text-end" style="font-size:1rem">Tổng cộng</th>
+                                <th class="text-end pe-3" style="color:#ff7236;font-size:1.05rem">@Model.GrandTotal.ToString("N0") đ</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cột phải: thao tác trạng thái -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm mb-3" style="border-radius:10px">
+            <div class="card-body">
+                <h5 class="fw-600 mb-3" style="font-size:1rem"><i class="bi bi-wallet2 me-1"></i>Thanh toán</h5>
+                <dl class="row mb-0" style="font-size:.9rem">
+                    <dt class="col-sm-5 text-muted fw-500">Phương thức</dt>
+                    <dd class="col-sm-7">@Model.PaymentMethod</dd>
+                    <dt class="col-sm-5 text-muted fw-500">Trạng thái</dt>
+                    <dd class="col-sm-7">@Model.PaymentStatus</dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm" style="border-radius:10px">
+            <div class="card-body">
+                <h5 class="fw-600 mb-3" style="font-size:1rem"><i class="bi bi-gear me-1"></i>Thao tác</h5>
+
+                <!-- Xác nhận: Pending → Confirmed -->
+                <form asp-action="Confirm" method="post" class="mb-2"
+                      onsubmit="return confirm('Xác nhận đơn hàng #@Model.OrderId?')">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="orderId" value="@Model.OrderId" />
+                    <button type="submit" class="btn btn-primary w-100"
+                            style="border-radius:6px;font-size:.875rem" @(canConfirm ? "" : "disabled")>
+                        <i class="bi bi-check2-circle me-1"></i>Xác nhận đơn (Chờ → Đã xác nhận)
+                    </button>
+                </form>
+
+                <!-- Chuyển xử lý: Confirmed → Processing -->
+                <form asp-action="MoveToProcessing" method="post" class="mb-2"
+                      onsubmit="return confirm('Chuyển đơn #@Model.OrderId sang Đang xử lý?')">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="orderId" value="@Model.OrderId" />
+                    <button type="submit" class="btn btn-outline-primary w-100"
+                            style="border-radius:6px;font-size:.875rem" @(canProcess ? "" : "disabled")>
+                        <i class="bi bi-box-seam me-1"></i>Chuyển sang Đang xử lý
+                    </button>
+                </form>
+
+                <!-- Gán shipper: Processing → Shipped -->
+                <form asp-action="AssignShipper" method="post" class="mb-2">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="orderId" value="@Model.OrderId" />
+                    <label class="form-label text-muted fw-500 mb-1" style="font-size:.8rem">Gán shipper</label>
+                    <div class="input-group input-group-sm">
+                        <select name="shipperUserId" class="form-select" style="font-size:.875rem" @(canAssign ? "" : "disabled")>
+                            <option value="">— Chọn shipper —</option>
+                            @foreach (var sp in shippers)
+                            {
+                                <option value="@sp.UserId">@sp.Name</option>
+                            }
+                        </select>
+                        <button type="submit" class="btn btn-primary"
+                                style="border-radius:0 6px 6px 0;font-size:.875rem" @(canAssign ? "" : "disabled")>
+                            <i class="bi bi-truck"></i>
+                        </button>
+                    </div>
+                    @if (canAssign && shippers.Count == 0)
+                    {
+                        <div class="text-warning small mt-1"><i class="bi bi-exclamation-triangle"></i> Chưa có shipper nào đang hoạt động.</div>
+                    }
+                </form>
+
+                <hr class="my-3" />
+
+                <!-- Hủy đơn -->
+                <button type="button" class="btn btn-outline-danger w-100"
+                        style="border-radius:6px;font-size:.875rem"
+                        data-bs-toggle="collapse" data-bs-target="#cancelForm"
+                        @(canCancel ? "" : "disabled")>
+                    <i class="bi bi-x-circle me-1"></i>Hủy đơn
+                </button>
+                <div class="collapse mt-2" id="cancelForm">
+                    <form asp-action="Cancel" method="post"
+                          onsubmit="return confirm('Hủy đơn #@Model.OrderId? Thao tác này sẽ hoàn kho cho các sản phẩm.')">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="orderId" value="@Model.OrderId" />
+                        <textarea name="reason" class="form-control form-control-sm mb-2"
+                                  placeholder="Lý do hủy (tuỳ chọn)" rows="2" style="font-size:.875rem"></textarea>
+                        <button type="submit" class="btn btn-danger btn-sm w-100" style="border-radius:6px">
+                            Xác nhận hủy đơn
+                        </button>
+                    </form>
+                </div>
+
+                <div class="mt-3 text-muted" style="font-size:.78rem">
+                    <i class="bi bi-info-circle me-1"></i>Sau khi gán shipper, các bước <strong>Đang giao / Đã giao / Giao thất bại</strong> sẽ do shipper cập nhật trong khu vực Shipper.
+                </div>
+            </div>
+        </div>
+
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm mt-3" style="border-radius:6px">
+            <i class="bi bi-arrow-left me-1"></i>Về danh sách đơn
+        </a>
+    </div>
+</div>

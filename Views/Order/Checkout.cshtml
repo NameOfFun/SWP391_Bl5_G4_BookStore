@@ -1,0 +1,128 @@
+@model BookStore.Dtos.Common.CheckoutViewModel
+@{
+    Layout = "~/Views/Shared/_LayoutAuth.cshtml";
+}
+<link href="~/css/bookshop.css" rel="stylesheet" asp-append-version="true" />
+
+<section class="page-banner services-banner">
+    <div class="container">
+        <div class="banner-header">
+            <h2>Thanh toán</h2>
+            <span class="underline center"></span>
+            <p class="lead">@Model.TotalQuantity sản phẩm</p>
+        </div>
+        <div class="breadcrumb">
+            <ul>
+                <li><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                <li><a asp-controller="Cart" asp-action="Index">Giỏ hàng</a></li>
+                <li>Thanh toán</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<div id="content" class="site-content">
+    <div class="container" style="padding-bottom:48px">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="margin-top:16px"></div>
+
+        <form asp-action="Checkout" method="post" novalidate>
+            @Html.AntiForgeryToken()
+
+            <div class="row" style="margin-top:16px">
+                <div class="col-md-7">
+                    <h4 style="margin-top:0">Thông tin giao hàng</h4>
+                    <div class="form-group">
+                        <label asp-for="Form.ShippingName">Họ và tên *</label>
+                        <input asp-for="Form.ShippingName" class="form-control" />
+                        <span asp-validation-for="Form.ShippingName" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Form.ShippingPhone">Số điện thoại *</label>
+                        <input asp-for="Form.ShippingPhone" class="form-control" />
+                        <span asp-validation-for="Form.ShippingPhone" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Form.ShippingAddress">Địa chỉ nhận hàng *</label>
+                        <textarea asp-for="Form.ShippingAddress" class="form-control" rows="2"></textarea>
+                        <span asp-validation-for="Form.ShippingAddress" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Form.DeliveryNote">Ghi chú giao hàng</label>
+                        <textarea asp-for="Form.DeliveryNote" class="form-control" rows="2" placeholder="Ví dụ: gọi trước khi giao, giao giờ hành chính..."></textarea>
+                        <span asp-validation-for="Form.DeliveryNote" class="text-danger"></span>
+                    </div>
+
+                    <h4 style="margin-top:24px">Phương thức thanh toán</h4>
+                    <div class="form-group">
+                        <label class="radio-inline" style="margin-right:16px">
+                            <input type="radio" asp-for="Form.PaymentMethod" value="COD" />
+                            Thanh toán khi nhận hàng (COD)
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" asp-for="Form.PaymentMethod" value="BankTransfer" />
+                            Chuyển khoản ngân hàng
+                        </label>
+                        <span asp-validation-for="Form.PaymentMethod" class="text-danger d-block"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-5">
+                    <div style="border:1px solid #eee;background:#fafafa;padding:18px;border-radius:6px">
+                        <h4 style="margin-top:0">Đơn hàng của bạn</h4>
+                        <table class="table" style="margin-bottom:12px">
+                            <thead>
+                                <tr>
+                                    <th>Sản phẩm</th>
+                                    <th class="text-right">Tạm tính</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var l in Model.Lines)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div style="display:flex;align-items:center;gap:10px">
+                                                <img src="@l.CoverUrl" alt="" style="width:40px;height:56px;object-fit:cover;border:1px solid #eee" />
+                                                <div>
+                                                    <div style="font-weight:600">@l.Title</div>
+                                                    <div class="text-muted small">@l.UnitPrice.ToString("N0") đ × @l.Quantity</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-right" style="vertical-align:middle">@l.LineTotal.ToString("N0") đ</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th>Tạm tính</th>
+                                    <td class="text-right">@Model.Subtotal.ToString("N0") đ</td>
+                                </tr>
+                                <tr>
+                                    <th>Giảm giá</th>
+                                    <td class="text-right">@Model.DiscountAmount.ToString("N0") đ</td>
+                                </tr>
+                                <tr>
+                                    <th style="font-size:16px">Tổng cộng</th>
+                                    <td class="text-right" style="color:#ff7236;font-size:20px;font-weight:700">@Model.GrandTotal.ToString("N0") đ</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <button type="submit" class="btn btn-primary btn-block btn-lg"
+                                style="background:#ff7236;border-color:#ff7236;width:100%;padding:12px;font-weight:600">
+                            Đặt hàng
+                        </button>
+                        <a asp-controller="Cart" asp-action="Index" class="btn btn-default btn-block" style="width:100%;margin-top:8px">
+                            Quay lại giỏ hàng
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
