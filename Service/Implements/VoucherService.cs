@@ -158,6 +158,38 @@ public class VoucherService : IVoucherService
         await _context.SaveChangesAsync();
     }
 
+    public async Task<(int VoucherId, decimal DiscountAmount)> ValidateForCheckoutAsync(
+        string code, decimal subTotal)
+    {
+        var normalized = code.Trim().ToUpperInvariant();
+        var now = DateTime.Now;
+
+        var voucher = await _context.Vouchers
+            .AsNoTracking()
+            .FirstOrDefaultAsync(v => v.Code == normalized);
+
+        if (voucher == null)
+            throw new ArgumentException("Mã giảm giá không tồn tại.");
+        if (!voucher.IsActive)
+            throw new ArgumentException("Mã giảm giá đã bị vô hiệu hóa.");
+        if (voucher.ValidFrom.HasValue && voucher.ValidFrom.Value > now)
+            throw new ArgumentException("Mã giảm giá chưa có hiệu lực.");
+        if (voucher.ValidTo.HasValue && voucher.ValidTo.Value < now)
+            throw new ArgumentException("Mã giảm giá đã hết hạn.");
+        if (voucher.UsageLimit.HasValue && voucher.TimesUsed >= voucher.UsageLimit.Value)
+            throw new ArgumentException("Mã giảm giá đã hết lượt sử dụng.");
+        if (voucher.MinOrderAmount.HasValue && subTotal < voucher.MinOrderAmount.Value)
+            throw new ArgumentException($"Đơn hàng tối thiểu {voucher.MinOrderAmount.Value:N0}đ để dùng mã này.");
+
+        decimal discount = voucher.DiscountType == "P"
+            ? subTotal * voucher.DiscountValue / 100m
+            : voucher.DiscountValue;
+
+        discount = Math.Min(discount, subTotal);
+
+        return (voucher.VoucherId, discount);
+    }
+
     private static void ValidateDiscountType(string discountType, decimal discountValue)
     {
         if (discountType == "P" && (discountValue < 1 || discountValue > 100))

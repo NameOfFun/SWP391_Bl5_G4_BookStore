@@ -11,11 +11,14 @@ public class OrderService : IOrderService
 {
     private readonly BookStoreDbContext _db;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IVoucherService _voucherService;
 
-    public OrderService(BookStoreDbContext db, UserManager<ApplicationUser> userManager)
+    public OrderService(BookStoreDbContext db, UserManager<ApplicationUser> userManager,
+        IVoucherService voucherService)
     {
         _db = db;
         _userManager = userManager;
+        _voucherService = voucherService;
     }
 
     // ─── Checkout view ────────────────────────────────────────
@@ -96,16 +99,43 @@ public class OrderService : IOrderService
 
         var subTotal = validLines.Sum(v => v.UnitPrice * v.Item.Quantity);
         var discount = 0m;
-        var grandTotal = subTotal - discount;
+        int? voucherId = null;
 
         await using var tx = await _db.Database.BeginTransactionAsync();
         try
         {
+            if (!string.IsNullOrWhiteSpace(dto.VoucherCode))
+            {
+                var normalizedCode = dto.VoucherCode.Trim().ToUpperInvariant();
+                try
+                {
+                    var (vid, disc) = await _voucherService.ValidateForCheckoutAsync(normalizedCode, subTotal);
+                    int rows = await _db.Database.ExecuteSqlRawAsync(
+                        "UPDATE Voucher SET TimesUsed = TimesUsed + 1 " +
+                        "WHERE VoucherId = {0} " +
+                        "AND (UsageLimit IS NULL OR TimesUsed < UsageLimit)",
+                        vid);
+
+                    if (rows == 0)
+                        return (false, "Mã giảm giá đã hết lượt sử dụng.", 0);
+
+                    discount = disc;
+                    voucherId = vid;
+                }
+                catch (ArgumentException ex)
+                {
+                    return (false, ex.Message, 0);
+                }
+            }
+
+            var grandTotal = Math.Max(0m, subTotal - discount);
+
             var order = new Order
             {
                 UserId = userId,
                 OrderDate = DateTime.Now,
                 Status = OrderStatus.Pending,
+                VoucherId = voucherId,
                 SubTotal = subTotal,
                 DiscountAmount = discount,
                 GrandTotal = grandTotal,
@@ -179,6 +209,7 @@ public class OrderService : IOrderService
             .Include(o => o.Details)
                 .ThenInclude(d => d.Book)
             .Include(o => o.Shipper)
+            .Include(o => o.Voucher)
             .FirstOrDefaultAsync(o => o.OrderId == orderId);
 
         if (order == null) return null;
@@ -203,6 +234,7 @@ public class OrderService : IOrderService
             DeliveryNote = order.DeliveryNote,
             PaymentMethod = order.PaymentMethod,
             PaymentStatus = order.PaymentStatus,
+            VoucherCode = order.Voucher?.Code,
             SubTotal = order.SubTotal,
             DiscountAmount = order.DiscountAmount,
             GrandTotal = order.GrandTotal,
@@ -333,6 +365,15 @@ public class OrderService : IOrderService
                 detail.Book.Stock = (detail.Book.Stock ?? 0) + detail.Quantity;
         }
 
+        // Hoàn lượt dùng voucher
+        if (order.VoucherId.HasValue)
+        {
+            var voucher = await _db.Vouchers
+                .FirstOrDefaultAsync(v => v.VoucherId == order.VoucherId.Value);
+            if (voucher != null && voucher.TimesUsed > 0)
+                voucher.TimesUsed--;
+        }
+
         order.Status = OrderStatus.Cancelled;
         order.FailedReason = string.IsNullOrWhiteSpace(reason) ? "Đơn bị hủy bởi quản trị." : reason.Trim();
         await _db.SaveChangesAsync();
@@ -351,6 +392,46 @@ public class OrderService : IOrderService
                 Name = u.Name ?? u.UserName ?? u.Email ?? u.Id
             })
             .ToList();
+    }
+
+    // ─── Apply voucher (AJAX preview) ────────────────────────
+    public async Task<(bool Ok, decimal DiscountAmount, string Message)> ApplyVoucherAsync(
+        string userId, string code)
+    {
+        var cart = await _db.Carts.AsNoTracking().FirstOrDefaultAsync(c => c.UserId == userId);
+        if (cart == null)
+            return (false, 0, "Giỏ hàng trống.");
+
+        var items = await _db.CartItems
+            .AsNoTracking()
+            .Include(i => i.Book)
+            .Where(i => i.CartId == cart.CartId)
+            .ToListAsync();
+
+        var subTotal = 0m;
+        foreach (var item in items)
+        {
+            var book = item.Book;
+            if (book == null || !book.IsActive) continue;
+            var stock = book.Stock ?? 0;
+            if (stock < 1) continue;
+            var qty = Math.Min(item.Quantity, stock);
+            subTotal += PricingHelper.GetEffectiveUnitPrice(book) * qty;
+        }
+
+        if (subTotal <= 0)
+            return (false, 0, "Giỏ hàng trống.");
+
+        try
+        {
+            var (_, discountAmount) = await _voucherService.ValidateForCheckoutAsync(code, subTotal);
+            return (true, discountAmount,
+                $"Áp dụng mã {code} thành công! Giảm {discountAmount:N0}đ.");
+        }
+        catch (ArgumentException ex)
+        {
+            return (false, 0, ex.Message);
+        }
     }
 
     private static string Translate(OrderStatus s) => s switch

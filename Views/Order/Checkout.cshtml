@@ -98,16 +98,58 @@
                                     <th>Tạm tính</th>
                                     <td class="text-right">@Model.Subtotal.ToString("N0") đ</td>
                                 </tr>
-                                <tr>
-                                    <th>Giảm giá</th>
-                                    <td class="text-right">@Model.DiscountAmount.ToString("N0") đ</td>
+                                <tr id="discountRow" style="@(Model.DiscountAmount > 0 ? "" : "display:none")">
+                                    <th>Giảm giá (<span id="discountCodeLabel">@(Model.Form.VoucherCode ?? "")</span>)</th>
+                                    <td class="text-right" id="discountDisplay" style="color:#5cb85c">
+                                        -@Model.DiscountAmount.ToString("N0") đ
+                                    </td>
                                 </tr>
                                 <tr>
                                     <th style="font-size:16px">Tổng cộng</th>
-                                    <td class="text-right" style="color:#ff7236;font-size:20px;font-weight:700">@Model.GrandTotal.ToString("N0") đ</td>
+                                    <td class="text-right" id="grandTotalDisplay"
+                                        style="color:#ff7236;font-size:20px;font-weight:700">@Model.GrandTotal.ToString("N0") đ</td>
                                 </tr>
                             </tfoot>
                         </table>
+
+                        <!-- Voucher section -->
+                        <div style="border-top:1px solid #eee;padding:12px 0 8px">
+                            <div style="font-weight:600;margin-bottom:8px">
+                                <i class="fa fa-tag"></i> Mã giảm giá
+                            </div>
+
+                            <!-- Input row (visible when no voucher applied) -->
+                            <div id="voucherInputRow">
+                                <div class="input-group" style="max-width:320px">
+                                    <input type="text" id="voucherCodeInput" class="form-control"
+                                           placeholder="Nhập mã giảm giá" maxlength="50"
+                                           style="text-transform:uppercase" />
+                                    <span class="input-group-btn">
+                                        <button type="button" class="btn btn-default" id="applyVoucherBtn">
+                                            Áp dụng
+                                        </button>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Applied state (hidden until apply succeeds) -->
+                            <div id="voucherAppliedRow" style="display:none">
+                                <span class="text-success">
+                                    <i class="fa fa-check-circle"></i>
+                                    <span id="voucherAppliedText"></span>
+                                </span>
+                                &nbsp;
+                                <button type="button" class="btn btn-link btn-xs" id="removeVoucherBtn"
+                                        style="color:#d9534f;padding:0">Xóa</button>
+                            </div>
+
+                            <!-- Error message -->
+                            <div id="voucherError" class="text-danger" style="font-size:12px;margin-top:4px;display:none"></div>
+
+                            <!-- Hidden input carried into form POST -->
+                            <input type="hidden" name="Form.VoucherCode" id="voucherCodeHidden"
+                                   value="@(Model.Form.VoucherCode ?? "")" />
+                        </div>
 
                         <button type="submit" class="btn btn-primary btn-block btn-lg"
                                 style="background:#ff7236;border-color:#ff7236;width:100%;padding:12px;font-weight:600">
@@ -125,4 +167,78 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+    (function () {
+        var subtotal = @Model.Subtotal;
+
+        // Restore applied state on POST-failure roundtrip
+        var initialCode = document.getElementById('voucherCodeHidden').value;
+        if (initialCode) showApplied(initialCode, @Model.DiscountAmount);
+
+        document.getElementById('applyVoucherBtn').onclick = function () {
+            var code = document.getElementById('voucherCodeInput').value.trim().toUpperCase();
+            if (!code) { showError('Vui lòng nhập mã giảm giá.'); return; }
+
+            clearError();
+            var btn = this;
+            btn.disabled = true;
+            btn.textContent = 'Đang kiểm tra…';
+
+            $.ajax({
+                url: '/Order/ApplyVoucher',
+                type: 'POST',
+                contentType: 'application/json',
+                headers: { 'RequestVerificationToken': $('[name="__RequestVerificationToken"]').val() },
+                data: JSON.stringify({ code: code }),
+                success: function (data) {
+                    if (data.ok) {
+                        showApplied(code, data.discountAmount);
+                    } else {
+                        showError(data.message);
+                    }
+                },
+                error: function () { showError('Không thể kết nối. Vui lòng thử lại.'); },
+                complete: function () { btn.disabled = false; btn.textContent = 'Áp dụng'; }
+            });
+        };
+
+        document.getElementById('removeVoucherBtn').onclick = function () {
+            document.getElementById('voucherCodeHidden').value = '';
+            document.getElementById('voucherInputRow').style.display = '';
+            document.getElementById('voucherAppliedRow').style.display = 'none';
+            document.getElementById('voucherCodeInput').value = '';
+            document.getElementById('discountRow').style.display = 'none';
+            document.getElementById('grandTotalDisplay').textContent = fmtVnd(subtotal);
+            clearError();
+        };
+
+        function showApplied(code, discount) {
+            document.getElementById('voucherCodeHidden').value = code;
+            document.getElementById('voucherInputRow').style.display = 'none';
+            document.getElementById('voucherAppliedRow').style.display = '';
+            document.getElementById('voucherAppliedText').textContent =
+                code + ' — giảm ' + fmtVnd(discount);
+            document.getElementById('discountCodeLabel').textContent = code;
+            document.getElementById('discountDisplay').textContent = '-' + fmtVnd(discount);
+            document.getElementById('discountRow').style.display = '';
+            document.getElementById('grandTotalDisplay').textContent =
+                fmtVnd(Math.max(0, subtotal - discount));
+            clearError();
+        }
+
+        function showError(msg) {
+            var el = document.getElementById('voucherError');
+            el.textContent = msg;
+            el.style.display = '';
+        }
+
+        function clearError() {
+            document.getElementById('voucherError').style.display = 'none';
+        }
+
+        function fmtVnd(n) {
+            return n.toLocaleString('vi-VN') + ' đ';
+        }
+    })();
+    </script>
 }
