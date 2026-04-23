@@ -58,16 +58,8 @@ public class AccountController : Controller
             return Redirect(returnUrl);
         }
 
-        // Redirect based on role
-        var user = await _userManager.FindByEmailAsync(model.Email);
-        if (user != null)
-        {
-            var roles = await _userManager.GetRolesAsync(user);
-            if (roles.Contains("Shipper"))
-            {
-                return RedirectToAction("Dashboard", "Shipper");
-            }
-        }
+        if (result.Role == "Shipper")
+            return RedirectToAction("Dashboard", "Shipper");
 
         return RedirectToAction("Index", "Home");
     }

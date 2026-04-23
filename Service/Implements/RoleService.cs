@@ -78,6 +78,25 @@ public class RoleService : IRoleService
         }
     }
 
+    public async Task ToggleActiveAsync(string id)
+    {
+        var role = await _roleManager.FindByIdAsync(id)
+            ?? throw new InvalidOperationException("Không tìm thấy vai trò.");
+
+        if (role.Name == "Admin")
+            throw new InvalidOperationException("Không thể thay đổi trạng thái vai trò Admin.");
+
+        role.Status = !role.Status;
+        role.UpdatedAt = DateTime.Now;
+
+        var result = await _roleManager.UpdateAsync(role);
+        if (!result.Succeeded)
+        {
+            var errors = string.Join(" ", result.Errors.Select(e => e.Description));
+            throw new ArgumentException(errors);
+        }
+    }
+
     public async Task UpdateAsync(string id, UpdateRoleDto dto)
     {
         var role = await _roleManager.FindByIdAsync(id)

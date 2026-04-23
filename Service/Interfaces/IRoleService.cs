@@ -8,4 +8,5 @@ public interface IRoleService
     Task<UpdateRoleDto?> GetByIdAsync(string id);
     Task CreateAsync(CreateRoleDto dto);
     Task UpdateAsync(string id, UpdateRoleDto dto);
+    Task ToggleActiveAsync(string id);
 }

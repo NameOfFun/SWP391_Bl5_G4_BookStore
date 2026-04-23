@@ -2,19 +2,13 @@
 @model IReadOnlyList<RoleListDto>
 @{
     ViewData["Title"] = "Quản lý vai trò";
-    ViewData["BreadcrumbParent"] = "Quản lý vai trò";
+    ViewData["BreadcrumbParent"] = "Tài Khoản và Vai Trò";
     ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "Role");
 }
 
 <style>
     .book-management-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
     .book-management-header h4 { font-weight:600; font-size:1.25rem; color:#1a1a2e; margin:0; }
-    .filter-card { background:#fff; border:1px solid #e8e8e8; border-radius:10px; padding:16px 20px; margin-bottom:20px; }
-    .search-group { display:flex; flex:1; min-width:250px; gap:0; }
-    .search-group .form-control { border-radius:6px 0 0 6px; border-right:none; font-size:0.875rem; border-color:#d9d9d9; }
-    .search-group .form-control:focus { box-shadow:none; border-color:#1677ff; }
-    .search-group .btn-search { border-radius:0 6px 6px 0; background-color:#1677ff; border-color:#1677ff; color:#fff; font-size:0.875rem; padding:6px 16px; display:flex; align-items:center; gap:6px; white-space:nowrap; }
-    .search-group .btn-search:hover { background-color:#0958d9; border-color:#0958d9; }
     .book-table-card { background:#fff; border:1px solid #e8e8e8; border-radius:10px; overflow:hidden; }
     .book-table { margin:0; font-size:0.875rem; }
     .book-table thead tr th { background-color:#fafafa; color:#595959; font-weight:600; font-size:0.8125rem; padding:12px 14px; border-bottom:1px solid #e8e8e8; border-top:none; white-space:nowrap; }
@@ -27,6 +21,10 @@
     .btn-action { width:32px; height:32px; padding:0; display:inline-flex; align-items:center; justify-content:center; border-radius:6px; font-size:0.875rem; border:1px solid; }
     .btn-edit { color:#fa8c16; border-color:#ffd591; background:#fff; }
     .btn-edit:hover { background:#fff7e6; color:#fa8c16; border-color:#fa8c16; }
+    .btn-deactivate { color:#8c8c8c; border-color:#d9d9d9; background:#fff; }
+    .btn-deactivate:hover { background:#f5f5f5; border-color:#8c8c8c; }
+    .btn-activate { color:#52c41a; border-color:#b7eb8f; background:#fff; }
+    .btn-activate:hover { background:#f6ffed; border-color:#52c41a; }
     .btn-add-new { background-color:#1677ff; border-color:#1677ff; font-size:0.875rem; padding:7px 18px; border-radius:6px; display:inline-flex; align-items:center; gap:6px; }
     .btn-add-new:hover { background-color:#0958d9; border-color:#0958d9; }
     .pagination-area { display:flex; justify-content:space-between; align-items:center; padding:14px 16px; border-top:1px solid #f0f0f0; font-size:0.875rem; color:#595959; }
@@ -61,12 +59,37 @@
     </a>
 </div>
 
-<div class="filter-card">
-    <div class="search-group">
-        <input type="text" id="searchInput" class="form-control" placeholder="Tìm theo tên vai trò...">
-        <button class="btn btn-search" onclick="applyFilter()">
-            <i class="bi bi-search"></i> Tìm kiếm
-        </button>
+<div class="card border-0 shadow-sm mb-3" style="border-radius:10px">
+    <div class="card-body py-3 px-4">
+        <div class="row g-2 align-items-end">
+            <div class="col">
+                <label class="form-label mb-1" style="font-size:.8rem;font-weight:500;color:#595959">Tìm kiếm</label>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white border-end-0" style="border-radius:6px 0 0 6px">
+                        <i class="bi bi-search text-muted" style="font-size:.85rem"></i>
+                    </span>
+                    <input type="text" id="searchInput" class="form-control border-start-0"
+                           style="border-radius:0 6px 6px 0;font-size:.875rem"
+                           placeholder="Tìm theo tên vai trò..." />
+                </div>
+            </div>
+            <div class="col-md-auto">
+                <label class="form-label mb-1" style="font-size:.8rem;font-weight:500;color:#595959">Trạng thái</label>
+                <select id="statusFilter" class="form-select form-select-sm" style="border-radius:6px;font-size:.875rem;min-width:140px">
+                    <option value="">Tất cả</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+            </div>
+            <div class="col-md-auto">
+                <button class="btn btn-primary btn-sm" onclick="applyFilter()" style="border-radius:6px;font-size:.875rem;padding:6px 16px">
+                    <i class="bi bi-funnel me-1"></i>Lọc
+                </button>
+                <button class="btn btn-outline-secondary btn-sm ms-1" onclick="resetFilter()" style="border-radius:6px;font-size:.875rem;padding:6px 14px">
+                    <i class="bi bi-x-lg me-1"></i>Xóa lọc
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -78,9 +101,8 @@
                 <th>Tên vai trò</th>
                 <th>Mô tả</th>
                 <th class="text-center" style="width:100px">Số người dùng</th>
-                <th class="text-center" style="width:100px">Hệ thống</th>
                 <th class="text-center" style="width:110px">Trạng thái</th>
-                <th class="text-center" style="width:80px">Thao tác</th>
+                <th class="text-center" style="width:100px">Thao tác</th>
             </tr>
         </thead>
         <tbody id="roleTableBody">
@@ -88,21 +110,11 @@
             @foreach (var role in Model)
             {
                 stt++;
-                <tr class="role-row" data-name="@role.Name.ToLower()">
+                <tr class="role-row" data-name="@role.Name.ToLower()" data-status="@(role.IsActive ? "active" : "inactive")">
                     <td class="row-stt">@stt</td>
                     <td><span class="fw-semibold">@role.Name</span></td>
                     <td><span class="text-muted">@(string.IsNullOrWhiteSpace(role.Description) ? "—" : role.Description)</span></td>
                     <td class="text-center">@role.UserCount</td>
-                    <td class="text-center">
-                        @if (role.IsSystemRole)
-                        {
-                            <span class="badge-system">Hệ thống</span>
-                        }
-                        else
-                        {
-                            <span class="text-muted">—</span>
-                        }
-                    </td>
                     <td class="text-center">
                         @if (role.IsActive)
                         {
@@ -116,10 +128,22 @@
                     <td class="text-center">
                         @if (role.Name != "Admin")
                         {
-                            <a asp-action="Edit" asp-route-id="@role.Id"
-                               class="btn-action btn-edit" title="Chỉnh sửa">
-                                <i class="bi bi-pencil"></i>
-                            </a>
+                            <div class="d-flex gap-1 justify-content-center">
+                                <a asp-action="Edit" asp-route-id="@role.Id"
+                                   class="btn-action btn-edit" title="Chỉnh sửa">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form asp-action="ToggleActive" asp-route-id="@role.Id"
+                                      method="post" class="d-inline"
+                                      onsubmit="return confirm('@(role.IsActive ? "Vô hiệu hóa vai trò này?" : "Kích hoạt vai trò này?")')">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit"
+                                            class="btn-action @(role.IsActive ? "btn-activate" : "btn-deactivate")"
+                                            title="@(role.IsActive ? "Vô hiệu hóa" : "Kích hoạt")">
+                                        <i class="bi @(role.IsActive ? "bi-toggle-on" : "bi-toggle-off")"></i>
+                                    </button>
+                                </form>
+                            </div>
                         }
                         else
                         {
@@ -151,10 +175,13 @@
 
     function applyFilter() {
         const search = document.getElementById('searchInput').value.toLowerCase().trim();
+        const status = document.getElementById('statusFilter').value;
         const allRows = Array.from(document.querySelectorAll('.role-row'));
 
         filteredRows = allRows.filter(row => {
-            return !search || row.dataset.name.includes(search);
+            const nameMatch = !search || row.dataset.name.includes(search);
+            const statusMatch = !status || row.dataset.status === status;
+            return nameMatch && statusMatch;
         });
 
         allRows.forEach(r => r.style.display = 'none');
@@ -214,6 +241,12 @@
         next.disabled = currentPage === totalPages;
         next.onclick = () => { currentPage++; renderPage(); };
         container.appendChild(next);
+    }
+
+    function resetFilter() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('statusFilter').value = '';
+        applyFilter();
     }
 
     document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') applyFilter(); });

@@ -1,0 +1,152 @@
+@model BookStore.Dtos.Admin.Voucher.UpdateVoucherDto
+@{
+    ViewData["Title"] = "Chỉnh sửa Voucher";
+    ViewData["BreadcrumbParent"] = "Quản lý Voucher";
+    ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "Voucher");
+}
+
+<style>
+    .form-card { background:#fff; border:1px solid #e8e8e8; border-radius:10px; overflow:hidden; max-width:760px; margin:0 auto; }
+    .form-card-header { padding:16px 24px; border-bottom:1px solid #e8e8e8; }
+    .form-card-header h5 { font-weight:600; font-size:1rem; color:#1a1a2e; margin:0; }
+    .form-card-body { padding:24px; }
+    .field-label { font-size:.8rem; font-weight:500; color:#595959; margin-bottom:5px; }
+    .field-value { font-size:.875rem; font-weight:600; color:#262626; padding:6px 0; }
+    .form-control, .form-select { font-size:.875rem; border-radius:6px; border-color:#d9d9d9; }
+    .form-control:focus, .form-select:focus { border-color:#1677ff; box-shadow:0 0 0 .2rem rgba(22,119,255,.15); }
+    .field-hint { font-size:.775rem; color:#8c8c8c; margin-top:4px; }
+    .form-divider { border:none; border-top:1px solid #f0f0f0; margin:20px 0; }
+    .switch-label { font-size:.875rem; font-weight:500; color:#262626; }
+    .btn-save { background-color:#fa8c16; border-color:#fa8c16; font-size:.875rem; padding:7px 20px; border-radius:6px; }
+    .btn-save:hover { background-color:#d46b08; border-color:#d46b08; }
+    .btn-cancel { font-size:.875rem; padding:7px 16px; border-radius:6px; }
+</style>
+
+<div class="book-management-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <h4 style="font-weight:600;font-size:1.25rem;color:#1a1a2e;margin:0">Chỉnh sửa Voucher</h4>
+</div>
+
+<div class="form-card">
+    <div class="form-card-header">
+        <h5>Thông tin Voucher</h5>
+    </div>
+    <div class="form-card-body">
+
+        @if (Model.TimesUsed > 0)
+        {
+            <div class="alert alert-warning border-0 mb-3" style="border-radius:8px;font-size:.875rem">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                Voucher này đã được sử dụng <strong>@Model.TimesUsed</strong> lần. Thay đổi sẽ không ảnh hưởng đến các đơn hàng đã áp dụng.
+            </div>
+        }
+
+        <form asp-action="Edit" asp-route-id="@Model.VoucherId" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="VoucherId" />
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3" style="font-size:.875rem;border-radius:6px"></div>
+
+            <!-- Mã voucher (read-only) -->
+            <div class="mb-3">
+                <label class="field-label">Mã voucher</label>
+                <div class="field-value" style="font-family:monospace">@Model.Code</div>
+                <div class="field-hint">Mã voucher không thể thay đổi sau khi tạo.</div>
+            </div>
+
+            <!-- Mô tả -->
+            <div class="mb-3">
+                <label asp-for="Description" class="field-label">Mô tả</label>
+                <textarea asp-for="Description" class="form-control" rows="2"
+                          placeholder="Mô tả ngắn về voucher (tuỳ chọn)"></textarea>
+                <span asp-validation-for="Description" class="text-danger" style="font-size:.775rem"></span>
+            </div>
+
+            <!-- Loại giảm giá -->
+            <div class="mb-3">
+                <label class="field-label">Loại giảm giá <span class="text-danger">*</span></label>
+                <div class="d-flex gap-4 mt-1">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" asp-for="DiscountType" value="P"
+                               id="typePercent" onchange="updateDiscountSuffix()" />
+                        <label class="form-check-label" for="typePercent" style="font-size:.875rem">Phần trăm (%)</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" asp-for="DiscountType" value="F"
+                               id="typeFixed" onchange="updateDiscountSuffix()" />
+                        <label class="form-check-label" for="typeFixed" style="font-size:.875rem">Số tiền cố định (đ)</label>
+                    </div>
+                </div>
+                <span asp-validation-for="DiscountType" class="text-danger" style="font-size:.775rem"></span>
+            </div>
+
+            <!-- Giá trị giảm + Đơn tối thiểu -->
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label asp-for="DiscountValue" class="field-label">Giá trị giảm <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <input asp-for="DiscountValue" type="number" class="form-control"
+                               step="0.01" min="0.01" placeholder="0" />
+                        <span class="input-group-text" id="discountSuffix" style="font-size:.875rem">%</span>
+                    </div>
+                    <span asp-validation-for="DiscountValue" class="text-danger" style="font-size:.775rem"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="MinOrderAmount" class="field-label">Đơn hàng tối thiểu (đ)</label>
+                    <input asp-for="MinOrderAmount" type="number" class="form-control"
+                           step="1000" min="0" placeholder="Không giới hạn" />
+                    <span asp-validation-for="MinOrderAmount" class="text-danger" style="font-size:.775rem"></span>
+                </div>
+            </div>
+
+            <!-- Ngày hiệu lực -->
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label asp-for="ValidFrom" class="field-label">Ngày bắt đầu</label>
+                    <input asp-for="ValidFrom" type="date" class="form-control" />
+                    <span asp-validation-for="ValidFrom" class="text-danger" style="font-size:.775rem"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="ValidTo" class="field-label">Ngày kết thúc</label>
+                    <input asp-for="ValidTo" type="date" class="form-control" />
+                    <span asp-validation-for="ValidTo" class="text-danger" style="font-size:.775rem"></span>
+                </div>
+            </div>
+
+            <!-- Giới hạn lượt dùng -->
+            <div class="mb-3">
+                <label asp-for="UsageLimit" class="field-label">Giới hạn lượt dùng</label>
+                <input asp-for="UsageLimit" type="number" class="form-control"
+                       min="1" placeholder="Không giới hạn" />
+                <span asp-validation-for="UsageLimit" class="text-danger" style="font-size:.775rem"></span>
+            </div>
+
+            <!-- Trạng thái -->
+            <div class="mb-3">
+                <label class="field-label d-block">Trạng thái</label>
+                <div class="form-check form-switch mt-1">
+                    <input asp-for="IsActive" class="form-check-input" type="checkbox" role="switch" id="isActiveSwitch" />
+                    <label class="form-check-label switch-label" for="isActiveSwitch">Kích hoạt voucher</label>
+                </div>
+                <div class="field-hint">Bỏ chọn để vô hiệu hóa — voucher sẽ không thể được áp dụng.</div>
+            </div>
+
+            <hr class="form-divider" />
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-warning btn-save text-white">
+                    <i class="bi bi-floppy me-1"></i> Cập nhật
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary btn-cancel">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script>
+        function updateDiscountSuffix() {
+            const isPercent = document.getElementById('typePercent').checked;
+            document.getElementById('discountSuffix').textContent = isPercent ? '%' : 'đ';
+        }
+        document.addEventListener('DOMContentLoaded', updateDiscountSuffix);
+    </script>
+}

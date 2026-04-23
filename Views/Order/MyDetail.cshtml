@@ -70,7 +70,17 @@
                     <tr><th>Ngày đặt</th><td>@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</td></tr>
                     <tr><th>Thanh toán</th><td>@Model.PaymentMethod / @Model.PaymentStatus</td></tr>
                     <tr><th>Tạm tính</th><td>@Model.SubTotal.ToString("N0") đ</td></tr>
-                    <tr><th>Giảm giá</th><td>@Model.DiscountAmount.ToString("N0") đ</td></tr>
+                    @if (Model.DiscountAmount > 0)
+                    {
+                        <tr>
+                            <th>Giảm giá@(Model.VoucherCode != null ? $" ({Model.VoucherCode})" : "")</th>
+                            <td style="color:#5cb85c">-@Model.DiscountAmount.ToString("N0") đ</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        <tr><th>Giảm giá</th><td>0 đ</td></tr>
+                    }
                     <tr><th>Tổng cộng</th><td style="color:#ff7236;font-weight:700">@Model.GrandTotal.ToString("N0") đ</td></tr>
                 </table>
             </div>
