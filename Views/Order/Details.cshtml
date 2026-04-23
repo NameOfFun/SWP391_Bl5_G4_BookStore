@@ -246,7 +246,8 @@
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="orderId" value="@Model.OrderId" />
                         <textarea name="reason" class="form-control form-control-sm mb-2"
-                                  placeholder="Lý do hủy (tuỳ chọn)" rows="2" style="font-size:.875rem"></textarea>
+                                  placeholder="Lý do hủy (tối đa 500 ký tự, tuỳ chọn)" rows="2"
+                                  maxlength="500" style="font-size:.875rem"></textarea>
                         <button type="submit" class="btn btn-danger btn-sm w-100" style="border-radius:6px">
                             Xác nhận hủy đơn
                         </button>
