@@ -1,6 +1,7 @@
 using BookStore.Dtos.Auth;
 using BookStore.Models;
 using BookStore.Service.Interfaces;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel;
@@ -12,18 +13,21 @@ public class AuthService : IAuthService
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly RoleManager<ApplicationRole> _roleManager;
-    private readonly IEmailService _emailService; 
+    private readonly IEmailService _emailService;
+    private readonly IWebHostEnvironment _environment;
 
     public AuthService(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
         RoleManager<ApplicationRole> roleManager,
-        IEmailService emailService)
+        IEmailService emailService,
+        IWebHostEnvironment environment)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _roleManager = roleManager;
         _emailService = emailService;
+        _environment = environment;
     }
 
     public async Task<LoginResultDto> LoginAsync(LoginDto model)
@@ -198,6 +202,82 @@ public class AuthService : IAuthService
         return new ProfileResultDto { Succeeded = true };
     }
 
+    public async Task<AvatarUploadResultDto> UploadAvatarAsync(string userId, Stream fileStream, string fileName, long fileSize)
+    {
+        // Validate file size (max 5MB)
+        const long maxFileSize = 5 * 1024 * 1024;
+        if (fileSize > maxFileSize)
+        {
+            return new AvatarUploadResultDto
+            {
+                Succeeded = false,
+                ErrorMessage = "File ảnh không được vượt quá 5MB."
+            };
+        }
+
+        // Validate file extension
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+        var extension = Path.GetExtension(fileName).ToLowerInvariant();
+        if (!allowedExtensions.Contains(extension))
+        {
+            return new AvatarUploadResultDto
+            {
+                Succeeded = false,
+                ErrorMessage = "Chỉ chấp nhận file ảnh (jpg, jpeg, png, gif, webp)."
+            };
+        }
+
+        // Find user
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            return new AvatarUploadResultDto
+            {
+                Succeeded = false,
+                ErrorMessage = "Không tìm thấy người dùng."
+            };
+        }
+
+        // Create uploads folder if not exists
+        var uploadsFolder = Path.Combine(_environment.WebRootPath, "images", "avatars");
+        if (!Directory.Exists(uploadsFolder))
+        {
+            Directory.CreateDirectory(uploadsFolder);
+        }
+
+        // Generate unique filename
+        var newFileName = $"{user.Id}_{DateTime.Now.Ticks}{extension}";
+        var filePath = Path.Combine(uploadsFolder, newFileName);
+
+        // Save file
+        using (var targetStream = new FileStream(filePath, FileMode.Create))
+        {
+            await fileStream.CopyToAsync(targetStream);
+        }
+
+        var avatarUrl = $"/images/avatars/{newFileName}";
+
+        // Update user's avatar in database
+        user.Avatar = avatarUrl;
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            // Delete the uploaded file if database update fails
+            if (System.IO.File.Exists(filePath))
+            {
+                System.IO.File.Delete(filePath);
+            }
+            var errors = result.Errors.Select(e => e.Description).ToList();
+            return new AvatarUploadResultDto { Succeeded = false, Errors = errors };
+        }
+
+        return new AvatarUploadResultDto
+        {
+            Succeeded = true,
+            AvatarUrl = avatarUrl
+        };
+    }
+
     public async Task<ProfileResultDto> ChangePasswordAsync(string userId, ChangePasswordDto model)
     {
         var user = await _userManager.FindByIdAsync(userId);
@@ -264,6 +344,16 @@ public class AuthService : IAuthService
             {
                 Succeeded = false,
                 ErrorMessage = "Email không tồn tại"
+            };
+        }
+
+        var isSamePassword = await _userManager.CheckPasswordAsync(user,model.NewPassword);
+        if (isSamePassword)
+        {
+            return new ResetPasswordResultDto
+            {
+                Succeeded = false,
+                ErrorMessage = "Mật khẩu bạn nhập đã được sử dụng gần đây. Hãy nhập mật khẩu mới!"
             };
         }
 

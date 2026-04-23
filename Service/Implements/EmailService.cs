@@ -78,9 +78,6 @@ namespace BookStore.Service.Implements
                             Đặt lại mật khẩu
                         </a>
                     </p>
-                    <p>Hoặc sao chép link sau vào trình duyệt:</p>
-                    <p style='word-break: break-all; color: #666;'>{resetLink}</p>
-                    <p style='color: #999; font-size: 12px;'>
                         Liên kết này sẽ hết hạn sau 24 giờ.<br/>
                         Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.
                     </p>
