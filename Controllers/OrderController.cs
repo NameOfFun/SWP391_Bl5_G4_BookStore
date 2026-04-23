@@ -19,6 +19,7 @@ public class OrderController : Controller
 
     private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
     private const int PageSize = 10;
+    private const int MaxCancelReasonLength = 500;
 
     // ══════════════════════════════════════════════════════════
     //   CUSTOMER
@@ -77,6 +78,7 @@ public class OrderController : Controller
     [HttpGet]
     public async Task<IActionResult> Confirmation(int id)
     {
+        if (id <= 0) return NotFound();
         var detail = await _orderService.GetDetailAsync(id, UserId);
         if (detail == null) return NotFound();
 
@@ -99,6 +101,7 @@ public class OrderController : Controller
     [HttpGet]
     public async Task<IActionResult> MyDetail(int id)
     {
+        if (id <= 0) return NotFound();
         var detail = await _orderService.GetDetailAsync(id, UserId);
         if (detail == null) return NotFound();
 
@@ -141,6 +144,7 @@ public class OrderController : Controller
     [Authorize(Roles = "Staff,Manager,Admin")]
     public async Task<IActionResult> Details(int id)
     {
+        if (id <= 0) return NotFound();
         var detail = await _orderService.GetDetailAsync(id);
         if (detail == null) return NotFound();
 
@@ -156,6 +160,12 @@ public class OrderController : Controller
     [Authorize(Roles = "Staff,Manager,Admin")]
     public async Task<IActionResult> Confirm(int orderId)
     {
+        if (orderId <= 0)
+        {
+            TempData["Error"] = "Mã đơn hàng không hợp lệ.";
+            return RedirectToAction(nameof(Index));
+        }
+
         var (ok, msg) = await _orderService.ConfirmAsync(orderId);
         TempData[ok ? "Success" : "Error"] = msg;
         return RedirectToAction(nameof(Details), new { id = orderId });
@@ -166,6 +176,12 @@ public class OrderController : Controller
     [Authorize(Roles = "Staff,Manager,Admin")]
     public async Task<IActionResult> MoveToProcessing(int orderId)
     {
+        if (orderId <= 0)
+        {
+            TempData["Error"] = "Mã đơn hàng không hợp lệ.";
+            return RedirectToAction(nameof(Index));
+        }
+
         var (ok, msg) = await _orderService.MoveToProcessingAsync(orderId);
         TempData[ok ? "Success" : "Error"] = msg;
         return RedirectToAction(nameof(Details), new { id = orderId });
@@ -176,6 +192,11 @@ public class OrderController : Controller
     [Authorize(Roles = "Staff,Manager,Admin")]
     public async Task<IActionResult> AssignShipper(int orderId, string shipperUserId)
     {
+        if (orderId <= 0)
+        {
+            TempData["Error"] = "Mã đơn hàng không hợp lệ.";
+            return RedirectToAction(nameof(Index));
+        }
         if (string.IsNullOrWhiteSpace(shipperUserId))
         {
             TempData["Error"] = "Vui lòng chọn shipper.";
@@ -192,6 +213,17 @@ public class OrderController : Controller
     [Authorize(Roles = "Staff,Manager,Admin")]
     public async Task<IActionResult> Cancel(int orderId, string? reason)
     {
+        if (orderId <= 0)
+        {
+            TempData["Error"] = "Mã đơn hàng không hợp lệ.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Cắt bớt reason ngay từ controller để tránh payload vô lý
+        // (service cũng có clamp nhưng chặn sớm giảm tải).
+        if (!string.IsNullOrEmpty(reason) && reason.Length > MaxCancelReasonLength)
+            reason = reason[..MaxCancelReasonLength];
+
         var (ok, msg) = await _orderService.CancelAsync(orderId, reason);
         TempData[ok ? "Success" : "Error"] = msg;
         return RedirectToAction(nameof(Details), new { id = orderId });

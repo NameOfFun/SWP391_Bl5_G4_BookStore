@@ -127,14 +127,24 @@ namespace BookStore.Controllers
         public async Task<IActionResult> Details(int id)
         {
             if (id <= 0)
-                return NotFound();
+            {
+                TempData["Error"] = $"Không tìm được sản phẩm với id = {id}.";
+                return RedirectToAction(nameof(Shop));
+            }
 
             var book = await _bookService.GetByIdAsync(id);
-            if (book == null) return NotFound();
+            if (book == null)
+            {
+                TempData["Error"] = $"Không tìm được sản phẩm với id = {id}.";
+                return RedirectToAction(nameof(Shop));
+            }
 
             var canManage = User.IsInRole("Staff") || User.IsInRole("Manager");
             if (!book.IsActive && !canManage)
-                return NotFound();
+            {
+                TempData["Error"] = $"Không tìm được sản phẩm với id = {id}.";
+                return RedirectToAction(nameof(Shop));
+            }
 
             ViewData["Title"] = book.Title;
             ViewData["LibrariaInnerHeader"] = true;

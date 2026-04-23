@@ -8,11 +8,12 @@
     var listPrice = Model.IsPromoActive ? Model.Price : (decimal?)null;
     var coverUrl = ViewBag.CoverUrl as string ?? "/images/header-slider/home-v1/header-slide.jpg";
     var isbn = $"978-604-{Model.BookId:D6}";
-    var maxQty = Math.Max(0, Model.Stock);
+    var maxQty = Math.Min(Math.Max(0, Model.Stock), 1000);
     var canAddToCart = Model.Stock > 0;
     var isLoggedIn = User.Identity?.IsAuthenticated == true;
     var loginReturnUrl = Url.Action("Details", "Book", new { id = Model.BookId }) ?? "";
 }
+
 <link href="~/css/bookshop.css" rel="stylesheet" asp-append-version="true" />
 
 <section class="page-banner services-banner">
