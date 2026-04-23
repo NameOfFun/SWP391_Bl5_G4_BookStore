@@ -30,6 +30,12 @@ public class CartController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Add(int bookId, int quantity = 1)
     {
+        if (bookId <= 0)
+        {
+            TempData["CartError"] = "Mã sách không hợp lệ.";
+            return RedirectToAction("Shop", "Book");
+        }
+
         var (ok, err) = await _cartService.AddItemAsync(UserId, bookId, quantity);
         if (!ok)
         {
@@ -45,6 +51,12 @@ public class CartController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Update(int cartItemId, int quantity)
     {
+        if (cartItemId <= 0)
+        {
+            TempData["CartError"] = "Mã sản phẩm trong giỏ không hợp lệ.";
+            return RedirectToAction(nameof(Index));
+        }
+
         var (ok, err) = await _cartService.SetQuantityAsync(UserId, cartItemId, quantity);
         if (!ok)
             TempData["CartError"] = err;
@@ -58,6 +70,12 @@ public class CartController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Remove(int cartItemId)
     {
+        if (cartItemId <= 0)
+        {
+            TempData["CartError"] = "Mã sản phẩm trong giỏ không hợp lệ.";
+            return RedirectToAction(nameof(Index));
+        }
+
         await _cartService.RemoveItemAsync(UserId, cartItemId);
         TempData["CartMessage"] = "Đã xóa sản phẩm khỏi giỏ.";
         return RedirectToAction(nameof(Index));

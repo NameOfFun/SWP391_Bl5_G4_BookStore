@@ -10,6 +10,10 @@ public class CartService : ICartService
 {
     private readonly BookStoreDbContext _db;
 
+    // Giới hạn số lượng tối đa mỗi dòng giỏ hàng để tránh overflow khi cộng dồn
+    // và tránh tình huống bất hợp lý (khách mua 1 triệu cuốn trong một dòng).
+    private const int MaxQuantityPerLine = 1000;
+
     public CartService(BookStoreDbContext db)
     {
         _db = db;
@@ -90,8 +94,14 @@ public class CartService : ICartService
 
     public async Task<(bool Ok, string? Error)> AddItemAsync(string userId, int bookId, int quantity)
     {
+        if (bookId <= 0)
+            return (false, "Mã sách không hợp lệ.");
+
         if (quantity < 1)
             return (false, "Số lượng phải ít nhất là 1.");
+
+        if (quantity > MaxQuantityPerLine)
+            return (false, $"Số lượng tối đa mỗi lần thêm là {MaxQuantityPerLine}.");
 
         var book = await _db.Books.FirstOrDefaultAsync(b => b.BookId == bookId);
         if (book == null || !book.IsActive)
@@ -103,9 +113,16 @@ public class CartService : ICartService
 
         var cart = await GetOrCreateCartTrackedAsync(userId);
         var existing = await _db.CartItems.FirstOrDefaultAsync(i => i.CartId == cart.CartId && i.BookId == bookId);
-        var newQty = (existing?.Quantity ?? 0) + quantity;
-        if (newQty > stock)
+        var existingQty = existing?.Quantity ?? 0;
+
+        // Cộng dồn bằng long để tránh tràn số khi quantity gần int.MaxValue.
+        long newQtyLong = (long)existingQty + quantity;
+        if (newQtyLong > MaxQuantityPerLine)
+            return (false, $"Mỗi sản phẩm trong giỏ tối đa {MaxQuantityPerLine} cuốn.");
+        if (newQtyLong > stock)
             return (false, $"Trong kho chỉ còn {stock} cuốn.");
+
+        var newQty = (int)newQtyLong;
 
         if (existing != null)
             existing.Quantity = newQty;
@@ -118,6 +135,9 @@ public class CartService : ICartService
 
     public async Task<(bool Ok, string? Error)> SetQuantityAsync(string userId, int cartItemId, int quantity)
     {
+        if (cartItemId <= 0)
+            return (false, "Mã sản phẩm trong giỏ không hợp lệ.");
+
         var item = await _db.CartItems
             .Include(i => i.Cart)
             .Include(i => i.Book)
@@ -128,6 +148,9 @@ public class CartService : ICartService
 
         if (quantity < 1)
             return await RemoveItemAsync(userId, cartItemId);
+
+        if (quantity > MaxQuantityPerLine)
+            return (false, $"Số lượng tối đa mỗi sản phẩm là {MaxQuantityPerLine}.");
 
         if (!item.Book.IsActive)
             return (false, "Sách đã ngừng bán — vui lòng xóa khỏi giỏ.");

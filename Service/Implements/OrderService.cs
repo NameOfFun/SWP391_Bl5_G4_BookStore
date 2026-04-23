@@ -13,6 +13,10 @@ public class OrderService : IOrderService
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IVoucherService _voucherService;
 
+    // Giới hạn độ dài lý do hủy đơn — khớp kích thước cột FailedReason hợp lý
+    // và tránh việc payload quá lớn gây lỗi DbUpdateException.
+    private const int MaxCancelReasonLength = 500;
+
     public OrderService(BookStoreDbContext db, UserManager<ApplicationUser> userManager,
         IVoucherService voucherService)
     {
@@ -68,6 +72,21 @@ public class OrderService : IOrderService
     // ─── Place order ──────────────────────────────────────────
     public async Task<(bool Ok, string? Error, int OrderId)> PlaceOrderAsync(string userId, CheckoutDto dto)
     {
+        ArgumentNullException.ThrowIfNull(dto);
+
+        // Kiểm tra thêm ở tầng service — controller đã validate ModelState,
+        // nhưng vẫn kiểm tra lại để phòng trường hợp service bị gọi ở chỗ khác.
+        if (string.IsNullOrWhiteSpace(dto.ShippingName))
+            return (false, "Họ tên người nhận không được để trống.", 0);
+        if (string.IsNullOrWhiteSpace(dto.ShippingPhone))
+            return (false, "Số điện thoại không được để trống.", 0);
+        if (string.IsNullOrWhiteSpace(dto.ShippingAddress))
+            return (false, "Địa chỉ giao hàng không được để trống.", 0);
+
+        var method = (dto.PaymentMethod ?? "").Trim();
+        if (method != "COD" && method != "BankTransfer")
+            return (false, "Phương thức thanh toán không hợp lệ.", 0);
+
         var cart = await _db.Carts.FirstOrDefaultAsync(c => c.UserId == userId);
         if (cart == null)
             return (false, "Giỏ hàng trống — không thể đặt hàng.", 0);
@@ -143,7 +162,7 @@ public class OrderService : IOrderService
                 ShippingPhone = dto.ShippingPhone.Trim(),
                 ShippingAddress = dto.ShippingAddress.Trim(),
                 DeliveryNote = string.IsNullOrWhiteSpace(dto.DeliveryNote) ? null : dto.DeliveryNote.Trim(),
-                PaymentMethod = string.IsNullOrWhiteSpace(dto.PaymentMethod) ? "COD" : dto.PaymentMethod.Trim(),
+                PaymentMethod = method,
                 PaymentStatus = "Unpaid"
             };
             _db.Orders.Add(order);
@@ -204,6 +223,8 @@ public class OrderService : IOrderService
     // ─── Detail ───────────────────────────────────────────────
     public async Task<OrderDetailDto?> GetDetailAsync(int orderId, string? userIdForOwnership = null)
     {
+        if (orderId <= 0) return null;
+
         var order = await _db.Orders
             .AsNoTracking()
             .Include(o => o.Details)
@@ -301,6 +322,8 @@ public class OrderService : IOrderService
     // ─── State transitions ────────────────────────────────────
     public async Task<(bool Ok, string Message)> ConfirmAsync(int orderId)
     {
+        if (orderId <= 0) return (false, "Mã đơn hàng không hợp lệ.");
+
         var order = await _db.Orders.FirstOrDefaultAsync(o => o.OrderId == orderId);
         if (order == null) return (false, "Không tìm thấy đơn hàng.");
         if (order.Status != OrderStatus.Pending)
@@ -313,6 +336,8 @@ public class OrderService : IOrderService
 
     public async Task<(bool Ok, string Message)> MoveToProcessingAsync(int orderId)
     {
+        if (orderId <= 0) return (false, "Mã đơn hàng không hợp lệ.");
+
         var order = await _db.Orders.FirstOrDefaultAsync(o => o.OrderId == orderId);
         if (order == null) return (false, "Không tìm thấy đơn hàng.");
         if (order.Status != OrderStatus.Confirmed)
@@ -325,6 +350,10 @@ public class OrderService : IOrderService
 
     public async Task<(bool Ok, string Message)> AssignShipperAsync(int orderId, string shipperUserId)
     {
+        if (orderId <= 0) return (false, "Mã đơn hàng không hợp lệ.");
+        if (string.IsNullOrWhiteSpace(shipperUserId))
+            return (false, "Vui lòng chọn shipper.");
+
         var order = await _db.Orders.FirstOrDefaultAsync(o => o.OrderId == orderId);
         if (order == null) return (false, "Không tìm thấy đơn hàng.");
         if (order.Status != OrderStatus.Processing)
@@ -335,6 +364,10 @@ public class OrderService : IOrderService
             return (false, "Không tìm thấy shipper được chọn.");
         if (!await _userManager.IsInRoleAsync(shipper, "Shipper"))
             return (false, "Người dùng được chọn không phải là shipper.");
+        // Kiểm tra lại ở thời điểm gán để tránh dùng shipper đã bị vô hiệu hóa
+        // sau khi dropdown đã render.
+        if (!shipper.Status)
+            return (false, "Shipper này đã bị vô hiệu hóa — vui lòng chọn shipper khác.");
 
         order.ShipperId = shipperUserId;
         order.Status = OrderStatus.Shipped;
@@ -344,6 +377,8 @@ public class OrderService : IOrderService
 
     public async Task<(bool Ok, string Message)> CancelAsync(int orderId, string? reason)
     {
+        if (orderId <= 0) return (false, "Mã đơn hàng không hợp lệ.");
+
         var order = await _db.Orders
             .Include(o => o.Details)
                 .ThenInclude(d => d.Book)
@@ -365,6 +400,10 @@ public class OrderService : IOrderService
                 detail.Book.Stock = (detail.Book.Stock ?? 0) + detail.Quantity;
         }
 
+        var cleanReason = (reason ?? string.Empty).Trim();
+        if (cleanReason.Length > MaxCancelReasonLength)
+            cleanReason = cleanReason[..MaxCancelReasonLength];
+
         // Hoàn lượt dùng voucher
         if (order.VoucherId.HasValue)
         {
@@ -375,7 +414,7 @@ public class OrderService : IOrderService
         }
 
         order.Status = OrderStatus.Cancelled;
-        order.FailedReason = string.IsNullOrWhiteSpace(reason) ? "Đơn bị hủy bởi quản trị." : reason.Trim();
+        order.FailedReason = string.IsNullOrWhiteSpace(cleanReason) ? "Đơn bị hủy bởi quản trị." : cleanReason;
         await _db.SaveChangesAsync();
         return (true, $"Đã hủy đơn #{orderId} và hoàn kho.");
     }

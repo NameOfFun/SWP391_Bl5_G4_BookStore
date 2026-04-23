@@ -13,6 +13,8 @@ public interface IAuthService
     Task<ProfileDto?> GetProfileAsync(string userId);
     Task<ProfileResultDto> UpdateProfileAsync(string userId, EditProfileDto model);
     Task<ProfileResultDto> UpdateAvatarAsync(string userId, string avatarUrl);
+
+    Task<AvatarUploadResultDto> UploadAvatarAsync(string userId, Stream fileStream, string fileName, long fileSize);
     Task<ProfileResultDto> ChangePasswordAsync(string userId, ChangePasswordDto model);
 
     Task<ForgotPasswordResultDto> ForgotPasswordAsync(ForgotPasswordDto model);
