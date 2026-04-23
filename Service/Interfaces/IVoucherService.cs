@@ -7,6 +7,8 @@ public interface IVoucherService
     Task<(IReadOnlyList<VoucherListDto> Items, int TotalCount)> GetPagedAsync(
         string? search, string? status, string? validity, int page, int pageSize);
 
+    Task<VoucherDetailsDto?> GetDetailsAsync(int id);
+
     Task<UpdateVoucherDto?> GetForEditAsync(int id);
 
     Task CreateAsync(CreateVoucherDto dto, string userId);

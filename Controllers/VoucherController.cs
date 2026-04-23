@@ -39,6 +39,17 @@ public class VoucherController : Controller
     }
 
     [HttpGet]
+    public async Task<IActionResult> Details(int id)
+    {
+        var dto = await _voucherService.GetDetailsAsync(id);
+        if (dto == null) return NotFound();
+        ViewData["Title"] = $"Chi tiết Voucher – {dto.Code}";
+        ViewData["BreadcrumbParent"] = "Quản lý Voucher";
+        ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "Voucher");
+        return View(dto);
+    }
+
+    [HttpGet]
     public IActionResult Create()
     {
         return View(new CreateVoucherDto());

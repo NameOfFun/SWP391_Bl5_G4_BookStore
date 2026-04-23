@@ -1,0 +1,205 @@
+@model BookStore.Dtos.Admin.Voucher.VoucherDetailsDto
+@{
+    ViewData["Title"] = $"Chi tiết Voucher – {Model.Code}";
+    ViewData["BreadcrumbParent"] = "Quản lý Voucher";
+    ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "Voucher");
+}
+
+<style>
+    .detail-label {
+        font-size: .8rem;
+        font-weight: 500;
+        color: #8c8c8c;
+        margin-bottom: 2px;
+    }
+    .detail-value {
+        font-size: .9rem;
+        color: #262626;
+    }
+    .detail-row {
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+    .section-title {
+        font-size: .8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+        color: #8c8c8c;
+        margin-bottom: 4px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+</style>
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div class="d-flex align-items-center">
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm me-3"
+           style="border-radius:6px;font-size:.85rem;padding:5px 12px">
+            <i class="bi bi-arrow-left me-1"></i>Quay lại
+        </a>
+        <div>
+            <h4 class="mb-0 fw-600" style="font-size:1.15rem;color:#262626">Chi tiết Voucher</h4>
+            <p class="text-muted mb-0" style="font-size:.85rem">Mã: <strong>@Model.Code</strong></p>
+        </div>
+    </div>
+    <a asp-action="Edit" asp-route-id="@Model.VoucherId"
+       class="btn btn-primary btn-sm" style="border-radius:6px;font-size:.875rem;padding:7px 16px">
+        <i class="bi bi-pencil me-1"></i>Chỉnh sửa
+    </a>
+</div>
+
+<div class="row g-3" style="max-width:860px">
+
+    <!-- Thông tin cơ bản -->
+    <div class="col-12">
+        <div class="card border-0 shadow-sm" style="border-radius:10px">
+            <div class="card-body p-4">
+                <div class="section-title">Thông tin cơ bản</div>
+
+                <div class="row detail-row">
+                    <div class="col-4 col-md-3 detail-label">Mã voucher</div>
+                    <div class="col detail-value fw-semibold" style="font-family:monospace;font-size:1rem">@Model.Code</div>
+                </div>
+
+                <div class="row detail-row">
+                    <div class="col-4 col-md-3 detail-label">Trạng thái</div>
+                    <div class="col detail-value">
+                        @switch (Model.StatusBadge)
+                        {
+                            case "active":
+                                <span class="badge rounded-pill"
+                                      style="background:#f6ffed;color:#52c41a;border:1px solid #b7eb8f;font-size:.78rem;font-weight:500;padding:4px 12px">
+                                    Hoạt động
+                                </span>
+                                break;
+                            case "expired":
+                                <span class="badge rounded-pill"
+                                      style="background:#fff7e6;color:#d46b08;border:1px solid #ffd591;font-size:.78rem;font-weight:500;padding:4px 12px">
+                                    Hết hạn
+                                </span>
+                                break;
+                            default:
+                                <span class="badge rounded-pill"
+                                      style="background:#f5f5f5;color:#8c8c8c;border:1px solid #d9d9d9;font-size:.78rem;font-weight:500;padding:4px 12px">
+                                    Vô hiệu
+                                </span>
+                                break;
+                        }
+                    </div>
+                </div>
+
+                <div class="row detail-row">
+                    <div class="col-4 col-md-3 detail-label">Mô tả</div>
+                    <div class="col detail-value">
+                        @(string.IsNullOrWhiteSpace(Model.Description) ? "—" : Model.Description)
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Giảm giá -->
+    <div class="col-12">
+        <div class="card border-0 shadow-sm" style="border-radius:10px">
+            <div class="card-body p-4">
+                <div class="section-title">Giảm giá</div>
+
+                <div class="row detail-row">
+                    <div class="col-4 col-md-3 detail-label">Loại giảm giá</div>
+                    <div class="col detail-value">
+                        @(Model.DiscountType == "P" ? "Phần trăm (%)" : "Số tiền cố định (đ)")
+                    </div>
+                </div>
+
+                <div class="row detail-row">
+                    <div class="col-4 col-md-3 detail-label">Giá trị giảm</div>
+                    <div class="col detail-value fw-semibold">@Model.DisplayDiscount</div>
+                </div>
+
+                <div class="row detail-row">
+                    <div class="col-4 col-md-3 detail-label">Đơn tối thiểu</div>
+                    <div class="col detail-value">
+                        @(Model.MinOrderAmount.HasValue ? $"{Model.MinOrderAmount:N0}đ" : "Không giới hạn")
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thời gian hiệu lực -->
+    <div class="col-12 col-md-6">
+        <div class="card border-0 shadow-sm h-100" style="border-radius:10px">
+            <div class="card-body p-4">
+                <div class="section-title">Thời gian hiệu lực</div>
+
+                <div class="row detail-row">
+                    <div class="col-5 detail-label">Ngày bắt đầu</div>
+                    <div class="col detail-value">
+                        @(Model.ValidFrom.HasValue ? Model.ValidFrom.Value.ToString("dd/MM/yyyy") : "—")
+                    </div>
+                </div>
+
+                <div class="row detail-row">
+                    <div class="col-5 detail-label">Ngày kết thúc</div>
+                    <div class="col detail-value">
+                        @(Model.ValidTo.HasValue ? Model.ValidTo.Value.ToString("dd/MM/yyyy") : "—")
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lượt sử dụng -->
+    <div class="col-12 col-md-6">
+        <div class="card border-0 shadow-sm h-100" style="border-radius:10px">
+            <div class="card-body p-4">
+                <div class="section-title">Lượt sử dụng</div>
+
+                <div class="row detail-row">
+                    <div class="col-5 detail-label">Đã sử dụng</div>
+                    <div class="col detail-value fw-semibold">@Model.TimesUsed lần</div>
+                </div>
+
+                <div class="row detail-row">
+                    <div class="col-5 detail-label">Giới hạn</div>
+                    <div class="col detail-value">
+                        @(Model.UsageLimit.HasValue ? $"{Model.UsageLimit} lần" : "Không giới hạn")
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thông tin hệ thống -->
+    <div class="col-12">
+        <div class="card border-0 shadow-sm" style="border-radius:10px">
+            <div class="card-body p-4">
+                <div class="section-title">Thông tin hệ thống</div>
+
+                <div class="row detail-row">
+                    <div class="col-4 col-md-3 detail-label">Ngày tạo</div>
+                    <div class="col detail-value">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                </div>
+
+                <div class="row detail-row">
+                    <div class="col-4 col-md-3 detail-label">Cập nhật lần cuối</div>
+                    <div class="col detail-value">
+                        @(Model.UpdatedAt.HasValue ? Model.UpdatedAt.Value.ToString("dd/MM/yyyy HH:mm") : "—")
+                    </div>
+                </div>
+
+                <div class="row detail-row">
+                    <div class="col-4 col-md-3 detail-label">Quản lý bởi</div>
+                    <div class="col detail-value">
+                        @(string.IsNullOrEmpty(Model.LastManagedByName) ? "—" : Model.LastManagedByName)
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

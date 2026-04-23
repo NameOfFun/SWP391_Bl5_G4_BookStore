@@ -68,6 +68,34 @@ public class VoucherService : IVoucherService
         return (items, totalCount);
     }
 
+    public async Task<VoucherDetailsDto?> GetDetailsAsync(int id)
+    {
+        var v = await _context.Vouchers
+            .AsNoTracking()
+            .Include(x => x.LastManagedBy)
+            .FirstOrDefaultAsync(x => x.VoucherId == id);
+
+        if (v == null) return null;
+
+        return new VoucherDetailsDto
+        {
+            VoucherId = v.VoucherId,
+            Code = v.Code,
+            Description = v.Description,
+            DiscountType = v.DiscountType,
+            DiscountValue = v.DiscountValue,
+            MinOrderAmount = v.MinOrderAmount,
+            UsageLimit = v.UsageLimit,
+            TimesUsed = v.TimesUsed,
+            ValidFrom = v.ValidFrom,
+            ValidTo = v.ValidTo,
+            IsActive = v.IsActive,
+            CreatedAt = v.CreatedAt,
+            UpdatedAt = v.UpdatedAt,
+            LastManagedByName = v.LastManagedBy?.Name ?? v.LastManagedBy?.UserName
+        };
+    }
+
     public async Task<UpdateVoucherDto?> GetForEditAsync(int id)
     {
         var v = await _context.Vouchers.AsNoTracking()
