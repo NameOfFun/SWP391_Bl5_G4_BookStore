@@ -25,9 +25,7 @@ namespace BookStore.Controllers
             var filtered = all.AsEnumerable();
             if (!string.IsNullOrWhiteSpace(search))
                 filtered = filtered.Where(s =>
-                    (s.Caption != null && s.Caption.Contains(search, StringComparison.OrdinalIgnoreCase)) ||
-                    s.ImageUrl.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-                    (s.LinkUrl != null && s.LinkUrl.Contains(search, StringComparison.OrdinalIgnoreCase)));
+                    s.Caption != null && s.Caption.Contains(search, StringComparison.OrdinalIgnoreCase));
 
             if (status == "active") filtered = filtered.Where(s => s.IsActive);
             else if (status == "inactive") filtered = filtered.Where(s => !s.IsActive);
