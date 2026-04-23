@@ -138,7 +138,7 @@
                                       onsubmit="return confirm('@(role.IsActive ? "Vô hiệu hóa vai trò này?" : "Kích hoạt vai trò này?")')">
                                     @Html.AntiForgeryToken()
                                     <button type="submit"
-                                            class="btn-action @(role.IsActive ? "btn-deactivate" : "btn-activate")"
+                                            class="btn-action @(role.IsActive ? "btn-activate" : "btn-deactivate")"
                                             title="@(role.IsActive ? "Vô hiệu hóa" : "Kích hoạt")">
                                         <i class="bi @(role.IsActive ? "bi-toggle-on" : "bi-toggle-off")"></i>
                                     </button>

@@ -52,6 +52,15 @@
         font-size: 0.8125rem;
         color: #8c8c8c;
     }
+    .btn-action { width:32px; height:32px; padding:0; display:inline-flex; align-items:center; justify-content:center; border-radius:6px; font-size:0.875rem; border:1px solid; }
+    .btn-view { color:#1677ff; border-color:#91caff; background:#fff; }
+    .btn-view:hover { background:#e6f4ff; border-color:#1677ff; }
+    .btn-edit { color:#fa8c16; border-color:#ffd591; background:#fff; }
+    .btn-edit:hover { background:#fff7e6; color:#fa8c16; border-color:#fa8c16; }
+    .btn-deactivate { color:#8c8c8c; border-color:#d9d9d9; background:#fff; }
+    .btn-deactivate:hover { background:#f5f5f5; border-color:#8c8c8c; }
+    .btn-activate { color:#52c41a; border-color:#b7eb8f; background:#fff; }
+    .btn-activate:hover { background:#f6ffed; border-color:#52c41a; }
 </style>
 
 <div class="d-flex align-items-center justify-content-between mb-4">
@@ -131,11 +140,14 @@
                 <thead style="background:#fafafa;border-bottom:1px solid #f0f0f0">
                     <tr>
                         <th class="px-4 py-3 text-muted fw-500" style="width:50px">#</th>
-                        <th class="py-3 text-muted fw-500">Mã / Mô tả</th>
-                        <th class="py-3 text-muted fw-500">Giảm giá</th>
-                        <th class="py-3 text-muted fw-500">Đơn tối thiểu / Lượt dùng</th>
-                        <th class="py-3 text-muted fw-500">Hiệu lực</th>
-                        <th class="py-3 text-muted fw-500" style="width:120px">Trạng thái</th>
+                        <th class="py-3 text-muted fw-500">Mã giảm giá</th>
+                        <th class="py-3 text-muted fw-500 text-end">Giảm giá</th>
+                        <th class="py-3 text-muted fw-500 text-end">Đơn tối thiểu</th>
+                        <th class="py-3 text-muted fw-500 text-end">Số lượt dùng</th>
+                        <th class="py-3 text-muted fw-500 text-end">Giới hạn lượt dùng</th>
+                        <th class="py-3 text-muted fw-500">Ngày có hiệu lực</th>
+                        <th class="py-3 text-muted fw-500">Ngày hết hiệu lực</th>
+                        <th class="py-3 text-muted fw-500 text-center" style="width:110px">Trạng thái</th>
                         <th class="py-3 text-muted fw-500 text-end pe-4" style="width:120px">Thao tác</th>
                     </tr>
                 </thead>
@@ -143,7 +155,7 @@
                     @if (!Model.Any())
                     {
                         <tr>
-                            <td colspan="7" class="text-center py-5 text-muted">
+                            <td colspan="10" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox" style="font-size:2rem;display:block;margin-bottom:8px"></i>
                                 Không có bản ghi nào.
                             </td>
@@ -153,37 +165,14 @@
                     {
                         <tr>
                             <td class="px-4 text-muted">@idx</td>
-                            <td>
-                                <div class="fw-500" style="color:#262626">@item.Code</div>
-                                @if (!string.IsNullOrEmpty(item.Description))
-                                {
-                                    <div class="text-muted" style="font-size:.8rem">
-                                        @(item.Description.Length > 60 ? item.Description[..60] + "…" : item.Description)
-                                    </div>
-                                }
-                            </td>
-                            <td class="fw-500" style="color:#1677ff">@item.DisplayDiscount</td>
-                            <td>
-                                <div>@(item.MinOrderAmount.HasValue ? $"{item.MinOrderAmount:N0}đ" : "—")</div>
-                                <div class="text-muted" style="font-size:.8rem">
-                                    @item.TimesUsed lượt@(item.UsageLimit.HasValue ? $" / {item.UsageLimit}" : "")
-                                </div>
-                            </td>
-                            <td>
-                                @if (item.ValidFrom.HasValue || item.ValidTo.HasValue)
-                                {
-                                    <div style="font-size:.8rem">
-                                        @(item.ValidFrom.HasValue ? item.ValidFrom.Value.ToString("dd/MM/yyyy") : "—")
-                                        &nbsp;→&nbsp;
-                                        @(item.ValidTo.HasValue ? item.ValidTo.Value.ToString("dd/MM/yyyy") : "—")
-                                    </div>
-                                }
-                                else
-                                {
-                                    <span class="text-muted">Không giới hạn</span>
-                                }
-                            </td>
-                            <td>
+                            <td class="fw-500" style="color:#262626">@item.Code</td>
+                            <td class="text-end">@item.DisplayDiscount</td>
+                            <td class="text-end">@(item.MinOrderAmount.HasValue ? $"{item.MinOrderAmount:N0}đ" : "Không giới hạn")</td>
+                            <td class="text-end">@item.TimesUsed</td>
+                            <td class="text-end">@(item.UsageLimit.HasValue ? item.UsageLimit.ToString() : "Không giới hạn")</td>
+                            <td>@(item.ValidFrom.HasValue ? item.ValidFrom.Value.ToString("dd/MM/yyyy") : "—")</td>
+                            <td>@(item.ValidTo.HasValue ? item.ValidTo.Value.ToString("dd/MM/yyyy") : "—")</td>
+                            <td class="text-center">
                                 @switch (item.StatusBadge)
                                 {
                                     case "active":
@@ -204,21 +193,26 @@
                                 }
                             </td>
                             <td class="text-end pe-4">
-                                <a asp-action="Edit" asp-route-id="@item.VoucherId"
-                                   class="btn btn-sm btn-outline-primary me-1" style="border-radius:6px;font-size:.8rem;padding:4px 10px" title="Sửa">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <form asp-action="ToggleStatus" asp-route-id="@item.VoucherId"
-                                      method="post" class="d-inline"
-                                      onsubmit="return confirm('@(item.IsActive ? "Vô hiệu hóa voucher này?" : "Kích hoạt voucher này?")')">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit"
-                                            class="btn btn-sm @(item.IsActive ? "btn-outline-warning" : "btn-outline-success")"
-                                            style="border-radius:6px;font-size:.8rem;padding:4px 10px"
-                                            title="@(item.IsActive ? "Vô hiệu hóa" : "Kích hoạt")">
-                                        <i class="bi @(item.IsActive ? "bi-toggle-on" : "bi-toggle-off")"></i>
-                                    </button>
-                                </form>
+                                <div class="d-flex gap-1 justify-content-end">
+                                    <a asp-action="Details" asp-route-id="@item.VoucherId"
+                                       class="btn-action btn-view" title="Xem chi tiết">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@item.VoucherId"
+                                       class="btn-action btn-edit" title="Chỉnh sửa">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form asp-action="ToggleStatus" asp-route-id="@item.VoucherId"
+                                          method="post" class="d-inline"
+                                          onsubmit="return confirm('@(item.IsActive ? "Vô hiệu hóa voucher này?" : "Kích hoạt voucher này?")')">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit"
+                                                class="btn-action @(item.IsActive ? "btn-activate" : "btn-deactivate")"
+                                                title="@(item.IsActive ? "Vô hiệu hóa" : "Kích hoạt")">
+                                            <i class="bi @(item.IsActive ? "bi-toggle-on" : "bi-toggle-off")"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     }

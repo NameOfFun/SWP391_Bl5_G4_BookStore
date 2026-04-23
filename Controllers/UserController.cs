@@ -151,6 +151,10 @@ public class UserController : Controller
         {
             TempData["Error"] = ex.Message;
         }
+        catch (ArgumentException ex)
+        {
+            TempData["Error"] = ex.Message;
+        }
 
         return RedirectToAction(nameof(Index));
     }

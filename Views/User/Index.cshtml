@@ -204,7 +204,6 @@
                 <th style="width:52px">STT</th>
                 <th>Họ tên</th>
                 <th>Email</th>
-                <th style="width:140px">Số điện thoại</th>
                 <th class="text-center" style="width:160px">Vai trò</th>
                 <th class="text-center" style="width:100px">Trạng thái</th>
                 <th class="text-center" style="width:90px">Thao tác</th>
@@ -225,7 +224,6 @@
                         <span class="fw-semibold">@(string.IsNullOrEmpty(user.Name) ? "—" : user.Name)</span>
                     </td>
                     <td>@(user.Email ?? "—")</td>
-                    <td>@(user.PhoneNumber ?? "—")</td>
                     <td class="text-center">
                         @foreach (var role in user.Roles)
                         {
@@ -259,7 +257,7 @@
                                       onsubmit="return confirm('@(user.IsActive ? "Vô hiệu hóa tài khoản này?" : "Kích hoạt tài khoản này?")')">
                                     @Html.AntiForgeryToken()
                                     <button type="submit"
-                                            class="btn-action @(user.IsActive ? "btn-deactivate" : "btn-activate")"
+                                            class="btn-action @(user.IsActive ? "btn-activate" : "btn-deactivate")"
                                             title="@(user.IsActive ? "Vô hiệu hóa" : "Kích hoạt")">
                                         <i class="bi @(user.IsActive ? "bi-toggle-on" : "bi-toggle-off")"></i>
                                     </button>
