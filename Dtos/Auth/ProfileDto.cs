@@ -7,8 +7,7 @@ public class ProfileDto
     public string Id { get; set; } = string.Empty;
 
     public string Email { get; set; } = string.Empty;
-
-    [MaxLength(20, ErrorMessage = "Số điện thoại không được vượt quá 20 ký tự")]
+    [RegularExpression(@"^\d{10}$", ErrorMessage = "Số điện thoại phải gồm đúng 10 chữ số")]
     public string? PhoneNumber { get; set; }
 
     [MaxLength(100, ErrorMessage = "Tên không được vượt quá 100 ký tự")]
@@ -24,8 +23,7 @@ public class EditProfileDto
 {
     [MaxLength(100, ErrorMessage = "Tên không được vượt quá 100 ký tự")]
     public string? Name { get; set; }
-
-    [MaxLength(20, ErrorMessage = "Số điện thoại không được vượt quá 20 ký tự")]
+    [RegularExpression(@"^\d{10}$", ErrorMessage = "Số điện thoại phải gồm đúng 10 chữ số")]
     public string? PhoneNumber { get; set; }
 
     [MaxLength(500, ErrorMessage = "Địa chỉ không được vượt quá 500 ký tự")]
@@ -49,6 +47,14 @@ public class ChangePasswordDto
 public class ProfileResultDto
 {
     public bool Succeeded { get; set; }
+    public string? ErrorMessage { get; set; }
+    public IEnumerable<string>? Errors { get; set; }
+}
+
+public class AvatarUploadResultDto
+{
+    public bool Succeeded { get; set; }
+    public string? AvatarUrl { get; set; }
     public string? ErrorMessage { get; set; }
     public IEnumerable<string>? Errors { get; set; }
 }

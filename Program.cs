@@ -41,8 +41,6 @@ namespace BookStore
             builder.Services.AddScoped<ICartService, CartService>();
             builder.Services.AddScoped<IEmailService, EmailService>();
             builder.Services.AddScoped<IOrderService, OrderService>();
-
-
             builder.Services.AddControllersWithViews();
 
             var app = builder.Build();

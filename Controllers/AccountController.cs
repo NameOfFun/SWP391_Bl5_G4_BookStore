@@ -4,7 +4,6 @@ using BookStore.Service.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.IO;
 
 namespace BookStore.Controllers;
 
@@ -12,19 +11,16 @@ public class AccountController : Controller
 {
     private readonly IAuthService _authService;
     private readonly ILogger<AccountController> _logger;
-    private readonly IWebHostEnvironment _environment;
     private readonly UserManager<ApplicationUser> _userManager;
 
     public AccountController(
         IAuthService authService,
         ILogger<AccountController> logger,
-        UserManager<ApplicationUser> userManager,
-        IWebHostEnvironment environment)
+        UserManager<ApplicationUser> userManager)
     {
         _authService = authService;
         _logger = logger;
         _userManager = userManager;
-        _environment = environment;
     }
 
     [HttpGet]
@@ -282,42 +278,14 @@ public class AccountController : Controller
             return RedirectToAction("EditProfile");
         }
 
-        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
-        var extension = Path.GetExtension(avatarFile.FileName).ToLowerInvariant();
-        if (!allowedExtensions.Contains(extension))
-        {
-            TempData["ErrorMessage"] = "Chỉ chấp nhận file ảnh (jpg, jpeg, png, gif, webp).";
-            return RedirectToAction("EditProfile");
-        }
-
-        if (avatarFile.Length > 5 * 1024 * 1024)
-        {
-            TempData["ErrorMessage"] = "File ảnh không được vượt quá 5MB.";
-            return RedirectToAction("EditProfile");
-        }
-
         var user = await _userManager.GetUserAsync(User);
         if (user == null)
         {
             return RedirectToAction("Login");
         }
 
-        var uploadsFolder = Path.Combine(_environment.WebRootPath, "images", "avatars");
-        if (!Directory.Exists(uploadsFolder))
-        {
-            Directory.CreateDirectory(uploadsFolder);
-        }
-
-        var fileName = $"{user.Id}_{DateTime.Now.Ticks}{extension}";
-        var filePath = Path.Combine(uploadsFolder, fileName);
-
-        using (var stream = new FileStream(filePath, FileMode.Create))
-        {
-            await avatarFile.CopyToAsync(stream);
-        }
-
-        var avatarUrl = $"/images/avatars/{fileName}";
-        var result = await _authService.UpdateAvatarAsync(user.Id, avatarUrl);
+        using var stream = avatarFile.OpenReadStream();
+        var result = await _authService.UploadAvatarAsync(user.Id, stream, avatarFile.FileName, avatarFile.Length);
 
         if (result.Succeeded)
         {
@@ -347,7 +315,7 @@ public class AccountController : Controller
     {
         if (!ModelState.IsValid)
         {
-            return View(model);
+            return View(model); 
         }
         var result = await _authService.ForgotPasswordAsync(model);
 
