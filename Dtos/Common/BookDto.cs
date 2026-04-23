@@ -1,10 +1,12 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace BookStore.Dtos.Common
 {
     public class BookDto
     {
+<<<<<<< HEAD
        public int BookId { get; set; }
+=======
+        public int BookId { get; set; }
+>>>>>>> 37e1c54 (fix code model state)
         public string Title { get; set; } = null!;
         public string? Description { get; set; }
         public decimal Price { get; set; }
