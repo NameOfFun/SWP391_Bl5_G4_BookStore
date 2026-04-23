@@ -55,7 +55,24 @@ namespace BookStore.Controllers
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(HomeSliderDto dto)
         {
-            if (!ModelState.IsValid) return View(dto);
+            var errors = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(dto.ImageUrl))
+                errors.Add("URL hình ảnh không được để trống");
+            else if (dto.ImageUrl.Length > 255)
+                errors.Add("URL hình ảnh không được vượt quá 255 ký tự");
+
+            if (dto.Caption != null && dto.Caption.Length > 255)
+                errors.Add("Nội dung chữ trên slider không được vượt quá 255 ký tự");
+
+            if (dto.LinkUrl != null && dto.LinkUrl.Length > 255)
+                errors.Add("Đường dẫn không được vượt quá 255 ký tự");
+
+            if (errors.Count > 0)
+            {
+                ViewBag.Errors = errors;
+                return View(dto);
+            }
 
             try
             {
@@ -66,7 +83,7 @@ namespace BookStore.Controllers
             }
             catch (ArgumentException ex)
             {
-                ModelState.AddModelError(string.Empty, ex.Message);
+                ViewBag.Errors = new List<string> { ex.Message };
                 return View(dto);
             }
         }
@@ -82,7 +99,24 @@ namespace BookStore.Controllers
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, HomeSliderDto dto)
         {
-            if (!ModelState.IsValid) return View(dto);
+            var errors = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(dto.ImageUrl))
+                errors.Add("URL hình ảnh không được để trống");
+            else if (dto.ImageUrl.Length > 255)
+                errors.Add("URL hình ảnh không được vượt quá 255 ký tự");
+
+            if (dto.Caption != null && dto.Caption.Length > 255)
+                errors.Add("Nội dung chữ trên slider không được vượt quá 255 ký tự");
+
+            if (dto.LinkUrl != null && dto.LinkUrl.Length > 255)
+                errors.Add("Đường dẫn không được vượt quá 255 ký tự");
+
+            if (errors.Count > 0)
+            {
+                ViewBag.Errors = errors;
+                return View(dto);
+            }
 
             try
             {
@@ -93,7 +127,7 @@ namespace BookStore.Controllers
             }
             catch (ArgumentException ex)
             {
-                ModelState.AddModelError(string.Empty, ex.Message);
+                ViewBag.Errors = new List<string> { ex.Message };
                 return View(dto);
             }
             catch (InvalidOperationException ex)
