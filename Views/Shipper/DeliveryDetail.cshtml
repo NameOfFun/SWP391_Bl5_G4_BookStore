@@ -202,6 +202,21 @@
                  display: flex; align-items: center; gap: 10px; font-size: .875rem; }
     .dd-toast.success { background:#f6ffed; border:1px solid #b7eb8f; color:#389e0d; }
     .dd-toast.error   { background:#fff1f0; border:1px solid #ffa39e; color:#cf1322; }
+
+    /* ── POD Image ── */
+    .dd-pod-container { margin-top: 15px; position: relative; border-radius: 12px; overflow: hidden; border: 1px solid #f0f0f0; }
+    .dd-pod-img { width: 100%; height: auto; display: block; max-height: 400px; object-fit: contain; background: #fafafa; }
+    .dd-pod-label { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.5); color: #fff; padding: 4px 10px; border-radius: 6px; font-size: .75rem; font-weight: 600; backdrop-filter: blur(4px); }
+    
+    .dd-preview-box { 
+        width: 100%; height: 180px; border: 2px dashed #d9d9d9; border-radius: 10px; 
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        color: #8c8c8c; cursor: pointer; transition: all .2s; overflow: hidden;
+        margin-top: 10px; background: #fafafa;
+    }
+    .dd-preview-box:hover { border-color: var(--dd-blue); color: var(--dd-blue); background: #f0f7ff; }
+    .dd-preview-box img { width: 100%; height: 100%; object-fit: cover; }
+    .dd-preview-box i { font-size: 1.8rem; margin-bottom: 5px; }
 </style>
 
 <!-- ── Page Header ── -->
@@ -312,6 +327,16 @@ else if (Model.Status == OrderStatus.Shipped && hours > 12)
                         <div class="dd-info-value">@Model.OrderDate.ToString("HH:mm:ss — dddd, dd/MM/yyyy")</div>
                     </div>
                 </div>
+                @if (Model.Status == OrderStatus.Delivered && Model.DeliveredAt.HasValue)
+                {
+                    <div class="dd-info-row">
+                        <div class="dd-info-icon" style="background:#f6ffed;color:#52c41a"><i class="bi bi-patch-check"></i></div>
+                        <div>
+                            <div class="dd-info-label">Thời gian giao thực tế</div>
+                            <div class="dd-info-value" style="color:#52c41a">@Model.DeliveredAt.Value.ToString("HH:mm:ss — dddd, dd/MM/yyyy")</div>
+                        </div>
+                    </div>
+                }
                 <div class="dd-info-row">
                     <div class="dd-info-icon"><i class="bi bi-activity"></i></div>
                     <div>
@@ -377,6 +402,21 @@ else if (Model.Status == OrderStatus.Shipped && hours > 12)
                         <div>
                             <div class="dd-info-label">Ghi chú giao hàng</div>
                             <div class="dd-info-value" style="color:#bfbfbf;font-weight:400">Không có ghi chú</div>
+                        </div>
+                    </div>
+                }
+                
+                @if (!string.IsNullOrWhiteSpace(Model.ProofOfDeliveryImage))
+                {
+                    <div class="dd-info-row" style="border-top:1px solid #f5f5f5; margin-top:10px; padding-top:15px; border-bottom:none">
+                        <div style="width:100%">
+                            <div class="dd-info-label" style="display:flex; align-items:center; gap:6px">
+                                <i class="bi bi-camera-fill"></i> Minh chứng giao hàng
+                            </div>
+                            <div class="dd-pod-container">
+                                <img src="@Model.ProofOfDeliveryImage" class="dd-pod-img" alt="Minh chứng giao hàng" />
+                                <div class="dd-pod-label">ẢNH MINH CHỨNG</div>
+                            </div>
                         </div>
                     </div>
                 }
@@ -596,7 +636,7 @@ else if (Model.Status == OrderStatus.Shipped && hours > 12)
 <div class="modal fade" id="updateStatusModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content" style="border-radius:16px; border:none; box-shadow:0 10px 30px rgba(0,0,0,0.1)">
-            <form asp-controller="Shipper" asp-action="UpdateStatus" method="post">
+            <form asp-controller="Shipper" asp-action="UpdateStatus" method="post" enctype="multipart/form-data">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="OrderId" value="@Model.OrderId" />
                 
@@ -638,6 +678,22 @@ else if (Model.Status == OrderStatus.Shipped && hours > 12)
                                   placeholder="Nhập ghi chú (ví dụ: đã gửi bảo vệ, khách hẹn lại...)" 
                                   style="border-radius:8px"></textarea>
                     </div>
+
+                    <!-- Proof Image Upload (Visible only when Success is selected) -->
+                    <div id="proofImageSection" class="mb-3">
+                        <label class="form-label" style="font-weight:600; font-size:0.9rem">Chụp ảnh minh chứng (Tùy chọn)</label>
+                        <input type="file" name="ProofImage" id="proofImageInput" accept="image/*" capture="environment" hidden />
+                        <div class="dd-preview-box" onclick="document.getElementById('proofImageInput').click()">
+                            <div id="previewPlaceholder">
+                                <i class="bi bi-camera"></i>
+                                <div style="font-size: .8rem">Chạm để chụp hoặc chọn ảnh</div>
+                            </div>
+                            <img id="imagePreview" style="display:none" />
+                        </div>
+                        <div class="mt-2 text-muted" style="font-size:.75rem">
+                            <i class="bi bi-info-circle me-1"></i> Khuyên dùng: Chụp ảnh kiện hàng tại vị trí giao hoặc cùng người nhận.
+                        </div>
+                    </div>
                 </div>
 
                 <div class="modal-footer px-4 pb-4 border-0 pt-0">
@@ -655,12 +711,34 @@ else if (Model.Status == OrderStatus.Shipped && hours > 12)
 
 @section Scripts {
 <script>
-    // Toggle failed reason visibility
+    // Toggle sections based on success/failed
     document.getElementsByName('IsSuccess').forEach(radio => {
         radio.addEventListener('change', function() {
             const failedSection = document.getElementById('failedReasonSection');
-            failedSection.style.display = (this.value === 'false') ? 'block' : 'none';
+            const proofSection = document.getElementById('proofImageSection');
+            
+            if (this.value === 'false') {
+                failedSection.style.display = 'block';
+                proofSection.style.display = 'none';
+            } else {
+                failedSection.style.display = 'none';
+                proofSection.style.display = 'block';
+            }
         });
+    });
+
+    // Image preview handling
+    document.getElementById('proofImageInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                document.getElementById('imagePreview').src = event.target.result;
+                document.getElementById('imagePreview').style.display = 'block';
+                document.getElementById('previewPlaceholder').style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
     });
 
     // Auto-hide toast after 4s

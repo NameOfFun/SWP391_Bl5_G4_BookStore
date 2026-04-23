@@ -323,28 +323,43 @@
         }
 
         <!-- Quản Lý Giao Hàng (Shipper) -->
-        @if (User.IsInRole("Shipper"))
+        @if (User.IsInRole("Shipper") || User.IsInRole("Admin") || User.IsInRole("Manager"))
         {
             <div class="nav-item-group">
                 <button class="nav-link-item @(ctrl == "Shipper" ? "active" : "")"
                         onclick="toggleSubmenu('submenu-shipper', this)">
                     <i class="bi bi-truck nav-icon"></i>
-                    <span class="nav-label">Quản Lý Giao Hàng</span>
+                    <span class="nav-label">Giao Hàng & Hiệu Suất</span>
                     <i class="bi bi-chevron-down nav-chevron"></i>
                 </button>
                 <div class="nav-submenu @(ctrl == "Shipper" ? "open" : "")" id="submenu-shipper">
-                    <a class="nav-link-item @(ctrl == "Shipper" && action == "Dashboard" ? "active" : "")"
-                       asp-controller="Shipper" asp-action="Dashboard">
-                        <span class="nav-label">Bảng điều khiển</span>
-                    </a>
-                    <a class="nav-link-item @(ctrl == "Shipper" && action == "AssignedOrders" ? "active" : "")"
-                       asp-controller="Shipper" asp-action="AssignedOrders">
-                        <span class="nav-label">Đơn được giao</span>
-                    </a>
-                    <a class="nav-link-item @(ctrl == "Shipper" && action == "DeliveryHistory" ? "active" : "")"
-                       asp-controller="Shipper" asp-action="DeliveryHistory">
-                        <span class="nav-label">Lịch sử giao hàng</span>
-                    </a>
+                    @if (User.IsInRole("Shipper"))
+                    {
+                        <a class="nav-link-item @(ctrl == "Shipper" && action == "Dashboard" ? "active" : "")"
+                           asp-controller="Shipper" asp-action="Dashboard">
+                            <span class="nav-label">Bảng điều khiển</span>
+                        </a>
+                        <a class="nav-link-item @(ctrl == "Shipper" && action == "AssignedOrders" ? "active" : "")"
+                           asp-controller="Shipper" asp-action="AssignedOrders">
+                            <span class="nav-label">Đơn được giao</span>
+                        </a>
+                        <a class="nav-link-item @(ctrl == "Shipper" && action == "MyPerformance" ? "active" : "")"
+                           asp-controller="Shipper" asp-action="MyPerformance">
+                            <span class="nav-label">Hiệu suất cá nhân</span>
+                        </a>
+                        <a class="nav-link-item @(ctrl == "Shipper" && action == "DeliveryHistory" ? "active" : "")"
+                           asp-controller="Shipper" asp-action="DeliveryHistory">
+                            <span class="nav-label">Lịch sử giao hàng</span>
+                        </a>
+                    }
+                    
+                    @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                    {
+                        <a class="nav-link-item @(ctrl == "Shipper" && action == "ManagePerformance" ? "active" : "")"
+                           asp-controller="Shipper" asp-action="ManagePerformance">
+                            <span class="nav-label">Thống kê hiệu suất</span>
+                        </a>
+                    }
                 </div>
             </div>
         }

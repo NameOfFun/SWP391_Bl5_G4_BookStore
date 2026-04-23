@@ -95,7 +95,7 @@
                                                            class="shop-qty-input cart-qty-input"
                                                            value="@line.Quantity"
                                                            min="1"
-                                                           max="@line.Stock"
+                                                           max="@Math.Min(line.Stock, 1000)"
                                                            aria-label="Số lượng" />
                                                     <button type="button" class="shop-qty-btn cart-qty-plus" aria-label="Tăng số lượng">+</button>
                                                 </div>

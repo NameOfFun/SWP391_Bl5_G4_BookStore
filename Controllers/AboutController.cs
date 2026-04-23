@@ -70,10 +70,17 @@ namespace BookStore.Controllers
                 return RedirectToAction(nameof(Manage));
             }
 
-            await _aboutService.CreateAsync(dto, userId);
-            TempData["Success"] = "Thêm thành công";
-
-            return RedirectToAction(nameof(Manage));
+            try
+            {
+                await _aboutService.CreateAsync(dto, userId);
+                TempData["Success"] = "Thêm thành công";
+                return RedirectToAction(nameof(Manage));
+            }
+            catch (ArgumentException ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return View(dto);
+            }
         }
 
         [Authorize(Roles = "Staff,Manager")]
@@ -93,6 +100,8 @@ namespace BookStore.Controllers
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, AboutDto dto)
         {
+            if (id <= 0) return NotFound();
+
             if (id != dto.AboutId)
             {
                 ModelState.AddModelError(string.Empty, "Mã bài viết không khớp. Vui lòng thử lại.");
@@ -108,9 +117,21 @@ namespace BookStore.Controllers
                 return RedirectToAction(nameof(Manage));
             }
 
-            await _aboutService.UpdateAsync(id, dto, userId);
-            TempData["Success"] = "Cập nhật thành công";
-            return RedirectToAction(nameof(Manage));
+            try
+            {
+                await _aboutService.UpdateAsync(id, dto, userId);
+                TempData["Success"] = "Cập nhật thành công";
+                return RedirectToAction(nameof(Manage));
+            }
+            catch (InvalidOperationException)
+            {
+                return NotFound();
+            }
+            catch (ArgumentException ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return View(dto);
+            }
         }
 
         [Authorize(Roles = "Staff,Manager")]
@@ -133,8 +154,16 @@ namespace BookStore.Controllers
             if (id <= 0)
                 return NotFound();
 
-            await _aboutService.DeleteAsync(id);
-            TempData["Success"] = "Xóa thành công";
+            try
+            {
+                await _aboutService.DeleteAsync(id);
+                TempData["Success"] = "Xóa thành công";
+            }
+            catch (InvalidOperationException)
+            {
+                TempData["Error"] = "Không tìm thấy bài viết cần xóa (có thể đã bị xóa trước đó).";
+            }
+
             return RedirectToAction(nameof(Manage));
         }
     }

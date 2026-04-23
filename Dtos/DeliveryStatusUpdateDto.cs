@@ -16,5 +16,11 @@ namespace BookStore.Dtos
 
         /// <summary>Ghi chú thêm từ shipper</summary>
         public string? Note { get; set; }
+
+        /// <summary>Ảnh minh chứng giao hàng</summary>
+        public Microsoft.AspNetCore.Http.IFormFile? ProofImage { get; set; }
+
+        /// <summary>Đường dẫn ảnh minh chứng sau khi lưu</summary>
+        public string? ProofImagePath { get; set; }
     }
 }
