@@ -1,5 +1,6 @@
 @model IReadOnlyList<BookStore.Dtos.Common.OrderListItemDto>
 @using BookStore.Models
+@using BookStore.Helpers
 @{
     Layout = "~/Views/Shared/_LayoutAuth.cshtml";
 }
@@ -84,7 +85,7 @@
                                 <td>@o.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
                                 <td class="text-center">@o.ItemCount</td>
                                 <td class="text-right" style="color:#ff7236;font-weight:600">@o.GrandTotal.ToString("N0") đ</td>
-                                <td>@o.PaymentMethod / @o.PaymentStatus</td>
+                                <td>@o.PaymentMethod / @(OrderPaymentStatuses.IsPaid(o.PaymentStatus) ? "Đã thanh toán" : OrderPaymentStatuses.IsAwaitingPayment(o.PaymentStatus) ? "Chưa thanh toán" : o.PaymentStatus ?? "—")</td>
                                 <td>
                                     <span style="display:inline-block;padding:3px 10px;border-radius:10px;background:@StatusColor(o.Status);color:#fff;font-size:12px">
                                         @StatusLabel(o.Status)

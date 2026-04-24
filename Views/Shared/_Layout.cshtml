@@ -41,19 +41,23 @@
 
         .sidebar-brand {
             padding: 18px 20px 14px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #1677ff;
-            display: flex;
-            align-items: center;
-            gap: 10px;
             border-bottom: 1px solid #f0f0f0;
             white-space: nowrap;
             overflow: hidden;
         }
-        .sidebar-brand i { font-size: 1.3rem; flex-shrink: 0; }
-        .sidebar-brand .brand-text { transition: opacity .2s; }
-        #sidebar.collapsed .brand-text { opacity: 0; width: 0; }
+        .sidebar-brand-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1677ff;
+            text-decoration: none;
+        }
+        .sidebar-brand-link:hover { color: #0958d9; text-decoration: none; }
+        .sidebar-brand-link i { font-size: 1.3rem; flex-shrink: 0; }
+        .sidebar-brand-link .brand-text { transition: opacity .2s; }
+        #sidebar.collapsed .sidebar-brand-link .brand-text { opacity: 0; width: 0; }
 
         .sidebar-nav { flex: 1; padding: 10px 0; overflow-y: auto; overflow-x: hidden; }
 
@@ -218,8 +222,10 @@
 <!-- ═══════════ SIDEBAR ═══════════ -->
 <nav id="sidebar">
     <div class="sidebar-brand">
-        <i class="bi bi-book-half"></i>
-        <span class="brand-text">BookStore</span>
+        <a asp-controller="Home" asp-action="Index" class="sidebar-brand-link">
+            <i class="bi bi-book-half"></i>
+            <span class="brand-text">BookStore</span>
+        </a>
     </div>
 
     <div class="sidebar-nav">

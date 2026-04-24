@@ -1,4 +1,5 @@
 @model BookStore.Dtos.Common.OrderDetailDto
+@using BookStore.Helpers
 @{
     Layout = "~/Views/Shared/_LayoutAuth.cshtml";
 }
@@ -40,7 +41,7 @@
                         <tr><th>Ghi chú</th><td>@Model.DeliveryNote</td></tr>
                     }
                     <tr><th>Phương thức</th><td>@Model.PaymentMethod</td></tr>
-                    <tr><th>Thanh toán</th><td>@Model.PaymentStatus</td></tr>
+                    <tr><th>Thanh toán</th><td>@(OrderPaymentStatuses.IsPaid(Model.PaymentStatus) ? "Đã thanh toán" : OrderPaymentStatuses.IsAwaitingPayment(Model.PaymentStatus) ? "Chưa thanh toán" : Model.PaymentStatus ?? "—")</td></tr>
                 </table>
             </div>
             <div class="col-md-5">

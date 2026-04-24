@@ -1,4 +1,5 @@
 using BookStore.Dtos;
+using BookStore.Helpers;
 using BookStore.Models;
 using BookStore.Service.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -109,14 +110,18 @@ public class ShipperService : IShipperService
 
         order.Status = OrderStatus.Delivered;
         order.DeliveredAt = DateTime.Now;
+        if (string.Equals((order.PaymentMethod ?? "").Trim(), "COD", StringComparison.OrdinalIgnoreCase))
+            order.PaymentStatus = OrderPaymentStatuses.Paid;
+
         await _db.SaveChangesAsync();
         return (true, $"Đơn #{orderId} đã giao thành công! 🎉");
     }
 
     public async Task<(bool ok, string message)> UpdateDeliveryStatusAsync(DeliveryStatusUpdateDto dto, string shipperId)
     {
-        var order = await _db.Orders.FirstOrDefaultAsync(
-            o => o.OrderId == dto.OrderId && o.ShipperId == shipperId);
+        var order = await _db.Orders
+            .Include(o => o.Details)
+            .FirstOrDefaultAsync(o => o.OrderId == dto.OrderId && o.ShipperId == shipperId);
 
         if (order is null)
             return (false, "Không tìm thấy đơn hàng.");
@@ -130,9 +135,18 @@ public class ShipperService : IShipperService
             order.DeliveredAt = DateTime.Now;
             order.FailedNote = dto.Note; // Dùng chung trường Note cho cả 2
             order.ProofOfDeliveryImage = dto.ProofImagePath;
+            if (string.Equals((order.PaymentMethod ?? "").Trim(), "COD", StringComparison.OrdinalIgnoreCase))
+                order.PaymentStatus = OrderPaymentStatuses.Paid;
         }
         else
         {
+            // Hàng không giao được — hoàn tồn kho (đơn vẫn tồn tại để tra cứu).
+            foreach (var d in order.Details)
+            {
+                await _db.Database.ExecuteSqlInterpolatedAsync($@"
+                    UPDATE Book SET Stock = COALESCE(Stock, 0) + {d.Quantity} WHERE BookId = {d.BookId}");
+            }
+
             order.Status = OrderStatus.DeliveryFailed;
             order.FailedReason = dto.FailedReason;
             order.FailedNote = dto.Note;

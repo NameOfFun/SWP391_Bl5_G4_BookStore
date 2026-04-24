@@ -22,7 +22,7 @@
                         <div class="navbar-header">
                             <div class="navbar-brand">
                                 <h1>
-                                    <a asp-controller="Home" asp-action="Index">
+                                    <a asp-controller="Home" asp-action="Index" class="navbar-brand-home-link">
                                         <img src="~/images/libraria-logo-v1.png" alt="BookStore" asp-append-version="true" />
                                     </a>
                                 </h1>
@@ -90,7 +90,7 @@
                                         <li><a asp-controller="Book" asp-action="Shop">Danh sách sách</a></li>
                                         @if (User.IsInRole("Admin") || User.IsInRole("Manager") || User.IsInRole("Staff"))
                                         {
-                                            <li><a asp-controller="Book" asp-action="Index">Manage Book</a></li>
+                                            <li><a asp-controller="Book" asp-action="Index">CMS</a></li>
                                         }
                                     </ul>
                                 </li>
