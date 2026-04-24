@@ -120,3 +120,24 @@ h6,
   border-radius: 999px;
   vertical-align: middle;
 }
+
+/* Logo + tên BookStore cùng một link về trang chủ */
+.navbar-brand-home-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+.navbar-brand-home-link:hover,
+.navbar-brand-home-link:focus {
+  text-decoration: none;
+}
+.navbar-brand-title {
+  font-weight: 700;
+  font-size: 1.15em;
+  color: #1e6bb8;
+}
+.navbar-brand-home-link:hover .navbar-brand-title,
+.navbar-brand-home-link:focus .navbar-brand-title {
+  color: #174d86;
+}
