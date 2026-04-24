@@ -1,6 +1,10 @@
 @model BookStore.Dtos.Common.AboutDto
 @{
     ViewData["Title"] = "Chỉnh sửa About";
+    var fieldErrors = ViewData["FieldErrors"] as IDictionary<string, string>;
+    string AboutErr(string key) =>
+        fieldErrors != null && fieldErrors.TryGetValue(key, out var m) ? m : "";
+    bool AboutInvalid(string key) => !string.IsNullOrEmpty(AboutErr(key));
 }
 
 <div class="container mt-4">
@@ -10,27 +14,30 @@
     <form asp-action="Edit" asp-route-id="@Model.AboutId" method="post">
         @Html.AntiForgeryToken()
         <input type="hidden" asp-for="AboutId" />
-        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        @if (ViewData["FormError"] is string formErr && !string.IsNullOrWhiteSpace(formErr))
+        {
+            <div class="alert alert-danger mb-3" role="alert">@formErr</div>
+        }
 
         <div class="mb-3">
             <label asp-for="Title" class="form-label">Tiêu đề</label>
-            <input asp-for="Title" class="form-control" />
-            <span asp-validation-for="Title" class="text-danger"></span>
+            <input asp-for="Title" class="form-control @(AboutInvalid(nameof(Model.Title)) ? "is-invalid" : "")" />
+            @if (AboutInvalid(nameof(Model.Title)))
+            {
+                <div class="invalid-feedback d-block">@AboutErr(nameof(Model.Title))</div>
+            }
         </div>
 
         <div class="mb-3">
             <label asp-for="ContentHtml" class="form-label">Nội dung</label>
-            <textarea asp-for="ContentHtml" class="form-control" rows="10"></textarea>
-            <span asp-validation-for="ContentHtml" class="text-danger"></span>
+            <textarea asp-for="ContentHtml" class="form-control @(AboutInvalid(nameof(Model.ContentHtml)) ? "is-invalid" : "")" rows="10"></textarea>
+            @if (AboutInvalid(nameof(Model.ContentHtml)))
+            {
+                <div class="invalid-feedback d-block">@AboutErr(nameof(Model.ContentHtml))</div>
+            }
         </div>
 
         <button type="submit" class="btn btn-warning">Cập nhật</button>
         <a asp-action="Manage" class="btn btn-secondary">Hủy</a>
     </form>
 </div>
-
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-}
