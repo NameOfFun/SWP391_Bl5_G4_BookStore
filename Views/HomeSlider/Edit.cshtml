@@ -18,7 +18,17 @@
                     @Html.AntiForgeryToken()
                     <input type="hidden" asp-for="DisplayOrder" />
 
-                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3" style="font-size:.875rem"></div>
+                    @if (ViewBag.Errors != null)
+                    {
+                        <div class="alert alert-danger py-2" style="font-size:.875rem">
+                            <ul class="mb-0">
+                                @foreach (var err in (List<string>)ViewBag.Errors)
+                                {
+                                    <li>@err</li>
+                                }
+                            </ul>
+                        </div>
+                    }
 
                     <div class="mb-3">
                         <label asp-for="ImageUrl" class="form-label" style="font-size:.875rem;font-weight:500;color:#595959">
@@ -26,7 +36,6 @@
                         </label>
                         <input asp-for="ImageUrl" class="form-control" style="border-radius:6px;font-size:.875rem"
                                placeholder="https://..." maxlength="255" oninput="previewImage(this.value)" />
-                        <span asp-validation-for="ImageUrl" class="text-danger" style="font-size:.8rem"></span>
                     </div>
 
                     <!-- Preview -->
@@ -43,7 +52,6 @@
                         <textarea asp-for="Caption" class="form-control" rows="4" style="border-radius:6px;font-size:.875rem"
                                   maxlength="255" placeholder="Nhiều dòng: dòng 1 = phụ đề nhỏ, dòng 2 = tiêu đề chính, từ dòng 3 = mô tả."></textarea>
                         <div class="form-text" style="font-size:.78rem">Trang chủ hiển thị theo thứ tự dòng. Chỉ một dòng = chỉ tiêu đề chính.</div>
-                        <span asp-validation-for="Caption" class="text-danger" style="font-size:.8rem"></span>
                     </div>
 
                     <div class="mb-3">
@@ -52,7 +60,6 @@
                         </label>
                         <input asp-for="LinkUrl" class="form-control" style="border-radius:6px;font-size:.875rem"
                                maxlength="255" placeholder="https://... (tuỳ chọn)" />
-                        <span asp-validation-for="LinkUrl" class="text-danger" style="font-size:.8rem"></span>
                     </div>
 
                     <div class="mb-4">
@@ -79,7 +86,6 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
         function previewImage(url) {
             const preview = document.getElementById('imagePreview');
