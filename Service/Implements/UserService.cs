@@ -1,4 +1,5 @@
 using BookStore.Dtos.Admin.User;
+using BookStore.Helpers;
 using BookStore.Models;
 using BookStore.Service.Interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -113,10 +114,7 @@ public class UserService : IUserService
 
         var result = await _userManager.CreateAsync(user, dto.Password);
         if (!result.Succeeded)
-        {
-            var errors = string.Join(" ", result.Errors.Select(e => e.Description));
-            throw new ArgumentException(errors);
-        }
+            throw new ArgumentException(IdentityHelper.GetErrors(result));
 
         await _userManager.AddToRoleAsync(user, role);
     }
@@ -144,8 +142,9 @@ public class UserService : IUserService
         if (!await _roleManager.RoleExistsAsync(newRole))
             throw new ArgumentException($"Vai trò '{newRole}' không tồn tại.");
 
-        // Check email uniqueness if changed
-        if (!string.Equals(user.Email, dto.Email, StringComparison.OrdinalIgnoreCase))
+        var emailChanged = !string.Equals(user.Email, dto.Email, StringComparison.OrdinalIgnoreCase);
+
+        if (emailChanged)
         {
             var existing = await _userManager.FindByEmailAsync(dto.Email);
             if (existing != null && existing.Id != user.Id)
@@ -161,20 +160,17 @@ public class UserService : IUserService
 
         var updateResult = await _userManager.UpdateAsync(user);
         if (!updateResult.Succeeded)
-        {
-            var errors = string.Join(" ", updateResult.Errors.Select(e => e.Description));
-            throw new ArgumentException(errors);
-        }
+            throw new ArgumentException(IdentityHelper.GetErrors(updateResult));
 
-        if (!string.Equals(user.Email, dto.Email, StringComparison.OrdinalIgnoreCase))
+        if (emailChanged)
         {
             var emailResult = await _userManager.SetEmailAsync(user, dto.Email);
             if (!emailResult.Succeeded)
-                throw new ArgumentException(string.Join(" ", emailResult.Errors.Select(e => e.Description)));
+                throw new ArgumentException(IdentityHelper.GetErrors(emailResult));
 
             var userNameResult = await _userManager.SetUserNameAsync(user, dto.Email);
             if (!userNameResult.Succeeded)
-                throw new ArgumentException(string.Join(" ", userNameResult.Errors.Select(e => e.Description)));
+                throw new ArgumentException(IdentityHelper.GetErrors(userNameResult));
         }
 
         // Each user holds exactly one role; remove all others before assigning the new one
@@ -188,10 +184,7 @@ public class UserService : IUserService
             await _userManager.RemovePasswordAsync(user);
             var pwResult = await _userManager.AddPasswordAsync(user, dto.NewPassword);
             if (!pwResult.Succeeded)
-            {
-                var errors = string.Join(" ", pwResult.Errors.Select(e => e.Description));
-                throw new ArgumentException(errors);
-            }
+                throw new ArgumentException(IdentityHelper.GetErrors(pwResult));
         }
     }
 
@@ -210,10 +203,7 @@ public class UserService : IUserService
 
         var result = await _userManager.UpdateAsync(user);
         if (!result.Succeeded)
-        {
-            var errors = string.Join(" ", result.Errors.Select(e => e.Description));
-            throw new ArgumentException(errors);
-        }
+            throw new ArgumentException(IdentityHelper.GetErrors(result));
 
         return (user.Status, user.Name ?? "");
     }

@@ -109,6 +109,10 @@
                                     </ul>
                                 </li>
                                 <li><a asp-controller="About" asp-action="Index">Liên hệ</a></li>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <li><a asp-controller="User" asp-action="Index">Quản lý Admin</a></li>
+                                }
                             </ul>
                         </div>
                     </div>
@@ -136,6 +140,10 @@
                                 </a>
                             </li>
                             <li><a asp-controller="About" asp-action="Index"><i class="fa fa-envelope-o" aria-hidden="true"></i><span>Liên hệ</span></a></li>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li><a asp-controller="User" asp-action="Index"><i class="fa fa-cogs" aria-hidden="true"></i><span>Quản lý Admin</span></a></li>
+                            }
                             @if (User.Identity?.IsAuthenticated == true)
                             {
                                 <li><a asp-controller="Account" asp-action="Profile"><i class="fa fa-user" aria-hidden="true"></i><span>Tài khoản</span></a></li>
