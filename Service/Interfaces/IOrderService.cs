@@ -33,6 +33,9 @@ public interface IOrderService
     /// <summary>Hủy đơn (chỉ từ Pending/Confirmed/Processing). Tự hoàn kho.</summary>
     Task<(bool Ok, string Message)> CancelAsync(int orderId, string? reason);
 
+    /// <summary>Đơn chuyển khoản: nhân viên xác nhận đã nhận tiền → PaymentStatus = Paid.</summary>
+    Task<(bool Ok, string Message)> MarkBankPaymentReceivedAsync(int orderId);
+
     /// <summary>Danh sách shipper đang hoạt động để gán đơn.</summary>
     Task<IReadOnlyList<ShipperOptionDto>> GetActiveShippersAsync();
 

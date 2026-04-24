@@ -29,7 +29,7 @@ public class OrderController : Controller
 
     // GET /Order/Checkout
     [HttpGet]
-    [Authorize(Roles = "Customer")]
+    [Authorize]
     public async Task<IActionResult> Checkout()
     {
         var vm = await _orderService.GetCheckoutAsync(UserId);
@@ -46,7 +46,7 @@ public class OrderController : Controller
 
     // POST /Order/Checkout
     [HttpPost, ValidateAntiForgeryToken]
-    [Authorize(Roles = "Customer")]
+    [Authorize]
     public async Task<IActionResult> Checkout(CheckoutDto form)
     {
         var vm = await _orderService.GetCheckoutAsync(UserId);
@@ -88,7 +88,7 @@ public class OrderController : Controller
 
     // POST /Order/ApplyVoucher
     [HttpPost, ValidateAntiForgeryToken]
-    [Authorize(Roles = "Customer")]
+    [Authorize]
     public async Task<IActionResult> ApplyVoucher([FromBody] ApplyVoucherRequest req)
     {
         if (string.IsNullOrWhiteSpace(req?.Code))
@@ -255,6 +255,22 @@ public class OrderController : Controller
             reason = reason[..MaxCancelReasonLength];
 
         var (ok, msg) = await _orderService.CancelAsync(orderId, reason);
+        TempData[ok ? "Success" : "Error"] = msg;
+        return RedirectToAction(nameof(Details), new { id = orderId });
+    }
+
+    // POST /Order/ConfirmBankPayment — xác nhận đã nhận tiền chuyển khoản
+    [HttpPost, ValidateAntiForgeryToken]
+    [Authorize(Roles = "Staff,Manager,Admin")]
+    public async Task<IActionResult> ConfirmBankPayment(int orderId)
+    {
+        if (orderId <= 0)
+        {
+            TempData["Error"] = "Mã đơn hàng không hợp lệ.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var (ok, msg) = await _orderService.MarkBankPaymentReceivedAsync(orderId);
         TempData[ok ? "Success" : "Error"] = msg;
         return RedirectToAction(nameof(Details), new { id = orderId });
     }

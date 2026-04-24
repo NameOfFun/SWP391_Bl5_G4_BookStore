@@ -1,5 +1,6 @@
 @model BookStore.Dtos.Common.OrderDetailDto
 @using BookStore.Models
+@using BookStore.Helpers
 @{
     Layout = "~/Views/Shared/_LayoutAuth.cshtml";
 }
@@ -68,7 +69,7 @@
                 <h4>Tóm tắt</h4>
                 <table class="table">
                     <tr><th>Ngày đặt</th><td>@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</td></tr>
-                    <tr><th>Thanh toán</th><td>@Model.PaymentMethod / @Model.PaymentStatus</td></tr>
+                    <tr><th>Thanh toán</th><td>@Model.PaymentMethod / @(OrderPaymentStatuses.IsPaid(Model.PaymentStatus) ? "Đã thanh toán" : OrderPaymentStatuses.IsAwaitingPayment(Model.PaymentStatus) ? "Chưa thanh toán" : Model.PaymentStatus ?? "—")</td></tr>
                     <tr><th>Tạm tính</th><td>@Model.SubTotal.ToString("N0") đ</td></tr>
                     @if (Model.DiscountAmount > 0)
                     {

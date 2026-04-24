@@ -4,6 +4,7 @@ using BookStore.Models;
 using BookStore.Service.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace BookStore.Service.Implements;
 
@@ -12,22 +13,27 @@ public class OrderService : IOrderService
     private readonly BookStoreDbContext _db;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IVoucherService _voucherService;
+    private readonly ICartService _cartService;
 
     // Giới hạn độ dài lý do hủy đơn — khớp kích thước cột FailedReason hợp lý
     // và tránh việc payload quá lớn gây lỗi DbUpdateException.
     private const int MaxCancelReasonLength = 500;
 
     public OrderService(BookStoreDbContext db, UserManager<ApplicationUser> userManager,
-        IVoucherService voucherService)
+        IVoucherService voucherService, ICartService cartService)
     {
         _db = db;
         _userManager = userManager;
         _voucherService = voucherService;
+        _cartService = cartService;
     }
 
     // ─── Checkout view ────────────────────────────────────────
     public async Task<CheckoutViewModel> GetCheckoutAsync(string userId)
     {
+        // Chuẩn hóa giỏ (cắt SL theo tồn, xóa dòng hết hàng) giống trang Giỏ hàng — tránh lệch checkout vs DB.
+        await _cartService.GetCartAsync(userId);
+
         var vm = new CheckoutViewModel();
 
         var cart = await _db.Carts.AsNoTracking().FirstOrDefaultAsync(c => c.UserId == userId);
@@ -86,6 +92,10 @@ public class OrderService : IOrderService
         var method = (dto.PaymentMethod ?? "").Trim();
         if (method != "COD" && method != "BankTransfer")
             return (false, "Phương thức thanh toán không hợp lệ.", 0);
+
+        await _cartService.GetCartAsync(userId);
+        // Tránh entity Book/CartItem còn track từ bước trên gây SaveChanges lệch với DB (ví dụ sau khi trừ kho bằng SQL).
+        _db.ChangeTracker.Clear();
 
         var cart = await _db.Carts.FirstOrDefaultAsync(c => c.UserId == userId);
         if (cart == null)
@@ -163,7 +173,8 @@ public class OrderService : IOrderService
                 ShippingAddress = dto.ShippingAddress.Trim(),
                 DeliveryNote = string.IsNullOrWhiteSpace(dto.DeliveryNote) ? null : dto.DeliveryNote.Trim(),
                 PaymentMethod = method,
-                PaymentStatus = "Unpaid"
+                // COD: thu tiền khi giao; BankTransfer: chờ nhân viên xác nhận (MarkBankPaymentReceived).
+                PaymentStatus = OrderPaymentStatuses.Pending
             };
             _db.Orders.Add(order);
             await _db.SaveChangesAsync();
@@ -177,22 +188,58 @@ public class OrderService : IOrderService
                     Quantity = cartItem.Quantity,
                     UnitPrice = unitPrice
                 });
-
-                // Trừ kho
-                book.Stock = (book.Stock ?? 0) - cartItem.Quantity;
             }
 
-            // Dọn giỏ hàng
+            await _db.SaveChangesAsync();
+
+            // Trừ kho nguyên tử (tránh race khi hai đơn cùng mua — chỉ trừ nếu đủ tồn tại thời điểm UPDATE).
+            foreach (var (cartItem, book, _) in validLines)
+            {
+                var n = await _db.Database.ExecuteSqlInterpolatedAsync($@"
+                    UPDATE Book SET Stock = COALESCE(Stock, 0) - {cartItem.Quantity}
+                    WHERE BookId = {book.BookId} AND COALESCE(Stock, 0) >= {cartItem.Quantity}");
+                if (n != 1)
+                    return (false,
+                        $"Sách \"{book.Title}\" không đủ tồn kho tại thời điểm đặt hàng (có thể vừa bán hết). Vui lòng làm mới giỏ và thử lại.",
+                        0);
+            }
+
+            // Dọn giỏ hàng — gỡ Book khỏi tracker để EF không ghi đè Stock đã cập nhật bằng SQL phía trên.
+            foreach (var line in items)
+            {
+                if (line.Book != null)
+                    _db.Entry(line.Book).State = EntityState.Detached;
+            }
+
             _db.CartItems.RemoveRange(items);
 
             await _db.SaveChangesAsync();
             await tx.CommitAsync();
             return (true, null, order.OrderId);
         }
+        catch (DbUpdateException ex)
+        {
+            await TryRollbackAsync(tx);
+            var detail = ex.GetBaseException().Message;
+            return (false, $"Không thể tạo đơn hàng: {detail}", 0);
+        }
         catch (Exception ex)
         {
-            await tx.RollbackAsync();
+            await TryRollbackAsync(tx);
             return (false, $"Không thể tạo đơn hàng: {ex.Message}", 0);
+        }
+    }
+
+    private static async Task TryRollbackAsync(IDbContextTransaction? tx)
+    {
+        if (tx == null) return;
+        try
+        {
+            await tx.RollbackAsync();
+        }
+        catch
+        {
+            // Giao dịch có thể đã hủy khi lỗi xảy ra giữa chừng.
         }
     }
 
@@ -417,6 +464,30 @@ public class OrderService : IOrderService
         order.FailedReason = string.IsNullOrWhiteSpace(cleanReason) ? "Đơn bị hủy bởi quản trị." : cleanReason;
         await _db.SaveChangesAsync();
         return (true, $"Đã hủy đơn #{orderId} và hoàn kho.");
+    }
+
+    public async Task<(bool Ok, string Message)> MarkBankPaymentReceivedAsync(int orderId)
+    {
+        if (orderId <= 0) return (false, "Mã đơn hàng không hợp lệ.");
+
+        var order = await _db.Orders.FirstOrDefaultAsync(o => o.OrderId == orderId);
+        if (order == null) return (false, "Không tìm thấy đơn hàng.");
+
+        if (!string.Equals((order.PaymentMethod ?? "").Trim(), "BankTransfer", StringComparison.OrdinalIgnoreCase))
+            return (false, "Chỉ có thể xác nhận thanh toán cho đơn chuyển khoản.");
+
+        if (OrderPaymentStatuses.IsPaid(order.PaymentStatus))
+            return (false, "Đơn đã được ghi nhận thanh toán.");
+
+        if (!OrderPaymentStatuses.IsAwaitingPayment(order.PaymentStatus))
+            return (false, "Trạng thái thanh toán hiện tại không cho phép xác nhận.");
+
+        if (order.Status == OrderStatus.Cancelled)
+            return (false, "Không thể cập nhật thanh toán cho đơn đã hủy.");
+
+        order.PaymentStatus = OrderPaymentStatuses.Paid;
+        await _db.SaveChangesAsync();
+        return (true, $"Đã xác nhận khách đã chuyển khoản (đơn #{orderId}).");
     }
 
     public async Task<IReadOnlyList<ShipperOptionDto>> GetActiveShippersAsync()

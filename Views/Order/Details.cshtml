@@ -1,6 +1,7 @@
 @model BookStore.Dtos.Common.OrderDetailDto
 @using BookStore.Models
 @using BookStore.Dtos.Common
+@using BookStore.Helpers
 @{
     ViewData["Title"] = $"Đơn #{Model.OrderId}";
     var shippers = (ViewData["Shippers"] as IReadOnlyList<ShipperOptionDto>) ?? new List<ShipperOptionDto>();
@@ -42,6 +43,9 @@
     bool canCancel  = Model.Status == OrderStatus.Pending
                    || Model.Status == OrderStatus.Confirmed
                    || Model.Status == OrderStatus.Processing;
+    bool canMarkBankPaid = string.Equals(Model.PaymentMethod, "BankTransfer", StringComparison.OrdinalIgnoreCase)
+                           && OrderPaymentStatuses.IsAwaitingPayment(Model.PaymentStatus)
+                           && Model.Status != OrderStatus.Cancelled;
 }
 
 <div class="d-flex align-items-center justify-content-between mb-4">
@@ -180,8 +184,23 @@
                     <dt class="col-sm-5 text-muted fw-500">Phương thức</dt>
                     <dd class="col-sm-7">@Model.PaymentMethod</dd>
                     <dt class="col-sm-5 text-muted fw-500">Trạng thái</dt>
-                    <dd class="col-sm-7">@Model.PaymentStatus</dd>
+                    <dd class="col-sm-7">
+                        @(OrderPaymentStatuses.IsPaid(Model.PaymentStatus) ? "Đã thanh toán"
+                            : OrderPaymentStatuses.IsAwaitingPayment(Model.PaymentStatus) ? "Chưa thanh toán"
+                            : Model.PaymentStatus ?? "—")
+                    </dd>
                 </dl>
+                @if (canMarkBankPaid)
+                {
+                    <form asp-action="ConfirmBankPayment" method="post" class="mt-2"
+                          onsubmit="return confirm('Xác nhận đã nhận đủ tiền chuyển khoản cho đơn #@Model.OrderId?');">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="orderId" value="@Model.OrderId" />
+                        <button type="submit" class="btn btn-success w-100" style="border-radius:6px;font-size:.875rem">
+                            <i class="bi bi-bank me-1"></i>Xác nhận đã nhận chuyển khoản
+                        </button>
+                    </form>
+                }
             </div>
         </div>
 
