@@ -142,7 +142,9 @@ public class AuthService : IAuthService
     }
 
 
-    //
+
+
+    //Profile Action
     public async Task<ProfileDto?> GetProfileAsync(string userId)
     {
         var user = await _userManager.FindByIdAsync(userId);
@@ -322,7 +324,7 @@ public class AuthService : IAuthService
 
         var token = await _userManager.GeneratePasswordResetTokenAsync(user); //Gui email + link reset
 
-        // Tạo URL reset (điều chỉnh domain theo môi trường)
+        // Tạo URL reset 
         var resetLink = $"https://localhost:7159/Account/ResetPassword?email={Uri.EscapeDataString(user.Email ?? "")}&token={Uri.EscapeDataString(token)}";
 
         // Gửi email
