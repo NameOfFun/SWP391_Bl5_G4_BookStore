@@ -11,10 +11,12 @@ namespace BookStore.Controllers;
 public class OrderController : Controller
 {
     private readonly IOrderService _orderService;
+    private readonly IVoucherService _voucherService;
 
-    public OrderController(IOrderService orderService)
+    public OrderController(IOrderService orderService, IVoucherService voucherService)
     {
         _orderService = orderService;
+        _voucherService = voucherService;
     }
 
     private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
@@ -27,6 +29,7 @@ public class OrderController : Controller
 
     // GET /Order/Checkout
     [HttpGet]
+    [Authorize(Roles = "Customer")]
     public async Task<IActionResult> Checkout()
     {
         var vm = await _orderService.GetCheckoutAsync(UserId);
@@ -43,6 +46,7 @@ public class OrderController : Controller
 
     // POST /Order/Checkout
     [HttpPost, ValidateAntiForgeryToken]
+    [Authorize(Roles = "Customer")]
     public async Task<IActionResult> Checkout(CheckoutDto form)
     {
         var vm = await _orderService.GetCheckoutAsync(UserId);
@@ -52,6 +56,14 @@ public class OrderController : Controller
         {
             TempData["CartError"] = "Giỏ hàng trống — vui lòng thêm sách trước khi thanh toán.";
             return RedirectToAction("Index", "Cart");
+        }
+
+        // Restore discount preview for re-render on ModelState failure
+        if (!string.IsNullOrWhiteSpace(form.VoucherCode))
+        {
+            var (vOk, vDiscount, _) = await _orderService.ApplyVoucherAsync(
+                UserId, form.VoucherCode.Trim().ToUpperInvariant());
+            if (vOk) vm.DiscountAmount = vDiscount;
         }
 
         if (!ModelState.IsValid)
@@ -72,6 +84,24 @@ public class OrderController : Controller
 
         TempData["Success"] = $"Đặt hàng thành công! Mã đơn: #{orderId}.";
         return RedirectToAction(nameof(Confirmation), new { id = orderId });
+    }
+
+    // POST /Order/ApplyVoucher
+    [HttpPost, ValidateAntiForgeryToken]
+    [Authorize(Roles = "Customer")]
+    public async Task<IActionResult> ApplyVoucher([FromBody] ApplyVoucherRequest req)
+    {
+        if (string.IsNullOrWhiteSpace(req?.Code))
+            return Json(new { ok = false, message = "Vui lòng nhập mã giảm giá." });
+
+        var (ok, discountAmount, message) = await _orderService.ApplyVoucherAsync(
+            UserId, req.Code.Trim().ToUpperInvariant());
+        return Json(new { ok, discountAmount, message });
+    }
+
+    public class ApplyVoucherRequest
+    {
+        public string? Code { get; set; }
     }
 
     // GET /Order/Confirmation/{id}

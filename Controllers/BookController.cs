@@ -184,14 +184,38 @@ namespace BookStore.Controllers
                 dto.PromotionalPrice = null;
                 dto.PromotionalStartsAt = null;
                 dto.PromotionalEndsAt = null;
-                ModelState.Remove(nameof(BookDto.Price));
-                ModelState.Remove(nameof(BookDto.PromotionalPrice));
-                ModelState.Remove(nameof(BookDto.PromotionalStartsAt));
-                ModelState.Remove(nameof(BookDto.PromotionalEndsAt));
             }
 
-            if (!ModelState.IsValid)
+            var errors = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(dto.Title))
+                errors.Add("Tiêu đề không được để trống");
+            else if (dto.Title.Length > 100)
+                errors.Add("Tiêu đề tối đa 100 ký tự");
+
+            if (dto.Description != null && dto.Description.Length > 255)
+                errors.Add("Mô tả tối đa 255 ký tự");
+
+            if (dto.AuthorName != null && dto.AuthorName.Length > 100)
+                errors.Add("Tên tác giả tối đa 100 ký tự");
+
+            if (canSetPrice)
             {
+                if (dto.Price < 0 || dto.Price > 999999999)
+                    errors.Add("Giá phải từ 0 đến 999.999.999");
+                if (dto.PromotionalPrice.HasValue && (dto.PromotionalPrice < 0 || dto.PromotionalPrice > 999999999))
+                    errors.Add("Giá khuyến mãi phải từ 0 đến 999.999.999");
+            }
+
+            if (dto.Stock < 0 || dto.Stock > 999999)
+                errors.Add("Tồn kho phải từ 0 đến 999.999");
+
+            if (dto.ImageUrl != null && dto.ImageUrl.Length > 255)
+                errors.Add("URL ảnh tối đa 255 ký tự");
+
+            if (errors.Count > 0)
+            {
+                ViewBag.Errors = errors;
                 await PopulateDropdownsAsync();
                 return View(dto);
             }
@@ -205,7 +229,7 @@ namespace BookStore.Controllers
             }
             catch (ArgumentException ex)
             {
-                ModelState.AddModelError(string.Empty, ex.Message);
+                ViewBag.Errors = new List<string> { ex.Message };
                 await PopulateDropdownsAsync();
                 return View(dto);
             }
@@ -240,14 +264,38 @@ namespace BookStore.Controllers
                 dto.PromotionalPrice = existing.PromotionalPrice;
                 dto.PromotionalStartsAt = existing.PromotionalStartsAt;
                 dto.PromotionalEndsAt = existing.PromotionalEndsAt;
-                ModelState.Remove(nameof(BookDto.Price));
-                ModelState.Remove(nameof(BookDto.PromotionalPrice));
-                ModelState.Remove(nameof(BookDto.PromotionalStartsAt));
-                ModelState.Remove(nameof(BookDto.PromotionalEndsAt));
             }
 
-            if (!ModelState.IsValid)
+            var errors = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(dto.Title))
+                errors.Add("Tiêu đề không được để trống");
+            else if (dto.Title.Length > 100)
+                errors.Add("Tiêu đề tối đa 100 ký tự");
+
+            if (dto.Description != null && dto.Description.Length > 255)
+                errors.Add("Mô tả tối đa 255 ký tự");
+
+            if (dto.AuthorName != null && dto.AuthorName.Length > 100)
+                errors.Add("Tên tác giả tối đa 100 ký tự");
+
+            if (canSetPrice)
             {
+                if (dto.Price < 0 || dto.Price > 999999999)
+                    errors.Add("Giá phải từ 0 đến 999.999.999");
+                if (dto.PromotionalPrice.HasValue && (dto.PromotionalPrice < 0 || dto.PromotionalPrice > 999999999))
+                    errors.Add("Giá khuyến mãi phải từ 0 đến 999.999.999");
+            }
+
+            if (dto.Stock < 0 || dto.Stock > 999999)
+                errors.Add("Tồn kho phải từ 0 đến 999.999");
+
+            if (dto.ImageUrl != null && dto.ImageUrl.Length > 255)
+                errors.Add("URL ảnh tối đa 255 ký tự");
+
+            if (errors.Count > 0)
+            {
+                ViewBag.Errors = errors;
                 await PopulateDropdownsAsync(dto.CategoryId);
                 return View(dto);
             }
@@ -265,7 +313,7 @@ namespace BookStore.Controllers
             }
             catch (ArgumentException ex)
             {
-                ModelState.AddModelError(string.Empty, ex.Message);
+                ViewBag.Errors = new List<string> { ex.Message };
                 await PopulateDropdownsAsync(dto.CategoryId);
                 return View(dto);
             }

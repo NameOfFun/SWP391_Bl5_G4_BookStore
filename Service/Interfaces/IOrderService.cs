@@ -35,4 +35,10 @@ public interface IOrderService
 
     /// <summary>Danh sách shipper đang hoạt động để gán đơn.</summary>
     Task<IReadOnlyList<ShipperOptionDto>> GetActiveShippersAsync();
+
+    /// <summary>
+    /// Validates a voucher code against the caller's current cart (DB subtotal, not client value).
+    /// Returns { ok, discountAmount, message } for the AJAX endpoint.
+    /// </summary>
+    Task<(bool Ok, decimal DiscountAmount, string Message)> ApplyVoucherAsync(string userId, string code);
 }

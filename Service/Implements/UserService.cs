@@ -65,6 +65,7 @@ public class UserService : IUserService
 
     public async Task<List<SelectListItem>> GetAvailableRolesAsync()
     {
+        // Admin is a system-only role; prevent it from appearing in assignment dropdowns
         return await _roleManager.Roles
             .Where(r => r.Name != "Admin" && r.Status)
             .OrderBy(r => r.Name)
@@ -103,7 +104,7 @@ public class UserService : IUserService
             PhoneNumber = dto.PhoneNumber,
             Name = dto.FullName,
             Status = true,
-            LockoutEnabled = true
+            LockoutEnabled = true  // Must be set explicitly; Identity defaults vary by configuration
         };
 
         var result = await _userManager.CreateAsync(user, dto.Password);
@@ -145,22 +146,11 @@ public class UserService : IUserService
         }
 
         user.Name = dto.FullName;
-        user.Email = dto.Email;
-        user.NormalizedEmail = dto.Email.ToUpperInvariant();
-        user.UserName = dto.Email;
-        user.NormalizedUserName = dto.Email.ToUpperInvariant();
         user.PhoneNumber = dto.PhoneNumber;
         user.Status = dto.IsActive;
 
-        if (!dto.IsActive)
-        {
-            user.LockoutEnabled = true;
-            user.LockoutEnd = DateTimeOffset.MaxValue;
-        }
-        else
-        {
+        if (dto.IsActive && user.LockoutEnd == DateTimeOffset.MaxValue)
             user.LockoutEnd = null;
-        }
 
         var updateResult = await _userManager.UpdateAsync(user);
         if (!updateResult.Succeeded)
@@ -169,7 +159,18 @@ public class UserService : IUserService
             throw new ArgumentException(errors);
         }
 
-        // Sync to single role
+        if (!string.Equals(user.Email, dto.Email, StringComparison.OrdinalIgnoreCase))
+        {
+            var emailResult = await _userManager.SetEmailAsync(user, dto.Email);
+            if (!emailResult.Succeeded)
+                throw new ArgumentException(string.Join(" ", emailResult.Errors.Select(e => e.Description)));
+
+            var userNameResult = await _userManager.SetUserNameAsync(user, dto.Email);
+            if (!userNameResult.Succeeded)
+                throw new ArgumentException(string.Join(" ", userNameResult.Errors.Select(e => e.Description)));
+        }
+
+        // Each user holds exactly one role; remove all others before assigning the new one
         var toRemove = currentRoles.Except([newRole]).ToList();
         if (toRemove.Count > 0) await _userManager.RemoveFromRolesAsync(user, toRemove);
         if (!currentRoles.Contains(newRole)) await _userManager.AddToRoleAsync(user, newRole);
@@ -196,19 +197,17 @@ public class UserService : IUserService
         if (roles.Contains("Admin"))
             throw new InvalidOperationException("Không thể thay đổi trạng thái tài khoản Admin.");
 
-        if (user.Status)
-        {
-            user.Status = false;
-            user.LockoutEnabled = true;
-            user.LockoutEnd = DateTimeOffset.MaxValue;
-        }
-        else
-        {
-            user.Status = true;
+        user.Status = !user.Status;
+        if (user.Status && user.LockoutEnd == DateTimeOffset.MaxValue)
             user.LockoutEnd = null;
+
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            var errors = string.Join(" ", result.Errors.Select(e => e.Description));
+            throw new ArgumentException(errors);
         }
 
-        await _userManager.UpdateAsync(user);
         return (user.Status, user.Name ?? "");
     }
 }

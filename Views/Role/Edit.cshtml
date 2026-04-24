@@ -2,63 +2,71 @@
 @model UpdateRoleDto
 @{
     ViewData["Title"] = $"Chỉnh sửa vai trò: {Model.Name}";
+    ViewData["BreadcrumbParent"] = "Tài Khoản và Vai Trò";
+    ViewData["BreadcrumbParentUrl"] = Url.Action("Index", "Role");
 }
 
-<div class="container mt-4" style="max-width:600px">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a asp-action="Index">Quản lý Vai trò</a></li>
-            <li class="breadcrumb-item active">Chỉnh sửa</li>
-        </ol>
-    </nav>
+<style>
+    .form-card { background:#fff; border:1px solid #e8e8e8; border-radius:10px; overflow:hidden; max-width:760px; margin:0 auto; }
+    .form-card-header { padding:16px 24px; border-bottom:1px solid #e8e8e8; }
+    .form-card-header h5 { font-weight:600; font-size:1rem; color:#1a1a2e; margin:0; }
+    .form-card-body { padding:24px; }
+    .field-label { font-size:.8rem; font-weight:500; color:#595959; margin-bottom:5px; }
+    .form-control, .form-select { font-size:.875rem; border-radius:6px; border-color:#d9d9d9; }
+    .form-control:focus, .form-select:focus { border-color:#1677ff; box-shadow:0 0 0 .2rem rgba(22,119,255,.15); }
+    .field-hint { font-size:.775rem; color:#8c8c8c; margin-top:4px; }
+    .field-value { font-size:.875rem; font-weight:600; color:#262626; padding:6px 0; }
+    .form-divider { border:none; border-top:1px solid #f0f0f0; margin:20px 0; }
+    .btn-save { background-color:#fa8c16; border-color:#fa8c16; font-size:.875rem; padding:7px 20px; border-radius:6px; }
+    .btn-save:hover { background-color:#d46b08; border-color:#d46b08; }
+    .btn-cancel { font-size:.875rem; padding:7px 16px; border-radius:6px; }
+    .switch-label { font-size:.875rem; font-weight:500; color:#262626; }
+</style>
 
-    <div class="card shadow-sm">
-        <div class="card-header text-white" style="background-color:#fa8c16">
-            <h5 class="mb-0"><i class="bi bi-shield-gear me-2"></i>Chỉnh sửa vai trò</h5>
-        </div>
-        <div class="card-body">
-            <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
-                @Html.AntiForgeryToken()
-                <input type="hidden" asp-for="Id" />
-                <input type="hidden" asp-for="Name" />
-                <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3"></div>
+<div class="book-management-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <h4 style="font-weight:600;font-size:1.25rem;color:#1a1a2e;margin:0">Chỉnh sửa vai trò</h4>
+</div>
 
-                <div class="row g-3">
-                    <div class="col-12">
-                        <label class="form-label fw-semibold">Tên vai trò</label>
-                        <p class="form-control-plaintext fw-semibold">@Model.Name</p>
-                        <small class="text-muted">Tên vai trò không thể thay đổi.</small>
-                    </div>
+<div class="form-card">
+    <div class="form-card-header">
+        <h5>Thông tin vai trò</h5>
+    </div>
+    <div class="form-card-body">
+        <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="Name" />
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3" style="font-size:.875rem;border-radius:6px"></div>
 
-                    <div class="col-12">
-                        <label asp-for="Description" class="form-label fw-semibold">Mô tả</label>
-                        <textarea asp-for="Description" class="form-control" rows="3"
-                                  placeholder="Mô tả chức năng của vai trò này..."></textarea>
-                        <span asp-validation-for="Description" class="text-danger small"></span>
-                    </div>
+            <div class="mb-3">
+                <label class="field-label">Tên vai trò</label>
+                <div class="field-value">@Model.Name</div>
+            </div>
 
-                    <div class="col-12">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" asp-for="IsActive" id="isActiveSwitch" />
-                            <label class="form-check-label fw-semibold" for="isActiveSwitch">
-                                Kích hoạt vai trò
-                            </label>
-                        </div>
-                        <small class="text-muted">
-                            Bỏ chọn để vô hiệu hóa vai trò — người dùng thuộc vai trò này sẽ không thể đăng nhập.
-                        </small>
-                    </div>
+            <div class="mb-3">
+                <label class="field-label">Mô tả</label>
+                <textarea asp-for="Description" class="form-control" rows="3"
+                          placeholder="Mô tả chức năng của vai trò này..."></textarea>
+                <span asp-validation-for="Description" class="text-danger" style="font-size:.775rem"></span>
+            </div>
+
+            <div class="mb-3">
+                <label class="field-label d-block">Trạng thái</label>
+                <div class="form-check form-switch mt-1">
+                    <input class="form-check-input" type="checkbox" asp-for="IsActive" id="isActiveSwitch" />
+                    <label class="form-check-label switch-label" for="isActiveSwitch">Kích hoạt vai trò</label>
                 </div>
+                <div class="field-hint">Bỏ chọn để vô hiệu hóa vai trò — người dùng thuộc vai trò này sẽ không thể đăng nhập.</div>
+            </div>
 
-                <hr class="my-4" />
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-warning px-4">
-                        <i class="bi bi-floppy me-1"></i> Cập nhật
-                    </button>
-                    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
-                </div>
-            </form>
-        </div>
+            <hr class="form-divider" />
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-warning btn-save text-white">
+                    <i class="bi bi-floppy me-1"></i> Cập nhật
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary btn-cancel">Hủy</a>
+            </div>
+        </form>
     </div>
 </div>
 

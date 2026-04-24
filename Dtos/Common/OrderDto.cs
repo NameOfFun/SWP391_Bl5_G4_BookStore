@@ -30,6 +30,9 @@ public class CheckoutDto
     [MaxLength(50)]
     [RegularExpression(@"^(COD|BankTransfer)$", ErrorMessage = "Phương thức thanh toán không hợp lệ")]
     public string PaymentMethod { get; set; } = "COD";
+
+    [MaxLength(50)]
+    public string? VoucherCode { get; set; }
 }
 
 public class CheckoutLineVm
@@ -47,7 +50,8 @@ public class CheckoutViewModel
     public CheckoutDto Form { get; set; } = new();
     public List<CheckoutLineVm> Lines { get; set; } = new();
     public decimal Subtotal => Lines.Sum(l => l.LineTotal);
-    public decimal DiscountAmount => 0m; // chưa hỗ trợ voucher
+    public decimal DiscountAmount { get; set; } = 0m;
+    public string? AppliedVoucherCode { get; set; }
     public decimal GrandTotal => Subtotal - DiscountAmount;
     public int TotalQuantity => Lines.Sum(l => l.Quantity);
 }
@@ -92,6 +96,7 @@ public class OrderDetailDto
     public string? PaymentMethod { get; set; }
     public string? PaymentStatus { get; set; }
 
+    public string? VoucherCode { get; set; }
     public decimal SubTotal { get; set; }
     public decimal DiscountAmount { get; set; }
     public decimal GrandTotal { get; set; }
