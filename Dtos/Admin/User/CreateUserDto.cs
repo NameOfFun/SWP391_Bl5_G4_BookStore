@@ -16,6 +16,7 @@ public class CreateUserDto
     public string Email { get; set; } = null!;
 
     [MaxLength(20, ErrorMessage = "Số điện thoại tối đa 20 ký tự")]
+    [RegularExpression(@"^0\d{9}$", ErrorMessage = "Số điện thoại không hợp lệ (10 chữ số, bắt đầu bằng 0)")]
     public string? PhoneNumber { get; set; }
 
     [Required(ErrorMessage = "Mật khẩu không được để trống")]

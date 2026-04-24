@@ -27,7 +27,7 @@ public class RoleController : Controller
         return View(roles);
     }
 
-    [HttpGet]
+    [NonAction]
     public IActionResult Create()
     {
         ViewData["Title"] = "Thêm vai trò mới";
@@ -36,8 +36,7 @@ public class RoleController : Controller
         return View(new CreateRoleDto());
     }
 
-    [HttpPost]
-    [ValidateAntiForgeryToken]
+    [NonAction]
     public async Task<IActionResult> Create(CreateRoleDto dto)
     {
         if (!ModelState.IsValid)
