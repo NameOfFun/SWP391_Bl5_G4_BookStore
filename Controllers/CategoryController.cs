@@ -56,8 +56,21 @@ namespace BookStore.Controllers
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CategoryDto dto)
         {
-            if (!ModelState.IsValid)
+            var errors = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(dto.Name))
+                errors.Add("Tên danh mục không được để trống");
+            else if (dto.Name.Length > 100)
+                errors.Add("Tên danh mục không được vượt quá 100 ký tự");
+
+            if (dto.Description != null && dto.Description.Length > 255)
+                errors.Add("Mô tả không được vượt quá 255 ký tự");
+
+            if (errors.Count > 0)
+            {
+                ViewBag.Errors = errors;
                 return View(dto);
+            }
 
             try
             {
@@ -68,7 +81,7 @@ namespace BookStore.Controllers
             }
             catch (ArgumentException ex)
             {
-                ModelState.AddModelError(string.Empty, ex.Message);
+                ViewBag.Errors = new List<string> { ex.Message };
                 return View(dto);
             }
         }
@@ -84,8 +97,21 @@ namespace BookStore.Controllers
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, CategoryDto dto)
         {
-            if (!ModelState.IsValid)
+            var errors = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(dto.Name))
+                errors.Add("Tên danh mục không được để trống");
+            else if (dto.Name.Length > 100)
+                errors.Add("Tên danh mục không được vượt quá 100 ký tự");
+
+            if (dto.Description != null && dto.Description.Length > 255)
+                errors.Add("Mô tả không được vượt quá 255 ký tự");
+
+            if (errors.Count > 0)
+            {
+                ViewBag.Errors = errors;
                 return View(dto);
+            }
 
             try
             {
@@ -96,7 +122,7 @@ namespace BookStore.Controllers
             }
             catch (ArgumentException ex)
             {
-                ModelState.AddModelError(string.Empty, ex.Message);
+                ViewBag.Errors = new List<string> { ex.Message };
                 return View(dto);
             }
             catch (InvalidOperationException ex)

@@ -56,8 +56,18 @@ namespace BookStore.Controllers
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(BookTagDto dto)
         {
-            if (!ModelState.IsValid)
+            var errors = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(dto.Name))
+                errors.Add("Tên tag không được để trống");
+            else if (dto.Name.Length > 99)
+                errors.Add("Tên tag không được vượt quá 99 ký tự");
+
+            if (errors.Count > 0)
+            {
+                ViewBag.Errors = errors;
                 return View(dto);
+            }
 
             try
             {
@@ -68,7 +78,7 @@ namespace BookStore.Controllers
             }
             catch (ArgumentException ex)
             {
-                ModelState.AddModelError(nameof(dto.Name), ex.Message);
+                ViewBag.Errors = new List<string> { ex.Message };
                 return View(dto);
             }
         }
@@ -84,8 +94,18 @@ namespace BookStore.Controllers
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, BookTagDto dto)
         {
-            if (!ModelState.IsValid)
+            var errors = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(dto.Name))
+                errors.Add("Tên tag không được để trống");
+            else if (dto.Name.Length > 99)
+                errors.Add("Tên tag không được vượt quá 99 ký tự");
+
+            if (errors.Count > 0)
+            {
+                ViewBag.Errors = errors;
                 return View(dto);
+            }
 
             try
             {
@@ -96,7 +116,7 @@ namespace BookStore.Controllers
             }
             catch (ArgumentException ex)
             {
-                ModelState.AddModelError(nameof(dto.Name), ex.Message);
+                ViewBag.Errors = new List<string> { ex.Message };
                 return View(dto);
             }
         }

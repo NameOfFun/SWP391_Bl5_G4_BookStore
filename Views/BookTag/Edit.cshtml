@@ -17,13 +17,24 @@
                 <form asp-action="Edit" asp-route-id="@Model.TagId" method="post">
                     @Html.AntiForgeryToken()
 
+                    @if (ViewBag.Errors != null)
+                    {
+                        <div class="alert alert-danger py-2" style="font-size:.85rem">
+                            <ul class="mb-0">
+                                @foreach (var err in (List<string>)ViewBag.Errors)
+                                {
+                                    <li>@err</li>
+                                }
+                            </ul>
+                        </div>
+                    }
+
                     <div class="mb-4">
                         <label asp-for="Name" class="form-label" style="font-size:.875rem;font-weight:500;color:#595959">
                             Tên Tag <span class="text-danger">*</span>
                         </label>
                         <input asp-for="Name" class="form-control" style="border-radius:6px;font-size:.875rem"
                                placeholder="Nhập tên tag (vd: LậpTrình, TiểuThuyết...)" />
-                        <span asp-validation-for="Name" class="text-danger" style="font-size:.8rem"></span>
                         <div class="mt-1" style="font-size:.78rem;color:#8c8c8c">
                             <i class="bi bi-info-circle me-1"></i>Hệ thống sẽ tự động thêm <strong>#</strong> vào trước tên tag. Tối đa 99 ký tự.
                         </div>
@@ -61,7 +72,3 @@
         </div>
     </div>
 </div>
-
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
