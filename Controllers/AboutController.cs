@@ -2,13 +2,23 @@
 using BookStore.Service.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 
 namespace BookStore.Controllers
 {
     [Authorize(Roles = "Staff")]
     public class AboutController : Controller
     {
+        private static readonly Regex TitleAllowedPattern = new(
+            @"^(?=.*[A-Za-z0-9\u00C0-\u024F\u1E00-\u1EFF])[A-Za-z0-9\u00C0-\u024F\u1E00-\u1EFF .,;:!?'""()\-–—…/]+$",
+            RegexOptions.Compiled,
+            TimeSpan.FromMilliseconds(250));
+
+        private const int TitleMaxLength = 500;
+        private const int ContentMaxLength = 200_000;
+
         private readonly IAboutService _aboutService;
 
         public AboutController(IAboutService aboutService)
@@ -60,7 +70,7 @@ namespace BookStore.Controllers
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(AboutDto dto)
         {
-            if (!ModelState.IsValid)
+            if (!ValidateAboutDto(dto))
                 return View(dto);
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -78,7 +88,7 @@ namespace BookStore.Controllers
             }
             catch (ArgumentException ex)
             {
-                ModelState.AddModelError(string.Empty, ex.Message);
+                ViewData["FormError"] = ex.Message;
                 return View(dto);
             }
         }
@@ -104,11 +114,12 @@ namespace BookStore.Controllers
 
             if (id != dto.AboutId)
             {
-                ModelState.AddModelError(string.Empty, "Mã bài viết không khớp. Vui lòng thử lại.");
+                ViewData["FormError"] = "Mã bài viết không khớp. Vui lòng thử lại.";
                 return View(dto);
             }
 
-            if (!ModelState.IsValid) return View(dto);
+            if (!ValidateAboutDto(dto))
+                return View(dto);
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
@@ -129,7 +140,7 @@ namespace BookStore.Controllers
             }
             catch (ArgumentException ex)
             {
-                ModelState.AddModelError(string.Empty, ex.Message);
+                ViewData["FormError"] = ex.Message;
                 return View(dto);
             }
         }
@@ -165,6 +176,33 @@ namespace BookStore.Controllers
             }
 
             return RedirectToAction(nameof(Manage));
+        }
+
+        private bool ValidateAboutDto(AboutDto dto)
+        {
+            dto.Title ??= string.Empty;
+            dto.ContentHtml ??= string.Empty;
+
+            var fieldErrors = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            var title = dto.Title.Trim();
+            if (string.IsNullOrWhiteSpace(title))
+                fieldErrors[nameof(AboutDto.Title)] = "Tiêu đề không được để trống";
+            else if (title.Length > TitleMaxLength)
+                fieldErrors[nameof(AboutDto.Title)] = "Tiêu đề tối đa 500 ký tự";
+            else if (!TitleAllowedPattern.IsMatch(title))
+                fieldErrors[nameof(AboutDto.Title)] = "Tiêu đề chỉ được chứa chữ, số, khoảng trắng và dấu câu cơ bản; phải có ít nhất một chữ/số";
+
+            if (string.IsNullOrWhiteSpace(dto.ContentHtml))
+                fieldErrors[nameof(AboutDto.ContentHtml)] = "Nội dung không được để trống";
+            else if (dto.ContentHtml.Length > ContentMaxLength)
+                fieldErrors[nameof(AboutDto.ContentHtml)] = "Nội dung tối đa 200.000 ký tự";
+
+            if (fieldErrors.Count == 0)
+                return true;
+
+            ViewData["FieldErrors"] = fieldErrors;
+            return false;
         }
     }
 }
