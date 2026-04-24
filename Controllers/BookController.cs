@@ -59,9 +59,20 @@ namespace BookStore.Controllers
 
             if (categoryId.HasValue)
             {
-                var categoryOk = await _context.Categories.AnyAsync(c => c.IsActive && c.CategoryId == categoryId.Value);
-                if (!categoryOk)
+                if (categoryId.Value <= 0)
+                {
+                    TempData["Error"] = $"Mã danh mục với mã {categoryId} không hợp lệ";
                     categoryId = null;
+                }
+                else
+                {
+                    var categoryOk = await _context.Categories.AnyAsync(c => c.IsActive && c.CategoryId == categoryId.Value);
+                    if (!categoryOk)
+                    {
+                        TempData["Error"] = "Danh mục không tồn tại hoặc bị vô hiệu hóa";
+                        categoryId = null;
+                    }
+                }
             }
 
             if (string.IsNullOrWhiteSpace(order) || !ShopOrderWhitelist.Contains(order))
