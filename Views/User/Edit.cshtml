@@ -58,10 +58,19 @@
 
             <div class="mb-3">
                 <label class="field-label">Vai trò <span class="text-danger">*</span></label>
-                <select asp-for="SelectedRole" asp-items="Model.AvailableRoles" class="form-select">
-                    <option value="">-- Chọn vai trò --</option>
-                </select>
-                <span asp-validation-for="SelectedRole" class="text-danger" style="font-size:.775rem"></span>
+                @if (Model.IsCustomer)
+                {
+                    <input type="hidden" asp-for="SelectedRole" />
+                    <input type="text" class="form-control" value="@Model.SelectedRole" disabled />
+                    <div class="field-hint">Không thể thay đổi vai trò của tài khoản Khách hàng.</div>
+                }
+                else
+                {
+                    <select asp-for="SelectedRole" asp-items="Model.AvailableRoles" class="form-select">
+                        <option value="">-- Chọn vai trò --</option>
+                    </select>
+                    <span asp-validation-for="SelectedRole" class="text-danger" style="font-size:.775rem"></span>
+                }
             </div>
 
             <div class="mb-3">

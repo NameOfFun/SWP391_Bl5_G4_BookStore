@@ -19,6 +19,7 @@ public class EditUserDto
     public string Email { get; set; } = null!;
 
     [MaxLength(20, ErrorMessage = "Số điện thoại tối đa 20 ký tự")]
+    [RegularExpression(@"^0\d{9}$", ErrorMessage = "Số điện thoại không hợp lệ (10 chữ số, bắt đầu bằng 0)")]
     public string? PhoneNumber { get; set; }
 
     public bool IsActive { get; set; } = true;
@@ -28,6 +29,8 @@ public class EditUserDto
 
     [ValidateNever]
     public List<SelectListItem> AvailableRoles { get; set; } = new();
+
+    public bool IsCustomer { get; set; }
 
     // Optional password reset
     [MinLength(6, ErrorMessage = "Mật khẩu tối thiểu 6 ký tự")]

@@ -59,15 +59,16 @@ public class UserService : IUserService
             PhoneNumber = user.PhoneNumber,
             IsActive = user.Status,
             SelectedRole = currentRoles.FirstOrDefault() ?? string.Empty,
-            AvailableRoles = availableRoles
+            AvailableRoles = availableRoles,
+            IsCustomer = currentRoles.Contains("Customer")
         };
     }
 
     public async Task<List<SelectListItem>> GetAvailableRolesAsync()
     {
-        // Admin is a system-only role; prevent it from appearing in assignment dropdowns
+        // Admin and Customer are restricted roles; prevent them from appearing in assignment dropdowns
         return await _roleManager.Roles
-            .Where(r => r.Name != "Admin" && r.Status)
+            .Where(r => r.Name != "Admin" && r.Name != "Customer" && r.Status)
             .OrderBy(r => r.Name)
             .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
             .ToListAsync();
@@ -93,6 +94,9 @@ public class UserService : IUserService
 
         if (role.Equals("Admin", StringComparison.OrdinalIgnoreCase))
             throw new ArgumentException("Không thể gán vai trò Admin.");
+
+        if (role.Equals("Customer", StringComparison.OrdinalIgnoreCase))
+            throw new ArgumentException("Không thể gán vai trò Khách hàng.");
 
         if (!await _roleManager.RoleExistsAsync(role))
             throw new ArgumentException($"Vai trò '{role}' không tồn tại.");
@@ -125,6 +129,9 @@ public class UserService : IUserService
         var currentRoles = await _userManager.GetRolesAsync(user);
         if (currentRoles.Contains("Admin"))
             throw new InvalidOperationException("Không thể chỉnh sửa tài khoản Admin.");
+
+        if (currentRoles.Contains("Customer"))
+            dto.SelectedRole = "Customer";
 
         var newRole = (dto.SelectedRole ?? string.Empty).Trim();
 
