@@ -46,23 +46,12 @@
                         <textarea asp-for="Form.ShippingAddress" class="form-control" rows="2"></textarea>
                         <span asp-validation-for="Form.ShippingAddress" class="text-danger"></span>
                     </div>
-                    <div class="form-group">
-                        <label asp-for="Form.DeliveryNote">Ghi chú giao hàng</label>
-                        <textarea asp-for="Form.DeliveryNote" class="form-control" rows="2" placeholder="Ví dụ: gọi trước khi giao, giao giờ hành chính..."></textarea>
-                        <span asp-validation-for="Form.DeliveryNote" class="text-danger"></span>
-                    </div>
-
                     <h4 style="margin-top:24px">Phương thức thanh toán</h4>
                     <div class="form-group">
-                        <label class="radio-inline" style="margin-right:16px">
-                            <input type="radio" asp-for="Form.PaymentMethod" value="COD" />
-                            Thanh toán khi nhận hàng (COD)
-                        </label>
-                        <label class="radio-inline">
-                            <input type="radio" asp-for="Form.PaymentMethod" value="BankTransfer" />
-                            Chuyển khoản ngân hàng
-                        </label>
-                        <span asp-validation-for="Form.PaymentMethod" class="text-danger d-block"></span>
+                        <input type="hidden" asp-for="Form.PaymentMethod" value="COD" />
+                        <p style="margin:0;padding:10px 14px;background:#f9f9f9;border:1px solid #eee;border-radius:4px">
+                            <i class="fa fa-money"></i>&nbsp;Thanh toán khi nhận hàng (COD)
+                        </p>
                     </div>
                 </div>
 

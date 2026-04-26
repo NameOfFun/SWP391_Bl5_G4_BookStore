@@ -1,5 +1,6 @@
 @model IReadOnlyList<BookStore.Dtos.Common.OrderListItemDto>
 @using BookStore.Models
+@using BookStore.Helpers
 @{
     ViewData["Title"] = "Quản Lý Đơn Hàng";
     ViewData["BreadcrumbParent"] = "Quản Lý";
@@ -15,28 +16,22 @@
 @functions {
     string StatusLabel(OrderStatus s) => s switch
     {
-        OrderStatus.Pending => "Chờ xác nhận",
-        OrderStatus.Confirmed => "Đã xác nhận",
+        OrderStatus.Pending    => "Chờ xác nhận",
+        OrderStatus.Confirmed  => "Đã xác nhận",
         OrderStatus.Processing => "Đang xử lý",
-        OrderStatus.Shipped => "Đã giao shipper",
-        OrderStatus.Delivering => "Đang giao",
-        OrderStatus.Delivered => "Đã giao",
-        OrderStatus.Cancelled => "Đã hủy",
-        OrderStatus.DeliveryFailed => "Giao thất bại",
+        OrderStatus.Delivered  => "Đã giao",
+        OrderStatus.Cancelled  => "Đã hủy",
         _ => s.ToString()
     };
 
     (string bg, string fg, string border) StatusStyle(OrderStatus s) => s switch
     {
-        OrderStatus.Pending        => ("#fffbe6", "#faad14", "#ffe58f"),
-        OrderStatus.Confirmed      => ("#e6f4ff", "#1677ff", "#91caff"),
-        OrderStatus.Processing     => ("#f9f0ff", "#722ed1", "#d3adf7"),
-        OrderStatus.Shipped        => ("#e6fffb", "#13c2c2", "#87e8de"),
-        OrderStatus.Delivering     => ("#f0f5ff", "#2f54eb", "#adc6ff"),
-        OrderStatus.Delivered      => ("#f6ffed", "#52c41a", "#b7eb8f"),
-        OrderStatus.Cancelled      => ("#fff2f0", "#ff4d4f", "#ffccc7"),
-        OrderStatus.DeliveryFailed => ("#fff2f0", "#ff4d4f", "#ffccc7"),
-        _                          => ("#fafafa", "#595959", "#d9d9d9")
+        OrderStatus.Pending    => ("#fffbe6", "#faad14", "#ffe58f"),
+        OrderStatus.Confirmed  => ("#e6f4ff", "#1677ff", "#91caff"),
+        OrderStatus.Processing => ("#f9f0ff", "#722ed1", "#d3adf7"),
+        OrderStatus.Delivered  => ("#f6ffed", "#52c41a", "#b7eb8f"),
+        OrderStatus.Cancelled  => ("#fff2f0", "#ff4d4f", "#ffccc7"),
+        _                      => ("#fafafa", "#595959", "#d9d9d9")
     };
 }
 
@@ -170,8 +165,14 @@
                             <td class="text-center">@o.ItemCount</td>
                             <td class="text-end" style="color:#ff7236;font-weight:600">@o.GrandTotal.ToString("N0") đ</td>
                             <td>
-                                <div>@o.PaymentMethod</div>
-                                <div class="text-muted small">@o.PaymentStatus</div>
+                                @if (OrderPaymentStatuses.IsPaid(o.PaymentStatus))
+                                {
+                                    <span style="color:#52c41a;font-size:.8rem;font-weight:500"><i class="bi bi-check-circle me-1"></i>Đã thu tiền</span>
+                                }
+                                else
+                                {
+                                    <span style="color:#faad14;font-size:.8rem"><i class="bi bi-clock me-1"></i>Chờ thu tiền</span>
+                                }
                             </td>
                             <td>
                                 <span class="badge rounded-pill"

@@ -12,11 +12,13 @@ public class OrderController : Controller
 {
     private readonly IOrderService _orderService;
     private readonly IVoucherService _voucherService;
+    private readonly ICartService _cartService;
 
-    public OrderController(IOrderService orderService, IVoucherService voucherService)
+    public OrderController(IOrderService orderService, IVoucherService voucherService, ICartService cartService)
     {
         _orderService = orderService;
         _voucherService = voucherService;
+        _cartService = cartService;
     }
 
     private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
@@ -32,6 +34,10 @@ public class OrderController : Controller
     [Authorize]
     public async Task<IActionResult> Checkout()
     {
+        // Issue 6: cart sync (cleanup inactive/out-of-stock items) called explicitly here,
+        // not hidden inside GetCheckoutAsync.
+        await _cartService.GetCartAsync(UserId);
+
         var vm = await _orderService.GetCheckoutAsync(UserId);
         if (vm.Lines.Count == 0)
         {
@@ -58,7 +64,6 @@ public class OrderController : Controller
             return RedirectToAction("Index", "Cart");
         }
 
-        // Restore discount preview for re-render on ModelState failure
         if (!string.IsNullOrWhiteSpace(form.VoucherCode))
         {
             var (vOk, vDiscount, _) = await _orderService.ApplyVoucherAsync(
@@ -82,7 +87,7 @@ public class OrderController : Controller
             return View(vm);
         }
 
-        TempData["Success"] = $"Đặt hàng thành công! Mã đơn: #{orderId}.";
+        TempData["OrderSuccess"] = $"Đặt hàng thành công! Mã đơn: <strong>#{orderId}</strong>.";
         return RedirectToAction(nameof(Confirmation), new { id = orderId });
     }
 
@@ -99,10 +104,7 @@ public class OrderController : Controller
         return Json(new { ok, discountAmount, message });
     }
 
-    public class ApplyVoucherRequest
-    {
-        public string? Code { get; set; }
-    }
+    public class ApplyVoucherRequest { public string? Code { get; set; } }
 
     // GET /Order/Confirmation/{id}
     [HttpGet]
@@ -127,7 +129,7 @@ public class OrderController : Controller
         return View(list);
     }
 
-    // GET /Order/MyDetail/{id}  (customer xem đơn của chính mình)
+    // GET /Order/MyDetail/{id}
     [HttpGet]
     public async Task<IActionResult> MyDetail(int id)
     {
@@ -144,7 +146,7 @@ public class OrderController : Controller
     //   STAFF / MANAGER / ADMIN — MANAGEMENT
     // ══════════════════════════════════════════════════════════
 
-    // GET /Order/Index?search=&status=&page=
+    // GET /Order/Index
     [HttpGet]
     [Authorize(Roles = "Staff,Manager,Admin")]
     public async Task<IActionResult> Index(string? search, string? status, int page = 1)
@@ -181,7 +183,6 @@ public class OrderController : Controller
         ViewData["Title"] = $"Chi tiết đơn #{id}";
         ViewData["BreadcrumbParent"] = "Quản lý đơn hàng";
         ViewData["BreadcrumbParentUrl"] = Url.Action(nameof(Index));
-        ViewData["Shippers"] = await _orderService.GetActiveShippersAsync();
         return View(detail);
     }
 
@@ -190,12 +191,6 @@ public class OrderController : Controller
     [Authorize(Roles = "Staff,Manager,Admin")]
     public async Task<IActionResult> Confirm(int orderId)
     {
-        if (orderId <= 0)
-        {
-            TempData["Error"] = "Mã đơn hàng không hợp lệ.";
-            return RedirectToAction(nameof(Index));
-        }
-
         var (ok, msg) = await _orderService.ConfirmAsync(orderId);
         TempData[ok ? "Success" : "Error"] = msg;
         return RedirectToAction(nameof(Details), new { id = orderId });
@@ -206,34 +201,17 @@ public class OrderController : Controller
     [Authorize(Roles = "Staff,Manager,Admin")]
     public async Task<IActionResult> MoveToProcessing(int orderId)
     {
-        if (orderId <= 0)
-        {
-            TempData["Error"] = "Mã đơn hàng không hợp lệ.";
-            return RedirectToAction(nameof(Index));
-        }
-
         var (ok, msg) = await _orderService.MoveToProcessingAsync(orderId);
         TempData[ok ? "Success" : "Error"] = msg;
         return RedirectToAction(nameof(Details), new { id = orderId });
     }
 
-    // POST /Order/AssignShipper
+    // POST /Order/MarkDelivered
     [HttpPost, ValidateAntiForgeryToken]
     [Authorize(Roles = "Staff,Manager,Admin")]
-    public async Task<IActionResult> AssignShipper(int orderId, string shipperUserId)
+    public async Task<IActionResult> MarkDelivered(int orderId)
     {
-        if (orderId <= 0)
-        {
-            TempData["Error"] = "Mã đơn hàng không hợp lệ.";
-            return RedirectToAction(nameof(Index));
-        }
-        if (string.IsNullOrWhiteSpace(shipperUserId))
-        {
-            TempData["Error"] = "Vui lòng chọn shipper.";
-            return RedirectToAction(nameof(Details), new { id = orderId });
-        }
-
-        var (ok, msg) = await _orderService.AssignShipperAsync(orderId, shipperUserId);
+        var (ok, msg) = await _orderService.MarkDeliveredAsync(orderId);
         TempData[ok ? "Success" : "Error"] = msg;
         return RedirectToAction(nameof(Details), new { id = orderId });
     }
@@ -243,34 +221,10 @@ public class OrderController : Controller
     [Authorize(Roles = "Staff,Manager,Admin")]
     public async Task<IActionResult> Cancel(int orderId, string? reason)
     {
-        if (orderId <= 0)
-        {
-            TempData["Error"] = "Mã đơn hàng không hợp lệ.";
-            return RedirectToAction(nameof(Index));
-        }
-
-        // Cắt bớt reason ngay từ controller để tránh payload vô lý
-        // (service cũng có clamp nhưng chặn sớm giảm tải).
         if (!string.IsNullOrEmpty(reason) && reason.Length > MaxCancelReasonLength)
             reason = reason[..MaxCancelReasonLength];
 
         var (ok, msg) = await _orderService.CancelAsync(orderId, reason);
-        TempData[ok ? "Success" : "Error"] = msg;
-        return RedirectToAction(nameof(Details), new { id = orderId });
-    }
-
-    // POST /Order/ConfirmBankPayment — xác nhận đã nhận tiền chuyển khoản
-    [HttpPost, ValidateAntiForgeryToken]
-    [Authorize(Roles = "Staff,Manager,Admin")]
-    public async Task<IActionResult> ConfirmBankPayment(int orderId)
-    {
-        if (orderId <= 0)
-        {
-            TempData["Error"] = "Mã đơn hàng không hợp lệ.";
-            return RedirectToAction(nameof(Index));
-        }
-
-        var (ok, msg) = await _orderService.MarkBankPaymentReceivedAsync(orderId);
         TempData[ok ? "Success" : "Error"] = msg;
         return RedirectToAction(nameof(Details), new { id = orderId });
     }

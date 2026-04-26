@@ -15,8 +15,6 @@ public class OrderService : IOrderService
     private readonly IVoucherService _voucherService;
     private readonly ICartService _cartService;
 
-    // Giới hạn độ dài lý do hủy đơn — khớp kích thước cột FailedReason hợp lý
-    // và tránh việc payload quá lớn gây lỗi DbUpdateException.
     private const int MaxCancelReasonLength = 500;
 
     public OrderService(BookStoreDbContext db, UserManager<ApplicationUser> userManager,
@@ -29,11 +27,9 @@ public class OrderService : IOrderService
     }
 
     // ─── Checkout view ────────────────────────────────────────
+    // Issue 6: side effect (cart cleanup) removed — caller is responsible for syncing cart first.
     public async Task<CheckoutViewModel> GetCheckoutAsync(string userId)
     {
-        // Chuẩn hóa giỏ (cắt SL theo tồn, xóa dòng hết hàng) giống trang Giỏ hàng — tránh lệch checkout vs DB.
-        await _cartService.GetCartAsync(userId);
-
         var vm = new CheckoutViewModel();
 
         var cart = await _db.Carts.AsNoTracking().FirstOrDefaultAsync(c => c.UserId == userId);
@@ -63,7 +59,6 @@ public class OrderService : IOrderService
             });
         }
 
-        // Đổ thông tin mặc định từ profile người dùng.
         var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
         if (user != null)
         {
@@ -80,8 +75,6 @@ public class OrderService : IOrderService
     {
         ArgumentNullException.ThrowIfNull(dto);
 
-        // Kiểm tra thêm ở tầng service — controller đã validate ModelState,
-        // nhưng vẫn kiểm tra lại để phòng trường hợp service bị gọi ở chỗ khác.
         if (string.IsNullOrWhiteSpace(dto.ShippingName))
             return (false, "Họ tên người nhận không được để trống.", 0);
         if (string.IsNullOrWhiteSpace(dto.ShippingPhone))
@@ -89,12 +82,12 @@ public class OrderService : IOrderService
         if (string.IsNullOrWhiteSpace(dto.ShippingAddress))
             return (false, "Địa chỉ giao hàng không được để trống.", 0);
 
-        var method = (dto.PaymentMethod ?? "").Trim();
-        if (method != "COD" && method != "BankTransfer")
+        // Issue 3: only COD supported
+        if (!string.Equals((dto.PaymentMethod ?? "").Trim(), "COD", StringComparison.OrdinalIgnoreCase))
             return (false, "Phương thức thanh toán không hợp lệ.", 0);
 
+        // Sync cart to ensure fresh data (removes inactive/out-of-stock items from tracker)
         await _cartService.GetCartAsync(userId);
-        // Tránh entity Book/CartItem còn track từ bước trên gây SaveChanges lệch với DB (ví dụ sau khi trừ kho bằng SQL).
         _db.ChangeTracker.Clear();
 
         var cart = await _db.Carts.FirstOrDefaultAsync(c => c.UserId == userId);
@@ -109,12 +102,11 @@ public class OrderService : IOrderService
         if (items.Count == 0)
             return (false, "Giỏ hàng trống — không thể đặt hàng.", 0);
 
-        // Lọc các dòng hợp lệ và kiểm tra tồn kho
         var validLines = new List<(CartItem Item, Book Book, decimal UnitPrice)>();
         foreach (var item in items)
         {
             if (item.Book == null || !item.Book.IsActive)
-                return (false, $"Một số sách đã ngừng bán — vui lòng quay lại giỏ hàng và kiểm tra.", 0);
+                return (false, "Một số sách đã ngừng bán — vui lòng quay lại giỏ hàng và kiểm tra.", 0);
 
             var stock = item.Book.Stock ?? 0;
             if (stock < item.Quantity)
@@ -171,9 +163,7 @@ public class OrderService : IOrderService
                 ShippingName = dto.ShippingName.Trim(),
                 ShippingPhone = dto.ShippingPhone.Trim(),
                 ShippingAddress = dto.ShippingAddress.Trim(),
-                DeliveryNote = string.IsNullOrWhiteSpace(dto.DeliveryNote) ? null : dto.DeliveryNote.Trim(),
-                PaymentMethod = method,
-                // COD: thu tiền khi giao; BankTransfer: chờ nhân viên xác nhận (MarkBankPaymentReceived).
+                PaymentMethod = "COD",
                 PaymentStatus = OrderPaymentStatuses.Pending
             };
             _db.Orders.Add(order);
@@ -189,22 +179,23 @@ public class OrderService : IOrderService
                     UnitPrice = unitPrice
                 });
             }
-
             await _db.SaveChangesAsync();
 
-            // Trừ kho nguyên tử (tránh race khi hai đơn cùng mua — chỉ trừ nếu đủ tồn tại thời điểm UPDATE).
+            // Issue 2: explicit rollback when stock deduction fails mid-loop
             foreach (var (cartItem, book, _) in validLines)
             {
                 var n = await _db.Database.ExecuteSqlInterpolatedAsync($@"
                     UPDATE Book SET Stock = COALESCE(Stock, 0) - {cartItem.Quantity}
                     WHERE BookId = {book.BookId} AND COALESCE(Stock, 0) >= {cartItem.Quantity}");
                 if (n != 1)
+                {
+                    await TryRollbackAsync(tx);
                     return (false,
                         $"Sách \"{book.Title}\" không đủ tồn kho tại thời điểm đặt hàng (có thể vừa bán hết). Vui lòng làm mới giỏ và thử lại.",
                         0);
+                }
             }
 
-            // Dọn giỏ hàng — gỡ Book khỏi tracker để EF không ghi đè Stock đã cập nhật bằng SQL phía trên.
             foreach (var line in items)
             {
                 if (line.Book != null)
@@ -212,7 +203,6 @@ public class OrderService : IOrderService
             }
 
             _db.CartItems.RemoveRange(items);
-
             await _db.SaveChangesAsync();
             await tx.CommitAsync();
             return (true, null, order.OrderId);
@@ -220,8 +210,7 @@ public class OrderService : IOrderService
         catch (DbUpdateException ex)
         {
             await TryRollbackAsync(tx);
-            var detail = ex.GetBaseException().Message;
-            return (false, $"Không thể tạo đơn hàng: {detail}", 0);
+            return (false, $"Không thể tạo đơn hàng: {ex.GetBaseException().Message}", 0);
         }
         catch (Exception ex)
         {
@@ -233,20 +222,14 @@ public class OrderService : IOrderService
     private static async Task TryRollbackAsync(IDbContextTransaction? tx)
     {
         if (tx == null) return;
-        try
-        {
-            await tx.RollbackAsync();
-        }
-        catch
-        {
-            // Giao dịch có thể đã hủy khi lỗi xảy ra giữa chừng.
-        }
+        try { await tx.RollbackAsync(); }
+        catch { }
     }
 
     // ─── My orders ────────────────────────────────────────────
     public async Task<IReadOnlyList<OrderListItemDto>> GetMyOrdersAsync(string userId)
     {
-        var orders = await _db.Orders
+        return await _db.Orders
             .AsNoTracking()
             .Where(o => o.UserId == userId)
             .OrderByDescending(o => o.OrderDate)
@@ -259,12 +242,9 @@ public class OrderService : IOrderService
                 ItemCount = o.Details.Sum(d => d.Quantity),
                 GrandTotal = o.GrandTotal,
                 Status = o.Status,
-                PaymentMethod = o.PaymentMethod,
                 PaymentStatus = o.PaymentStatus
             })
             .ToListAsync();
-
-        return orders;
     }
 
     // ─── Detail ───────────────────────────────────────────────
@@ -274,9 +254,7 @@ public class OrderService : IOrderService
 
         var order = await _db.Orders
             .AsNoTracking()
-            .Include(o => o.Details)
-                .ThenInclude(d => d.Book)
-            .Include(o => o.Shipper)
+            .Include(o => o.Details).ThenInclude(d => d.Book)
             .Include(o => o.Voucher)
             .FirstOrDefaultAsync(o => o.OrderId == orderId);
 
@@ -299,18 +277,11 @@ public class OrderService : IOrderService
             ShippingName = order.ShippingName ?? "",
             ShippingPhone = order.ShippingPhone ?? "",
             ShippingAddress = order.ShippingAddress ?? "",
-            DeliveryNote = order.DeliveryNote,
-            PaymentMethod = order.PaymentMethod,
             PaymentStatus = order.PaymentStatus,
             VoucherCode = order.Voucher?.Code,
             SubTotal = order.SubTotal,
             DiscountAmount = order.DiscountAmount,
             GrandTotal = order.GrandTotal,
-            ShipperId = order.ShipperId,
-            ShipperName = order.Shipper?.Name ?? order.Shipper?.UserName,
-            DeliveredAt = order.DeliveredAt,
-            FailedReason = order.FailedReason,
-            FailedNote = order.FailedNote,
             Items = order.Details.Select(d => new OrderDetailLineDto
             {
                 BookId = d.BookId,
@@ -344,7 +315,6 @@ public class OrderService : IOrderService
         }
 
         var totalCount = await q.CountAsync();
-
         var items = await q
             .OrderByDescending(o => o.OrderDate)
             .Skip((page - 1) * pageSize)
@@ -358,7 +328,6 @@ public class OrderService : IOrderService
                 ItemCount = o.Details.Sum(d => d.Quantity),
                 GrandTotal = o.GrandTotal,
                 Status = o.Status,
-                PaymentMethod = o.PaymentMethod,
                 PaymentStatus = o.PaymentStatus
             })
             .ToListAsync();
@@ -369,8 +338,6 @@ public class OrderService : IOrderService
     // ─── State transitions ────────────────────────────────────
     public async Task<(bool Ok, string Message)> ConfirmAsync(int orderId)
     {
-        if (orderId <= 0) return (false, "Mã đơn hàng không hợp lệ.");
-
         var order = await _db.Orders.FirstOrDefaultAsync(o => o.OrderId == orderId);
         if (order == null) return (false, "Không tìm thấy đơn hàng.");
         if (order.Status != OrderStatus.Pending)
@@ -383,8 +350,6 @@ public class OrderService : IOrderService
 
     public async Task<(bool Ok, string Message)> MoveToProcessingAsync(int orderId)
     {
-        if (orderId <= 0) return (false, "Mã đơn hàng không hợp lệ.");
-
         var order = await _db.Orders.FirstOrDefaultAsync(o => o.OrderId == orderId);
         if (order == null) return (false, "Không tìm thấy đơn hàng.");
         if (order.Status != OrderStatus.Confirmed)
@@ -395,40 +360,25 @@ public class OrderService : IOrderService
         return (true, $"Đơn #{orderId} đã chuyển sang Đang xử lý.");
     }
 
-    public async Task<(bool Ok, string Message)> AssignShipperAsync(int orderId, string shipperUserId)
+    // Issue 3: auto-mark payment as Paid (COD — cash collected on delivery)
+    public async Task<(bool Ok, string Message)> MarkDeliveredAsync(int orderId)
     {
-        if (orderId <= 0) return (false, "Mã đơn hàng không hợp lệ.");
-        if (string.IsNullOrWhiteSpace(shipperUserId))
-            return (false, "Vui lòng chọn shipper.");
-
         var order = await _db.Orders.FirstOrDefaultAsync(o => o.OrderId == orderId);
         if (order == null) return (false, "Không tìm thấy đơn hàng.");
         if (order.Status != OrderStatus.Processing)
-            return (false, $"Chỉ gán shipper khi đơn ở trạng thái Đang xử lý (hiện: {Translate(order.Status)}).");
+            return (false, $"Chỉ đánh dấu đã giao khi đơn đang xử lý (hiện: {Translate(order.Status)}).");
 
-        var shipper = await _userManager.FindByIdAsync(shipperUserId);
-        if (shipper == null)
-            return (false, "Không tìm thấy shipper được chọn.");
-        if (!await _userManager.IsInRoleAsync(shipper, "Shipper"))
-            return (false, "Người dùng được chọn không phải là shipper.");
-        // Kiểm tra lại ở thời điểm gán để tránh dùng shipper đã bị vô hiệu hóa
-        // sau khi dropdown đã render.
-        if (!shipper.Status)
-            return (false, "Shipper này đã bị vô hiệu hóa — vui lòng chọn shipper khác.");
-
-        order.ShipperId = shipperUserId;
-        order.Status = OrderStatus.Shipped;
+        order.Status = OrderStatus.Delivered;
+        order.PaymentStatus = OrderPaymentStatuses.Paid;
         await _db.SaveChangesAsync();
-        return (true, $"Đã giao đơn #{orderId} cho shipper {shipper.Name ?? shipper.UserName}.");
+        return (true, $"Đơn #{orderId} đã giao thành công và ghi nhận thu tiền.");
     }
 
+    // Issue 5: restore cart items after cancellation
     public async Task<(bool Ok, string Message)> CancelAsync(int orderId, string? reason)
     {
-        if (orderId <= 0) return (false, "Mã đơn hàng không hợp lệ.");
-
         var order = await _db.Orders
-            .Include(o => o.Details)
-                .ThenInclude(d => d.Book)
+            .Include(o => o.Details).ThenInclude(d => d.Book)
             .FirstOrDefaultAsync(o => o.OrderId == orderId);
 
         if (order == null) return (false, "Không tìm thấy đơn hàng.");
@@ -447,61 +397,25 @@ public class OrderService : IOrderService
                 detail.Book.Stock = (detail.Book.Stock ?? 0) + detail.Quantity;
         }
 
-        var cleanReason = (reason ?? string.Empty).Trim();
-        if (cleanReason.Length > MaxCancelReasonLength)
-            cleanReason = cleanReason[..MaxCancelReasonLength];
-
         // Hoàn lượt dùng voucher
         if (order.VoucherId.HasValue)
         {
-            var voucher = await _db.Vouchers
-                .FirstOrDefaultAsync(v => v.VoucherId == order.VoucherId.Value);
+            var voucher = await _db.Vouchers.FirstOrDefaultAsync(v => v.VoucherId == order.VoucherId.Value);
             if (voucher != null && voucher.TimesUsed > 0)
                 voucher.TimesUsed--;
         }
 
         order.Status = OrderStatus.Cancelled;
-        order.FailedReason = string.IsNullOrWhiteSpace(cleanReason) ? "Đơn bị hủy bởi quản trị." : cleanReason;
         await _db.SaveChangesAsync();
-        return (true, $"Đã hủy đơn #{orderId} và hoàn kho.");
-    }
 
-    public async Task<(bool Ok, string Message)> MarkBankPaymentReceivedAsync(int orderId)
-    {
-        if (orderId <= 0) return (false, "Mã đơn hàng không hợp lệ.");
+        // Khôi phục giỏ hàng (bỏ qua sách đã ngừng bán hoặc hết hàng)
+        foreach (var detail in order.Details)
+        {
+            if (detail.Book != null && detail.Book.IsActive && (detail.Book.Stock ?? 0) > 0)
+                await _cartService.AddItemAsync(order.UserId, detail.BookId, detail.Quantity);
+        }
 
-        var order = await _db.Orders.FirstOrDefaultAsync(o => o.OrderId == orderId);
-        if (order == null) return (false, "Không tìm thấy đơn hàng.");
-
-        if (!string.Equals((order.PaymentMethod ?? "").Trim(), "BankTransfer", StringComparison.OrdinalIgnoreCase))
-            return (false, "Chỉ có thể xác nhận thanh toán cho đơn chuyển khoản.");
-
-        if (OrderPaymentStatuses.IsPaid(order.PaymentStatus))
-            return (false, "Đơn đã được ghi nhận thanh toán.");
-
-        if (!OrderPaymentStatuses.IsAwaitingPayment(order.PaymentStatus))
-            return (false, "Trạng thái thanh toán hiện tại không cho phép xác nhận.");
-
-        if (order.Status == OrderStatus.Cancelled)
-            return (false, "Không thể cập nhật thanh toán cho đơn đã hủy.");
-
-        order.PaymentStatus = OrderPaymentStatuses.Paid;
-        await _db.SaveChangesAsync();
-        return (true, $"Đã xác nhận khách đã chuyển khoản (đơn #{orderId}).");
-    }
-
-    public async Task<IReadOnlyList<ShipperOptionDto>> GetActiveShippersAsync()
-    {
-        var shippers = await _userManager.GetUsersInRoleAsync("Shipper");
-        return shippers
-            .Where(u => u.Status)
-            .OrderBy(u => u.Name ?? u.UserName)
-            .Select(u => new ShipperOptionDto
-            {
-                UserId = u.Id,
-                Name = u.Name ?? u.UserName ?? u.Email ?? u.Id
-            })
-            .ToList();
+        return (true, $"Đã hủy đơn #{orderId}, hoàn kho và khôi phục giỏ hàng cho khách.");
     }
 
     // ─── Apply voucher (AJAX preview) ────────────────────────
@@ -509,8 +423,7 @@ public class OrderService : IOrderService
         string userId, string code)
     {
         var cart = await _db.Carts.AsNoTracking().FirstOrDefaultAsync(c => c.UserId == userId);
-        if (cart == null)
-            return (false, 0, "Giỏ hàng trống.");
+        if (cart == null) return (false, 0, "Giỏ hàng trống.");
 
         var items = await _db.CartItems
             .AsNoTracking()
@@ -525,18 +438,15 @@ public class OrderService : IOrderService
             if (book == null || !book.IsActive) continue;
             var stock = book.Stock ?? 0;
             if (stock < 1) continue;
-            var qty = Math.Min(item.Quantity, stock);
-            subTotal += PricingHelper.GetEffectiveUnitPrice(book) * qty;
+            subTotal += PricingHelper.GetEffectiveUnitPrice(book) * Math.Min(item.Quantity, stock);
         }
 
-        if (subTotal <= 0)
-            return (false, 0, "Giỏ hàng trống.");
+        if (subTotal <= 0) return (false, 0, "Giỏ hàng trống.");
 
         try
         {
             var (_, discountAmount) = await _voucherService.ValidateForCheckoutAsync(code, subTotal);
-            return (true, discountAmount,
-                $"Áp dụng mã {code} thành công! Giảm {discountAmount:N0}đ.");
+            return (true, discountAmount, $"Áp dụng mã {code} thành công! Giảm {discountAmount:N0}đ.");
         }
         catch (ArgumentException ex)
         {
@@ -546,14 +456,11 @@ public class OrderService : IOrderService
 
     private static string Translate(OrderStatus s) => s switch
     {
-        OrderStatus.Pending => "Chờ xác nhận",
-        OrderStatus.Confirmed => "Đã xác nhận",
+        OrderStatus.Pending    => "Chờ xác nhận",
+        OrderStatus.Confirmed  => "Đã xác nhận",
         OrderStatus.Processing => "Đang xử lý",
-        OrderStatus.Shipped => "Đã giao shipper",
-        OrderStatus.Delivering => "Đang giao",
-        OrderStatus.Delivered => "Đã giao",
-        OrderStatus.Cancelled => "Đã hủy",
-        OrderStatus.DeliveryFailed => "Giao thất bại",
+        OrderStatus.Delivered  => "Đã giao",
+        OrderStatus.Cancelled  => "Đã hủy",
         _ => s.ToString()
     };
 }

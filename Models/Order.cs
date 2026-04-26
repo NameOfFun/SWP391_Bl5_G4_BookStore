@@ -9,8 +9,6 @@ public class Order
 
     public string UserId { get; set; } = null!;
 
-    public string? ShipperId { get; set; }
-
     public DateTime OrderDate { get; set; }
 
     public OrderStatus Status { get; set; }
@@ -32,23 +30,6 @@ public class Order
     public string? PaymentMethod { get; set; }
 
     public string? PaymentStatus { get; set; }
-
-    /// <summary>Ghi chú giao hàng từ khách hàng (ví dụ: "Gọi trước 30p", "Để ở bảo vệ").</summary>
-    public string? DeliveryNote { get; set; }
-
-    /// <summary>Thời gian giao hàng thành công (auto).</summary>
-    public DateTime? DeliveredAt { get; set; }
-
-    /// <summary>Lý do giao hàng thất bại.</summary>
-    public string? FailedReason { get; set; }
-
-    /// <summary>Ghi chú thêm khi giao hàng thất bại hoặc thành công.</summary>
-    public string? FailedNote { get; set; }
-
-    /// <summary>Ảnh minh chứng giao hàng (POD).</summary>
-    public string? ProofOfDeliveryImage { get; set; }
-
-    public virtual ApplicationUser? Shipper { get; set; }
 
     public virtual Voucher? Voucher { get; set; }
 
