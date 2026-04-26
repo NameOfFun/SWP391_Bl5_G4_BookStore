@@ -7,7 +7,7 @@ public static class SeedData
 {
     public static void SeedRolesAndUsers(RoleManager<ApplicationRole> roleManager, UserManager<ApplicationUser> userManager)
     {
-        string[] roleNames = ["Customer", "Admin", "Staff", "Manager", "Shipper"];
+        string[] roleNames = ["Customer", "Admin", "Staff", "Manager"];
         // Note: Changing a user's password here will not take effect if the user already exists in the database.
         // To apply credential changes, either drop the users table data or change the seed email so it is treated as a new user.
         var seedUsers = new[]
@@ -15,8 +15,7 @@ public static class SeedData
             (Id: "d781ad2b-1123-4f24-9b88-12c5b74681f0", UserName: "admin",    Email: "admin@test.com",    Name: "Administrator", Password: "Admin@123",    Role: "Admin"),
             (Id: "e781ad2b-1123-4f24-9b88-12c5b74681f1", UserName: "manager",  Email: "manager@test.com",  Name: "Manager",       Password: "Manager@123",  Role: "Manager"),
             (Id: "f781ad2b-1123-4f24-9b88-12c5b74681f2", UserName: "staff",    Email: "staff@test.com",    Name: "Staff",         Password: "Staff@123",    Role: "Staff"),
-            (Id: ShipperSeedData.CUSTOMER_ID,           UserName: "customer", Email: "customer@test.com", Name: "Customer",      Password: "Customer@123", Role: "Customer"),
-            (Id: ShipperSeedData.SHIPPER_ID,            UserName: "shipper",  Email: "shipper@test.com",  Name: "Shipper",       Password: "Shipper@123",  Role: "Shipper"),
+            (Id: "3781ad2b-1123-4f24-9b88-12c5b74681f9", UserName: "customer", Email: "customer@test.com", Name: "Customer",      Password: "Customer@123", Role: "Customer"),
         };
 
         // Seed roles first

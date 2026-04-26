@@ -9,28 +9,32 @@
 @functions {
     string StatusLabel(OrderStatus s) => s switch
     {
-        OrderStatus.Pending => "Chờ xác nhận",
-        OrderStatus.Confirmed => "Đã xác nhận",
+        OrderStatus.Pending    => "Chờ xác nhận",
+        OrderStatus.Confirmed  => "Đã xác nhận",
         OrderStatus.Processing => "Đang xử lý",
-        OrderStatus.Shipped => "Đã giao shipper",
-        OrderStatus.Delivering => "Đang giao",
-        OrderStatus.Delivered => "Đã giao",
-        OrderStatus.Cancelled => "Đã hủy",
-        OrderStatus.DeliveryFailed => "Giao thất bại",
+        OrderStatus.Delivered  => "Đã giao",
+        OrderStatus.Cancelled  => "Đã hủy",
         _ => s.ToString()
     };
 
     string StatusColor(OrderStatus s) => s switch
     {
-        OrderStatus.Pending => "#faad14",
-        OrderStatus.Confirmed => "#1677ff",
+        OrderStatus.Pending    => "#faad14",
+        OrderStatus.Confirmed  => "#1677ff",
         OrderStatus.Processing => "#722ed1",
-        OrderStatus.Shipped => "#13c2c2",
-        OrderStatus.Delivering => "#2f54eb",
-        OrderStatus.Delivered => "#52c41a",
-        OrderStatus.Cancelled => "#ff4d4f",
-        OrderStatus.DeliveryFailed => "#ff4d4f",
+        OrderStatus.Delivered  => "#52c41a",
+        OrderStatus.Cancelled  => "#ff4d4f",
         _ => "#8c8c8c"
+    };
+
+    string StatusHint(OrderStatus s) => s switch
+    {
+        OrderStatus.Pending    => "Đang chờ nhân viên xác nhận đơn",
+        OrderStatus.Confirmed  => "Đơn đã xác nhận, đang chuẩn bị hàng",
+        OrderStatus.Processing => "Đang đóng gói, sắp giao đến bạn",
+        OrderStatus.Delivered  => "Đã giao thành công — thanh toán khi nhận",
+        OrderStatus.Cancelled  => "Đơn đã bị hủy, kho được hoàn trả",
+        _ => ""
     };
 }
 
@@ -90,6 +94,10 @@
                                     <span style="display:inline-block;padding:3px 10px;border-radius:10px;background:@StatusColor(o.Status);color:#fff;font-size:12px">
                                         @StatusLabel(o.Status)
                                     </span>
+                                    @if (!string.IsNullOrEmpty(StatusHint(o.Status)))
+                                    {
+                                        <div class="text-muted" style="font-size:11px;margin-top:3px">@StatusHint(o.Status)</div>
+                                    }
                                 </td>
                                 <td>
                                     <a asp-action="MyDetail" asp-route-id="@o.OrderId" class="btn btn-xs btn-default">Chi tiết</a>

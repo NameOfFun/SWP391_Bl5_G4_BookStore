@@ -35,8 +35,7 @@ namespace BookStore
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<IHomeSliderService, HomeSliderService>();
             builder.Services.AddScoped<IBookTagService, BookTagService>();
-            builder.Services.AddScoped<IShipperService, ShipperService>();
-            builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IRoleService, RoleService>();
             builder.Services.AddScoped<ICartService, CartService>();
             builder.Services.AddScoped<IEmailService, EmailService>();

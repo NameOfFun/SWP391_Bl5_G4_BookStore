@@ -203,9 +203,7 @@ public partial class BookStoreDbContext : IdentityDbContext<ApplicationUser, App
             entity.Property(e => e.ShippingAddress).HasMaxLength(500);
             entity.Property(e => e.PaymentMethod).HasMaxLength(50);
             entity.Property(e => e.PaymentStatus).HasMaxLength(50);
-            entity.Property(e => e.DeliveryNote).HasMaxLength(500);
             entity.HasOne<ApplicationUser>().WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Restrict);
-            entity.HasOne(e => e.Shipper).WithMany().HasForeignKey(e => e.ShipperId).IsRequired(false).OnDelete(DeleteBehavior.SetNull);
             entity.HasOne(e => e.Voucher).WithMany(v => v.Orders).HasForeignKey(e => e.VoucherId).OnDelete(DeleteBehavior.SetNull);
         });
 
@@ -377,7 +375,6 @@ public partial class BookStoreDbContext : IdentityDbContext<ApplicationUser, App
         });
 
         OnModelCreatingPartial(modelBuilder);
-        ShipperSeedData.Seed(modelBuilder);
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

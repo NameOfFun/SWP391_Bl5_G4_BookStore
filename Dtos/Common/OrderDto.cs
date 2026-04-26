@@ -12,9 +12,6 @@ public class CheckoutDto
 
     [Required(ErrorMessage = "Số điện thoại không được để trống")]
     [MaxLength(15, ErrorMessage = "Số điện thoại không được vượt quá 15 ký tự")]
-    // Chấp nhận các định dạng số Việt Nam:
-    //  - Bắt đầu bằng 0 theo sau 9–10 chữ số (tổng 10–11 số)
-    //  - Hoặc bắt đầu bằng +84 / 84 theo sau 9–10 chữ số
     [RegularExpression(@"^(0\d{9,10}|(\+?84)\d{9,10})$", ErrorMessage = "Số điện thoại không hợp lệ (ví dụ: 0987654321 hoặc +84987654321)")]
     public string ShippingPhone { get; set; } = string.Empty;
 
@@ -22,13 +19,7 @@ public class CheckoutDto
     [MaxLength(500, ErrorMessage = "Địa chỉ không được vượt quá 500 ký tự")]
     public string ShippingAddress { get; set; } = string.Empty;
 
-    [MaxLength(500, ErrorMessage = "Ghi chú không được vượt quá 500 ký tự")]
-    public string? DeliveryNote { get; set; }
-
-    /// <summary>"COD" hoặc "BankTransfer" (mở rộng sau).</summary>
-    [Required(ErrorMessage = "Vui lòng chọn phương thức thanh toán")]
     [MaxLength(50)]
-    [RegularExpression(@"^(COD|BankTransfer)$", ErrorMessage = "Phương thức thanh toán không hợp lệ")]
     public string PaymentMethod { get; set; } = "COD";
 
     [MaxLength(50)]
@@ -91,7 +82,6 @@ public class OrderDetailDto
     public string ShippingName { get; set; } = "";
     public string ShippingPhone { get; set; } = "";
     public string ShippingAddress { get; set; } = "";
-    public string? DeliveryNote { get; set; }
 
     public string? PaymentMethod { get; set; }
     public string? PaymentStatus { get; set; }
@@ -101,18 +91,5 @@ public class OrderDetailDto
     public decimal DiscountAmount { get; set; }
     public decimal GrandTotal { get; set; }
 
-    public string? ShipperId { get; set; }
-    public string? ShipperName { get; set; }
-
-    public DateTime? DeliveredAt { get; set; }
-    public string? FailedReason { get; set; }
-    public string? FailedNote { get; set; }
-
     public List<OrderDetailLineDto> Items { get; set; } = new();
-}
-
-public class ShipperOptionDto
-{
-    public string UserId { get; set; } = "";
-    public string Name { get; set; } = "";
 }

@@ -9,15 +9,32 @@
 @functions {
     string StatusLabel(OrderStatus s) => s switch
     {
-        OrderStatus.Pending => "Chờ xác nhận",
-        OrderStatus.Confirmed => "Đã xác nhận",
+        OrderStatus.Pending    => "Chờ xác nhận",
+        OrderStatus.Confirmed  => "Đã xác nhận",
         OrderStatus.Processing => "Đang xử lý",
-        OrderStatus.Shipped => "Đã giao shipper",
-        OrderStatus.Delivering => "Đang giao",
-        OrderStatus.Delivered => "Đã giao",
-        OrderStatus.Cancelled => "Đã hủy",
-        OrderStatus.DeliveryFailed => "Giao thất bại",
+        OrderStatus.Delivered  => "Đã giao",
+        OrderStatus.Cancelled  => "Đã hủy",
         _ => s.ToString()
+    };
+
+    string StatusHint(OrderStatus s) => s switch
+    {
+        OrderStatus.Pending    => "Đang chờ nhân viên xác nhận đơn",
+        OrderStatus.Confirmed  => "Đơn đã xác nhận, đang chuẩn bị hàng",
+        OrderStatus.Processing => "Đang đóng gói, sắp giao đến bạn",
+        OrderStatus.Delivered  => "Đã giao thành công — thanh toán khi nhận",
+        OrderStatus.Cancelled  => "Đơn đã bị hủy, kho được hoàn trả",
+        _ => ""
+    };
+
+    string StatusColor(OrderStatus s) => s switch
+    {
+        OrderStatus.Pending    => "#faad14",
+        OrderStatus.Confirmed  => "#1677ff",
+        OrderStatus.Processing => "#722ed1",
+        OrderStatus.Delivered  => "#52c41a",
+        OrderStatus.Cancelled  => "#ff4d4f",
+        _ => "#8c8c8c"
     };
 }
 
@@ -40,6 +57,14 @@
 
 <div id="content" class="site-content">
     <div class="container" style="padding-bottom:48px">
+        <div style="margin-top:16px;padding:12px 16px;border-left:4px solid @StatusColor(Model.Status);background:#fafafa;border-radius:0 6px 6px 0;font-size:14px;color:#595959">
+            <strong style="color:@StatusColor(Model.Status)">@StatusLabel(Model.Status)</strong>
+            @if (!string.IsNullOrEmpty(StatusHint(Model.Status)))
+            {
+                <span style="margin-left:8px">— @StatusHint(Model.Status)</span>
+            }
+        </div>
+
         <div class="row" style="margin-top:16px">
             <div class="col-md-7">
                 <h4>Giao hàng</h4>
@@ -47,22 +72,6 @@
                     <tr><th style="width:160px">Người nhận</th><td>@Model.ShippingName</td></tr>
                     <tr><th>Số điện thoại</th><td>@Model.ShippingPhone</td></tr>
                     <tr><th>Địa chỉ</th><td>@Model.ShippingAddress</td></tr>
-                    @if (!string.IsNullOrEmpty(Model.DeliveryNote))
-                    {
-                        <tr><th>Ghi chú</th><td>@Model.DeliveryNote</td></tr>
-                    }
-                    @if (!string.IsNullOrEmpty(Model.ShipperName))
-                    {
-                        <tr><th>Shipper</th><td>@Model.ShipperName</td></tr>
-                    }
-                    @if (Model.DeliveredAt.HasValue)
-                    {
-                        <tr><th>Giao lúc</th><td>@Model.DeliveredAt.Value.ToString("dd/MM/yyyy HH:mm")</td></tr>
-                    }
-                    @if (!string.IsNullOrEmpty(Model.FailedReason))
-                    {
-                        <tr><th>Lý do lỗi</th><td class="text-danger">@Model.FailedReason</td></tr>
-                    }
                 </table>
             </div>
             <div class="col-md-5">

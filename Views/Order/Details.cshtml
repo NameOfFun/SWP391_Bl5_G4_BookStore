@@ -1,37 +1,29 @@
 @model BookStore.Dtos.Common.OrderDetailDto
 @using BookStore.Models
-@using BookStore.Dtos.Common
 @using BookStore.Helpers
 @{
     ViewData["Title"] = $"Đơn #{Model.OrderId}";
-    var shippers = (ViewData["Shippers"] as IReadOnlyList<ShipperOptionDto>) ?? new List<ShipperOptionDto>();
 }
 
 @functions {
     string StatusLabel(OrderStatus s) => s switch
     {
-        OrderStatus.Pending => "Chờ xác nhận",
-        OrderStatus.Confirmed => "Đã xác nhận",
+        OrderStatus.Pending    => "Chờ xác nhận",
+        OrderStatus.Confirmed  => "Đã xác nhận",
         OrderStatus.Processing => "Đang xử lý",
-        OrderStatus.Shipped => "Đã giao shipper",
-        OrderStatus.Delivering => "Đang giao",
-        OrderStatus.Delivered => "Đã giao",
-        OrderStatus.Cancelled => "Đã hủy",
-        OrderStatus.DeliveryFailed => "Giao thất bại",
+        OrderStatus.Delivered  => "Đã giao",
+        OrderStatus.Cancelled  => "Đã hủy",
         _ => s.ToString()
     };
 
     (string bg, string fg, string border) StatusStyle(OrderStatus s) => s switch
     {
-        OrderStatus.Pending        => ("#fffbe6", "#faad14", "#ffe58f"),
-        OrderStatus.Confirmed      => ("#e6f4ff", "#1677ff", "#91caff"),
-        OrderStatus.Processing     => ("#f9f0ff", "#722ed1", "#d3adf7"),
-        OrderStatus.Shipped        => ("#e6fffb", "#13c2c2", "#87e8de"),
-        OrderStatus.Delivering     => ("#f0f5ff", "#2f54eb", "#adc6ff"),
-        OrderStatus.Delivered      => ("#f6ffed", "#52c41a", "#b7eb8f"),
-        OrderStatus.Cancelled      => ("#fff2f0", "#ff4d4f", "#ffccc7"),
-        OrderStatus.DeliveryFailed => ("#fff2f0", "#ff4d4f", "#ffccc7"),
-        _                          => ("#fafafa", "#595959", "#d9d9d9")
+        OrderStatus.Pending    => ("#fffbe6", "#faad14", "#ffe58f"),
+        OrderStatus.Confirmed  => ("#e6f4ff", "#1677ff", "#91caff"),
+        OrderStatus.Processing => ("#f9f0ff", "#722ed1", "#d3adf7"),
+        OrderStatus.Delivered  => ("#f6ffed", "#52c41a", "#b7eb8f"),
+        OrderStatus.Cancelled  => ("#fff2f0", "#ff4d4f", "#ffccc7"),
+        _                      => ("#fafafa", "#595959", "#d9d9d9")
     };
 }
 
@@ -39,13 +31,10 @@
     var st = StatusStyle(Model.Status);
     bool canConfirm = Model.Status == OrderStatus.Pending;
     bool canProcess = Model.Status == OrderStatus.Confirmed;
-    bool canAssign  = Model.Status == OrderStatus.Processing;
+    bool canDeliver = Model.Status == OrderStatus.Processing;
     bool canCancel  = Model.Status == OrderStatus.Pending
                    || Model.Status == OrderStatus.Confirmed
                    || Model.Status == OrderStatus.Processing;
-    bool canMarkBankPaid = string.Equals(Model.PaymentMethod, "BankTransfer", StringComparison.OrdinalIgnoreCase)
-                           && OrderPaymentStatuses.IsAwaitingPayment(Model.PaymentStatus)
-                           && Model.Status != OrderStatus.Cancelled;
 }
 
 <div class="d-flex align-items-center justify-content-between mb-4">
@@ -89,38 +78,8 @@
                     <dt class="col-sm-3 text-muted fw-500">Địa chỉ</dt>
                     <dd class="col-sm-9">@Model.ShippingAddress</dd>
 
-                    @if (!string.IsNullOrEmpty(Model.DeliveryNote))
-                    {
-                        <dt class="col-sm-3 text-muted fw-500">Ghi chú</dt>
-                        <dd class="col-sm-9">@Model.DeliveryNote</dd>
-                    }
-
                     <dt class="col-sm-3 text-muted fw-500">Email KH</dt>
                     <dd class="col-sm-9">@Model.CustomerEmail</dd>
-
-                    @if (!string.IsNullOrEmpty(Model.ShipperName))
-                    {
-                        <dt class="col-sm-3 text-muted fw-500">Shipper</dt>
-                        <dd class="col-sm-9"><i class="bi bi-truck me-1"></i>@Model.ShipperName</dd>
-                    }
-
-                    @if (Model.DeliveredAt.HasValue)
-                    {
-                        <dt class="col-sm-3 text-muted fw-500">Giao lúc</dt>
-                        <dd class="col-sm-9">@Model.DeliveredAt.Value.ToString("dd/MM/yyyy HH:mm")</dd>
-                    }
-
-                    @if (!string.IsNullOrEmpty(Model.FailedReason))
-                    {
-                        <dt class="col-sm-3 text-muted fw-500">Lý do lỗi</dt>
-                        <dd class="col-sm-9 text-danger">@Model.FailedReason</dd>
-                    }
-
-                    @if (!string.IsNullOrEmpty(Model.FailedNote))
-                    {
-                        <dt class="col-sm-3 text-muted fw-500">Ghi chú lỗi</dt>
-                        <dd class="col-sm-9">@Model.FailedNote</dd>
-                    }
                 </dl>
             </div>
         </div>
@@ -182,25 +141,19 @@
                 <h5 class="fw-600 mb-3" style="font-size:1rem"><i class="bi bi-wallet2 me-1"></i>Thanh toán</h5>
                 <dl class="row mb-0" style="font-size:.9rem">
                     <dt class="col-sm-5 text-muted fw-500">Phương thức</dt>
-                    <dd class="col-sm-7">@Model.PaymentMethod</dd>
+                    <dd class="col-sm-7">Tiền mặt khi nhận hàng (COD)</dd>
                     <dt class="col-sm-5 text-muted fw-500">Trạng thái</dt>
                     <dd class="col-sm-7">
-                        @(OrderPaymentStatuses.IsPaid(Model.PaymentStatus) ? "Đã thanh toán"
-                            : OrderPaymentStatuses.IsAwaitingPayment(Model.PaymentStatus) ? "Chưa thanh toán"
-                            : Model.PaymentStatus ?? "—")
+                        @if (OrderPaymentStatuses.IsPaid(Model.PaymentStatus))
+                        {
+                            <span style="color:#52c41a;font-weight:500"><i class="bi bi-check-circle me-1"></i>Đã thu tiền</span>
+                        }
+                        else
+                        {
+                            <span style="color:#faad14"><i class="bi bi-clock me-1"></i>Chờ thu tiền khi giao</span>
+                        }
                     </dd>
                 </dl>
-                @if (canMarkBankPaid)
-                {
-                    <form asp-action="ConfirmBankPayment" method="post" class="mt-2"
-                          onsubmit="return confirm('Xác nhận đã nhận đủ tiền chuyển khoản cho đơn #@Model.OrderId?');">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="orderId" value="@Model.OrderId" />
-                        <button type="submit" class="btn btn-success w-100" style="border-radius:6px;font-size:.875rem">
-                            <i class="bi bi-bank me-1"></i>Xác nhận đã nhận chuyển khoản
-                        </button>
-                    </form>
-                }
             </div>
         </div>
 
@@ -230,28 +183,15 @@
                     </button>
                 </form>
 
-                <!-- Gán shipper: Processing → Shipped -->
-                <form asp-action="AssignShipper" method="post" class="mb-2">
+                <!-- Đánh dấu đã giao: Processing → Delivered -->
+                <form asp-action="MarkDelivered" method="post" class="mb-2"
+                      onsubmit="return confirm('Đánh dấu đơn #@Model.OrderId là Đã giao?')">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="orderId" value="@Model.OrderId" />
-                    <label class="form-label text-muted fw-500 mb-1" style="font-size:.8rem">Gán shipper</label>
-                    <div class="input-group input-group-sm">
-                        <select name="shipperUserId" class="form-select" style="font-size:.875rem" @(canAssign ? "" : "disabled")>
-                            <option value="">— Chọn shipper —</option>
-                            @foreach (var sp in shippers)
-                            {
-                                <option value="@sp.UserId">@sp.Name</option>
-                            }
-                        </select>
-                        <button type="submit" class="btn btn-primary"
-                                style="border-radius:0 6px 6px 0;font-size:.875rem" @(canAssign ? "" : "disabled")>
-                            <i class="bi bi-truck"></i>
-                        </button>
-                    </div>
-                    @if (canAssign && shippers.Count == 0)
-                    {
-                        <div class="text-warning small mt-1"><i class="bi bi-exclamation-triangle"></i> Chưa có shipper nào đang hoạt động.</div>
-                    }
+                    <button type="submit" class="btn btn-success w-100"
+                            style="border-radius:6px;font-size:.875rem" @(canDeliver ? "" : "disabled")>
+                        <i class="bi bi-check-circle me-1"></i>Đánh dấu Đã giao
+                    </button>
                 </form>
 
                 <hr class="my-3" />
@@ -275,10 +215,6 @@
                             Xác nhận hủy đơn
                         </button>
                     </form>
-                </div>
-
-                <div class="mt-3 text-muted" style="font-size:.78rem">
-                    <i class="bi bi-info-circle me-1"></i>Sau khi gán shipper, các bước <strong>Đang giao / Đã giao / Giao thất bại</strong> sẽ do shipper cập nhật trong khu vực Shipper.
                 </div>
             </div>
         </div>
