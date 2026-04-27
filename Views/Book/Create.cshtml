@@ -61,52 +61,27 @@
                     @* Giá & Tồn kho *@
                     @if (canSetPrice)
                     {
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label asp-for="Price" class="form-label fw-semibold">Giá bán (đ) <span class="text-danger">*</span></label>
                             <input asp-for="Price" class="form-control" type="number" min="0" step="any" placeholder="0" />
                         </div>
-                        <div class="col-md-4">
-                            <label asp-for="PromotionalPrice" class="form-label fw-semibold">Giá khuyến mãi (đ)</label>
-                            <input asp-for="PromotionalPrice" class="form-control" type="number" min="0" step="any" placeholder="Để trống nếu không có" />
-                        </div>
                     }
                     else
                     {
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label class="form-label fw-semibold">Giá bán (đ)</label>
                             <input class="form-control" type="text" value="Chỉ Manager mới được đặt" disabled />
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Giá khuyến mãi (đ)</label>
-                            <input class="form-control" type="text" value="Chỉ Manager mới được đặt" disabled />
-                        </div>
-                    }
-                    <div class="col-md-4">
-                        <label asp-for="Stock" class="form-label fw-semibold">Tồn kho</label>
-                        <input asp-for="Stock" class="form-control" type="number" min="0" placeholder="0" />
-                    </div>
-
-                    @* Ngày khuyến mãi *@
-                    @if (canSetPrice)
-                    {
-                        <div class="col-md-6">
-                            <label asp-for="PromotionalStartsAt" class="form-label fw-semibold">KM từ ngày</label>
-                            <input asp-for="PromotionalStartsAt" id="promoStart" class="form-control" type="datetime-local" />
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="PromotionalEndsAt" class="form-label fw-semibold">KM đến ngày</label>
-                            <input asp-for="PromotionalEndsAt" id="promoEnd" class="form-control" type="datetime-local" />
-                            <span id="promoDateError" class="text-danger small d-none">Ngày kết thúc phải sau ngày bắt đầu.</span>
-                        </div>
-                    }
-                    else
-                    {
                         <div class="col-12">
                             <div class="alert alert-warning py-2 mb-0">
-                                <i class="bi bi-lock me-1"></i> Giá bán và thông tin khuyến mãi chỉ Manager mới có quyền thiết lập.
+                                <i class="bi bi-lock me-1"></i> Giá bán chỉ Manager mới có quyền thiết lập.
                             </div>
                         </div>
                     }
+                    <div class="col-md-6">
+                        <label asp-for="Stock" class="form-label fw-semibold">Tồn kho</label>
+                        <input asp-for="Stock" class="form-control" type="number" min="0" placeholder="0" />
+                    </div>
 
                     @* Ảnh bìa: URL *@
                     <div class="col-12">
@@ -173,23 +148,5 @@
             urlInput.addEventListener('input', showUrlPreview);
         })();
 
-        (function () {
-            var start = document.getElementById('promoStart');
-            var end = document.getElementById('promoEnd');
-            var err = document.getElementById('promoDateError');
-            if (!start || !end) return;
-
-            function validate() {
-                if (start.value && end.value && end.value <= start.value) {
-                    err.classList.remove('d-none');
-                    end.setCustomValidity('invalid');
-                } else {
-                    err.classList.add('d-none');
-                    end.setCustomValidity('');
-                }
-            }
-            start.addEventListener('change', validate);
-            end.addEventListener('change', validate);
-        })();
     </script>
 }

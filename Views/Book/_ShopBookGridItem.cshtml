@@ -1,7 +1,7 @@
 @model BookStore.Dtos.Common.BookDto
 @{
     var cover = BookCoverHelper.ResolveCoverPath(Model.ImageUrl);
-    var price = Model.EffectivePrice;
+    var price = Model.Price;
     var isbn = $"978-604-{Model.BookId:D6}";
 }
 <li>

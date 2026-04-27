@@ -88,8 +88,8 @@ namespace BookStore.Controllers
 
             query = order switch
             {
-                "price_asc" => query.OrderBy(b => b.EffectivePrice),
-                "price_desc" => query.OrderByDescending(b => b.EffectivePrice),
+                "price_asc" => query.OrderBy(b => b.Price),
+                "price_desc" => query.OrderByDescending(b => b.Price),
                 "title" => query.OrderBy(b => b.Title),
                  _ => query.OrderByDescending(b => b.CreatedAt ?? DateTime.MinValue)
             };
@@ -179,12 +179,7 @@ namespace BookStore.Controllers
         {
             bool canSetPrice = User.IsInRole("Manager");
             if (!canSetPrice)
-            {
                 dto.Price = 0;
-                dto.PromotionalPrice = null;
-                dto.PromotionalStartsAt = null;
-                dto.PromotionalEndsAt = null;
-            }
 
             var errors = new List<string>();
 
@@ -203,8 +198,6 @@ namespace BookStore.Controllers
             {
                 if (dto.Price < 0 || dto.Price > 999999999)
                     errors.Add("Giá phải từ 0 đến 999.999.999");
-                if (dto.PromotionalPrice.HasValue && (dto.PromotionalPrice < 0 || dto.PromotionalPrice > 999999999))
-                    errors.Add("Giá khuyến mãi phải từ 0 đến 999.999.999");
             }
 
             if (dto.Stock < 0 || dto.Stock > 999999)
@@ -261,9 +254,6 @@ namespace BookStore.Controllers
                 var existing = await _bookService.GetByIdAsync(id);
                 if (existing == null) return NotFound();
                 dto.Price = existing.Price;
-                dto.PromotionalPrice = existing.PromotionalPrice;
-                dto.PromotionalStartsAt = existing.PromotionalStartsAt;
-                dto.PromotionalEndsAt = existing.PromotionalEndsAt;
             }
 
             var errors = new List<string>();
@@ -283,8 +273,6 @@ namespace BookStore.Controllers
             {
                 if (dto.Price < 0 || dto.Price > 999999999)
                     errors.Add("Giá phải từ 0 đến 999.999.999");
-                if (dto.PromotionalPrice.HasValue && (dto.PromotionalPrice < 0 || dto.PromotionalPrice > 999999999))
-                    errors.Add("Giá khuyến mãi phải từ 0 đến 999.999.999");
             }
 
             if (dto.Stock < 0 || dto.Stock > 999999)
