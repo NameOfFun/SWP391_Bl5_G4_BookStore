@@ -2,17 +2,10 @@ namespace BookStore.Dtos.Common
 {
     public class BookDto
     {
-<<<<<<< HEAD
        public int BookId { get; set; }
-=======
-        public int BookId { get; set; }
->>>>>>> 37e1c54 (fix code model state)
         public string Title { get; set; } = null!;
         public string? Description { get; set; }
         public decimal Price { get; set; }
-        public decimal? PromotionalPrice { get; set; }
-        public DateTime? PromotionalStartsAt { get; set; }
-        public DateTime? PromotionalEndsAt { get; set; }
         public int Stock { get; set; }
         public int? CategoryId { get; set; }
         public int? AuthorId { get; set; }
@@ -26,11 +19,5 @@ namespace BookStore.Dtos.Common
         public List<string> TagNames { get; set; } = new();
         public DateTime? CreatedAt { get; set; }
 
-        public bool IsPromoActive =>
-            PromotionalPrice.HasValue
-            && (!PromotionalStartsAt.HasValue || PromotionalStartsAt.Value <= DateTime.Now)
-            && (!PromotionalEndsAt.HasValue || PromotionalEndsAt.Value >= DateTime.Now);
-
-        public decimal EffectivePrice => IsPromoActive ? PromotionalPrice!.Value : Price;
     }
 }

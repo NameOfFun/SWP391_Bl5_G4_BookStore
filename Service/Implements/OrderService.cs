@@ -54,7 +54,7 @@ public class OrderService : IOrderService
                 BookId = book.BookId,
                 Title = book.Title ?? "Sách",
                 CoverUrl = BookCoverHelper.ResolveCoverPath(book.ImageUrl),
-                UnitPrice = PricingHelper.GetEffectiveUnitPrice(book),
+                UnitPrice = book.Price ?? 0,
                 Quantity = qty
             });
         }
@@ -112,7 +112,7 @@ public class OrderService : IOrderService
             if (stock < item.Quantity)
                 return (false, $"Sách \"{item.Book.Title}\" chỉ còn {stock} cuốn, không đủ cho đơn hàng.", 0);
 
-            validLines.Add((item, item.Book, PricingHelper.GetEffectiveUnitPrice(item.Book)));
+            validLines.Add((item, item.Book, item.Book.Price ?? 0));
         }
 
         if (validLines.Count == 0)
@@ -438,7 +438,7 @@ public class OrderService : IOrderService
             if (book == null || !book.IsActive) continue;
             var stock = book.Stock ?? 0;
             if (stock < 1) continue;
-            subTotal += PricingHelper.GetEffectiveUnitPrice(book) * Math.Min(item.Quantity, stock);
+            subTotal += book.Price ?? 0 * Math.Min(item.Quantity, stock);
         }
 
         if (subTotal <= 0) return (false, 0, "Giỏ hàng trống.");

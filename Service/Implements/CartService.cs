@@ -71,15 +71,14 @@ public class CartService : ICartService
                 removed = true;
             }
 
-            var unit = PricingHelper.GetEffectiveUnitPrice(book);
             lines.Add(new CartLineViewModel
             {
                 CartItemId = item.CartItemId,
                 BookId = book.BookId,
                 Title = book.Title ?? "Sách",
                 CoverUrl = BookCoverHelper.ResolveCoverPath(book.ImageUrl),
-                UnitPrice = unit,
-                ListPrice = PricingHelper.GetDisplayListPrice(book),
+                UnitPrice = book.Price ?? 0,
+                ListPrice = null,
                 Quantity = item.Quantity,
                 Stock = stock,
                 BookActive = book.IsActive

@@ -1,8 +1,7 @@
 @model BookStore.Dtos.Common.BookDto
 @{
     var cover = BookCoverHelper.ResolveCoverPath(Model.ImageUrl);
-    var price = Model.EffectivePrice;
-    var oldPrice = Model.IsPromoActive ? Model.Price : (decimal?)null;
+    var price = Model.Price;
     var excerpt = Model.Description;
     if (!string.IsNullOrEmpty(excerpt) && excerpt.Length > 220)
         excerpt = excerpt[..220] + "…";
@@ -31,7 +30,7 @@
                     <div class="col-sm-6">
                         <ul>
                             <li><strong>Danh mục:</strong> @(Model.CategoryName ?? "—")</li>
-                            <li><strong>Giá:</strong> @price.ToString("N0") đ @if (oldPrice.HasValue) { <span class="text-muted" style="text-decoration:line-through;font-size:12px">@oldPrice.Value.ToString("N0") đ</span> }</li>
+                            <li><strong>Giá:</strong> @price.ToString("N0") đ</li>
                             <li>
                                 <div class="rating">
                                     <strong>Đánh giá: </strong>

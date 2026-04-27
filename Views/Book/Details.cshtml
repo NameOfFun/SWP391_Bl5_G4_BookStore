@@ -4,8 +4,7 @@
     Layout = "~/Views/Shared/_LayoutAuth.cshtml";
     ViewData["Title"] = Model.Title;
 
-    var effectivePrice = Model.EffectivePrice;
-    var listPrice = Model.IsPromoActive ? Model.Price : (decimal?)null;
+    var effectivePrice = Model.Price;
     var coverUrl = ViewBag.CoverUrl as string ?? "/images/header-slider/home-v1/header-slide.jpg";
     var isbn = $"978-604-{Model.BookId:D6}";
     var maxQty = Math.Min(Math.Max(0, Model.Stock), 1000);
@@ -70,10 +69,6 @@
                                             }
                                             <div class="shop-price-row">
                                                 <span class="shop-price">@effectivePrice.ToString("N0") đ</span>
-                                                @if (listPrice.HasValue)
-                                                {
-                                                    <span class="shop-price-was">@listPrice.Value.ToString("N0") đ</span>
-                                                }
                                             </div>
                                             @if (canAddToCart && isLoggedIn)
                                             {

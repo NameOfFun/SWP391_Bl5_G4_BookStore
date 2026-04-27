@@ -45,10 +45,6 @@ namespace BookStore.Service.Implements
             if (string.IsNullOrWhiteSpace(title))
                 throw new ArgumentException("Tiêu đề không được để trống");
 
-            if (dto.PromotionalStartsAt.HasValue && dto.PromotionalEndsAt.HasValue
-                && dto.PromotionalStartsAt.Value >= dto.PromotionalEndsAt.Value)
-                throw new ArgumentException("Ngày bắt đầu khuyến mãi phải trước ngày kết thúc.");
-
             var authorId = await ResolveAuthorIdAsync(dto.AuthorName, userId);
 
             var entity = new Book
@@ -56,9 +52,6 @@ namespace BookStore.Service.Implements
                 Title = title,
                 Description = dto.Description,
                 Price = dto.Price,
-                PromotionalPrice = dto.PromotionalPrice,
-                PromotionalStartsAt = dto.PromotionalStartsAt,
-                PromotionalEndsAt = dto.PromotionalEndsAt,
                 Stock = dto.Stock,
                 CategoryId = dto.CategoryId,
                 AuthorId = authorId,
@@ -97,18 +90,11 @@ namespace BookStore.Service.Implements
             if (string.IsNullOrWhiteSpace(title))
                 throw new ArgumentException("Tiêu đề không được để trống", nameof(dto));
 
-            if (dto.PromotionalStartsAt.HasValue && dto.PromotionalEndsAt.HasValue
-                && dto.PromotionalStartsAt.Value >= dto.PromotionalEndsAt.Value)
-                throw new ArgumentException("Ngày bắt đầu khuyến mãi phải trước ngày kết thúc.");
-
             var authorId = await ResolveAuthorIdAsync(dto.AuthorName, userId);
 
             entity.Title = title;
             entity.Description = dto.Description;
             entity.Price = dto.Price;
-            entity.PromotionalPrice = dto.PromotionalPrice;
-            entity.PromotionalStartsAt = dto.PromotionalStartsAt;
-            entity.PromotionalEndsAt = dto.PromotionalEndsAt;
             entity.Stock = dto.Stock;
             entity.CategoryId = dto.CategoryId;
             entity.AuthorId = authorId;
@@ -198,9 +184,6 @@ namespace BookStore.Service.Implements
             Title = b.Title ?? string.Empty,
             Description = b.Description,
             Price = b.Price ?? 0,
-            PromotionalPrice = b.PromotionalPrice,
-            PromotionalStartsAt = b.PromotionalStartsAt,
-            PromotionalEndsAt = b.PromotionalEndsAt,
             Stock = b.Stock ?? 0,
             CategoryId = b.CategoryId,
             AuthorId = b.AuthorId,

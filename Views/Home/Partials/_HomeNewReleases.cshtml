@@ -61,7 +61,7 @@
                     var cover = BookCoverHelper.ResolveCoverPath(book.ImageUrl);
                     var isbn = $"978-604-{book.BookId:D6}";
                     var excerpt = Excerpt(book.Description);
-                    var price = book.PromotionalPrice ?? book.Price;
+                    var price = book.Price;
                     <li class="@MixFilterClass(book)">
                         <figure>
                             <img src="@cover" alt="@book.Title" />
