@@ -22,7 +22,7 @@ public class RegisterDto
     [Compare("Password", ErrorMessage = "Mật khẩu xác nhận không khớp")]
     public string ConfirmPassword { get; set; } = string.Empty;
 
-    [MaxLength(20, ErrorMessage = "Số điện thoại không được vượt quá 20 ký tự")]
+    [RegularExpression(@"^\d{10}$", ErrorMessage = "Số điện thoại phải gồm đúng 10 chữ số")]
     public string? PhoneNumber { get; set; }
 
     [MaxLength(500, ErrorMessage = "Địa chỉ không được vượt quá 500 ký tự")]
