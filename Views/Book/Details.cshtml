@@ -150,41 +150,6 @@
                                     <p style="margin-top:20px;line-height:1.7"><strong>Mô tả:</strong> @Model.Description</p>
                                 }
 
-                                <div class="table-tabs" id="responsiveTabs" style="margin-top:28px">
-                                    <ul class="nav nav-tabs">
-                                        <li class="active"><b class="arrow-up"></b><a data-toggle="tab" href="#tab-reviews">Đánh giá &amp; bình luận</a></li>
-                                        <li><b class="arrow-up"></b><a data-toggle="tab" href="#tab-spec">Thông tin thêm</a></li>
-                                    </ul>
-                                    <div class="tab-content" style="padding-top:16px">
-                                        <div id="tab-reviews" class="tab-pane fade in active">
-                                            <p class="text-muted" style="font-size:13px;margin-bottom:16px">Phần dưới là <strong>nội dung tĩnh minh họa</strong> (chưa gắn cơ sở dữ liệu).</p>
-                                            <div class="comment-box">
-                                                <div class="meta">Minh Anh · ★★★★★ · 12/03/2026</div>
-                                                <p>Sách in đẹp, giao hàng nhanh. Nội dung đúng như mô tả, rất đáng đọc lại nhiều lần.</p>
-                                            </div>
-                                            <div class="comment-box">
-                                                <div class="meta">Hải Đăng · ★★★★☆ · 02/03/2026</div>
-                                                <p>Bản dịch ổn, có vài chỗ có thể chỉnh sửa cho mượt hơn nhưng nhìn chung hài lòng.</p>
-                                            </div>
-                                            <div class="comment-box">
-                                                <div class="meta">Thu Trang · ★★★★★ · 20/02/2026</div>
-                                                <p>Đóng gói cẩn thận, tặng kèm bookmark xinh. Sẽ ủng hộ shop tiếp.</p>
-                                            </div>
-                                        </div>
-                                        <div id="tab-spec" class="tab-pane fade">
-                                            <ul class="detail-page-listing">
-                                                <li><strong>Mã sách:</strong> #@Model.BookId</li>
-                                                <li><strong>ISBN (tham khảo):</strong> @isbn</li>
-                                                <li><strong>Danh mục:</strong> @(Model.CategoryName ?? "—")</li>
-                                                @if (Model.CreatedAt.HasValue)
-                                                {
-                                                    <li><strong>Cập nhật gần nhất:</strong> @Model.CreatedAt.Value.ToLocalTime().ToString("dd/MM/yyyy")</li>
-                                                }
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-
                                 @if (canManageBooks)
                                 {
                                     <div class="well" style="margin-top:24px;background:#fafafa;border-radius:6px">

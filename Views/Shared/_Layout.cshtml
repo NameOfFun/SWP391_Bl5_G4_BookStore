@@ -335,14 +335,6 @@
                 </a>
             </div>
         }
-
-        <!-- Cấu Hình Chung -->
-        <div class="nav-item-group">
-            <a class="nav-link-item" href="#">
-                <i class="bi bi-gear nav-icon"></i>
-                <span class="nav-label">Cấu Hình Chung</span>
-            </a>
-        </div>
     </div>
 
     <div class="sidebar-footer">
@@ -373,11 +365,6 @@
         </nav>
 
         <div class="header-right">
-            <button class="notif-btn" title="Thông báo">
-                <i class="bi bi-bell"></i>
-                <span class="notif-badge"></span>
-            </button>
-
             @if (SignInManager.IsSignedIn(User))
             {
                 var currentUser = await UserManager.GetUserAsync(User);
