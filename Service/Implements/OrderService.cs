@@ -457,7 +457,15 @@ public class OrderService : IOrderService
             if (book == null || !book.IsActive) continue;
             var stock = book.Stock ?? 0;
             if (stock < 1) continue;
-            subTotal += book.Price ?? 0 * Math.Min(item.Quantity, stock);
+
+            if(book.Price is null)
+            {
+                subTotal += 0;
+            } else
+            {
+                subTotal += (decimal)(book.Price * Math.Min(item.Quantity, stock));
+            }
+                //subTotal += book.Price ?? 0 * Math.Min(item.Quantity, stock);
         }
 
         if (subTotal <= 0) return (false, 0, "Giỏ hàng trống.");

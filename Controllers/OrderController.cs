@@ -7,7 +7,7 @@ using System.Security.Claims;
 
 namespace BookStore.Controllers;
 
-[Authorize]
+[Authorize(Roles = "Staff")]
 public class OrderController : Controller
 {
     private readonly IOrderService _orderService;
@@ -173,7 +173,7 @@ public class OrderController : Controller
 
     // GET /Order/Details/{id}
     [HttpGet]
-    [Authorize(Roles = "Staff,Manager,Admin")]
+    [Authorize(Roles = "Staff")]
     public async Task<IActionResult> Details(int id)
     {
         if (id <= 0) return NotFound();
@@ -188,7 +188,7 @@ public class OrderController : Controller
 
     // POST /Order/Confirm
     [HttpPost, ValidateAntiForgeryToken]
-    [Authorize(Roles = "Staff,Manager,Admin")]
+    [Authorize(Roles = "Staff")]
     public async Task<IActionResult> Confirm(int orderId)
     {
         var (ok, msg) = await _orderService.ConfirmAsync(orderId);
@@ -198,7 +198,7 @@ public class OrderController : Controller
 
     // POST /Order/MoveToProcessing
     [HttpPost, ValidateAntiForgeryToken]
-    [Authorize(Roles = "Staff,Manager,Admin")]
+    [Authorize(Roles = "Staff")]
     public async Task<IActionResult> MoveToProcessing(int orderId)
     {
         var (ok, msg) = await _orderService.MoveToProcessingAsync(orderId);
@@ -208,7 +208,7 @@ public class OrderController : Controller
 
     // POST /Order/MarkDelivered
     [HttpPost, ValidateAntiForgeryToken]
-    [Authorize(Roles = "Staff,Manager,Admin")]
+    [Authorize(Roles = "Staff")]
     public async Task<IActionResult> MarkDelivered(int orderId)
     {
         var (ok, msg) = await _orderService.MarkDeliveredAsync(orderId);
@@ -218,7 +218,7 @@ public class OrderController : Controller
 
     // POST /Order/Cancel
     [HttpPost, ValidateAntiForgeryToken]
-    [Authorize(Roles = "Staff,Manager,Admin")]
+    [Authorize(Roles = "Staff")]
     public async Task<IActionResult> Cancel(int orderId, string? reason)
     {
         if (!string.IsNullOrEmpty(reason) && reason.Length > MaxCancelReasonLength)
