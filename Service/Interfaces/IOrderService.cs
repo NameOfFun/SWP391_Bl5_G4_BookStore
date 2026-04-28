@@ -26,7 +26,7 @@ public interface IOrderService
     Task<(bool Ok, string Message)> MarkDeliveredAsync(int orderId);
 
     /// <summary>Hủy đơn (chỉ từ Pending/Confirmed/Processing). Tự hoàn kho và khôi phục giỏ hàng.</summary>
-    Task<(bool Ok, string Message)> CancelAsync(int orderId, string? reason);
+    Task<(bool Ok, string Message)> CancelAsync(int orderId, string? reason, string? cancelledByUserId);
 
     Task<(bool Ok, decimal DiscountAmount, string Message)> ApplyVoucherAsync(string userId, string code);
 }

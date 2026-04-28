@@ -75,13 +75,6 @@
                                         <a asp-controller="Book" asp-action="Details" asp-route-id="@line.BookId" style="font-weight:600">@line.Title</a>
                                         <div class="text-muted small">Còn @line.Stock cuốn</div>
                                     </td>
-                                    <td class="text-right">
-                                        <span style="color:#ff7236;font-weight:700">@line.UnitPrice.ToString("N0") đ</span>
-                                        @if (line.ListPrice.HasValue)
-                                        {
-                                            <div class="text-muted" style="font-size:12px;text-decoration:line-through">@line.ListPrice.Value.ToString("N0") đ</div>
-                                        }
-                                    </td>
                                     <td class="text-center">
                                         <form asp-action="Update" method="post" class="cart-line-update-form" style="margin:0">
                                             @Html.AntiForgeryToken()
