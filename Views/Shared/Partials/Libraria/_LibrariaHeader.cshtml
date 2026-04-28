@@ -1,9 +1,13 @@
 @using System.Security.Claims
 @inject BookStore.Service.Interfaces.ICartService CartService
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
 @{
     var useInnerHeader = ViewData["LibrariaInnerHeader"] as bool? ?? true;
     var headerClass = useInnerHeader ? "navbar-wrapper inner-navbar-wrapper" : "navbar-wrapper";
     var headerCartQty = 0;
+    var currentUser = User.Identity?.IsAuthenticated == true ? await UserManager.GetUserAsync(User) : null;
+    var displayName = currentUser?.Name ?? currentUser?.UserName ?? User.Identity?.Name ?? "User";
     if (User.Identity?.IsAuthenticated == true && User is ClaimsPrincipal cp)
     {
         var uid = cp.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -45,7 +49,7 @@
                                         @if (User.Identity?.IsAuthenticated == true)
                                         {
                                             <a asp-controller="Account" asp-action="Profile">
-                                                <i class="fa fa-user"></i>@User.Identity.Name
+                                                <i class="fa fa-user"></i>@displayName
                                             </a>
                                             <span>|</span>
                                             <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm" style="display:inline;">
