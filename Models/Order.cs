@@ -31,6 +31,12 @@ public class Order
 
     public string? PaymentStatus { get; set; }
 
+    public string? CancelReason { get; set; }
+
+    public DateTime? CancelledAt { get; set; }
+
+    public string? CancelledByUserId { get; set; }
+
     public virtual Voucher? Voucher { get; set; }
 
     public virtual ICollection<OrderDetail> Details { get; set; } = new List<OrderDetail>();

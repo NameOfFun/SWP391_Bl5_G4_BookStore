@@ -78,7 +78,6 @@ public class CartService : ICartService
                 Title = book.Title ?? "Sách",
                 CoverUrl = BookCoverHelper.ResolveCoverPath(book.ImageUrl),
                 UnitPrice = book.Price ?? 0,
-                ListPrice = null,
                 Quantity = item.Quantity,
                 Stock = stock,
                 BookActive = book.IsActive

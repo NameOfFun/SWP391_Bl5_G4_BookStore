@@ -282,6 +282,9 @@ public class OrderService : IOrderService
             SubTotal = order.SubTotal,
             DiscountAmount = order.DiscountAmount,
             GrandTotal = order.GrandTotal,
+            CancelReason = order.CancelReason,
+            CancelledAt = order.CancelledAt,
+            CancelledByUserId = order.CancelledByUserId,
             Items = order.Details.Select(d => new OrderDetailLineDto
             {
                 BookId = d.BookId,
@@ -370,12 +373,25 @@ public class OrderService : IOrderService
 
         order.Status = OrderStatus.Delivered;
         order.PaymentStatus = OrderPaymentStatuses.Paid;
+
+        // Ghi nhận thanh toán Cod vào bảng payment
+        _db.Payments.Add(new Payment
+        {
+            OrderId = orderId,
+            Amount = order.GrandTotal,
+            Currency = "VND",
+            Channel = PaymentChannel.CashOnDelivery,
+            Status = PaymentRecordStatus.Completed,
+            PaidAt = DateTime.Now,
+            CreatedAt = DateTime.Now
+        });
+        
         await _db.SaveChangesAsync();
         return (true, $"Đơn #{orderId} đã giao thành công và ghi nhận thu tiền.");
     }
 
     // Issue 5: restore cart items after cancellation
-    public async Task<(bool Ok, string Message)> CancelAsync(int orderId, string? reason)
+    public async Task<(bool Ok, string Message)> CancelAsync(int orderId, string? reason, string? cancelledByUserId)
     {
         var order = await _db.Orders
             .Include(o => o.Details).ThenInclude(d => d.Book)
@@ -405,7 +421,10 @@ public class OrderService : IOrderService
                 voucher.TimesUsed--;
         }
 
-        order.Status = OrderStatus.Cancelled;
+        order.Status             = OrderStatus.Cancelled;
+        order.CancelReason       = reason;
+        order.CancelledAt        = DateTime.Now;
+        order.CancelledByUserId  = cancelledByUserId;
         await _db.SaveChangesAsync();
 
         // Khôi phục giỏ hàng (bỏ qua sách đã ngừng bán hoặc hết hàng)

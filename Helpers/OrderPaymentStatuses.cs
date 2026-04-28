@@ -5,7 +5,7 @@ public static class OrderPaymentStatuses
 {
     public const string Pending = "Pending";
     public const string Paid = "Paid";
-
+    public const string Unpaid = "Unpaid";
     public static bool IsPaid(string? status) =>
         string.Equals(status, Paid, StringComparison.OrdinalIgnoreCase);
 

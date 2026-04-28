@@ -7,7 +7,6 @@ public class CartLineViewModel
     public string Title { get; set; } = "";
     public string CoverUrl { get; set; } = "";
     public decimal UnitPrice { get; set; }
-    public decimal? ListPrice { get; set; }
     public int Quantity { get; set; }
     public int Stock { get; set; }
     public bool BookActive { get; set; } = true;

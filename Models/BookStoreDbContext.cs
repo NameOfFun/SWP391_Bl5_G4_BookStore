@@ -203,7 +203,10 @@ public partial class BookStoreDbContext : IdentityDbContext<ApplicationUser, App
             entity.Property(e => e.ShippingAddress).HasMaxLength(500);
             entity.Property(e => e.PaymentMethod).HasMaxLength(50);
             entity.Property(e => e.PaymentStatus).HasMaxLength(50);
+            entity.Property(e => e.CancelReason).HasMaxLength(500);
+            entity.Property(e => e.CancelledAt).HasColumnType("datetime");
             entity.HasOne<ApplicationUser>().WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne<ApplicationUser>().WithMany().HasForeignKey(e => e.CancelledByUserId).IsRequired(false).OnDelete(DeleteBehavior.SetNull);
             entity.HasOne(e => e.Voucher).WithMany(v => v.Orders).HasForeignKey(e => e.VoucherId).OnDelete(DeleteBehavior.SetNull);
         });
 

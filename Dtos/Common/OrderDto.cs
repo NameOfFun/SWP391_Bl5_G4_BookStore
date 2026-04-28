@@ -86,6 +86,10 @@ public class OrderDetailDto
     public string? PaymentMethod { get; set; }
     public string? PaymentStatus { get; set; }
 
+    public string? CancelReason { get; set; }
+    public DateTime? CancelledAt { get; set; }
+    public string? CancelledByUserId { get; set; }
+
     public string? VoucherCode { get; set; }
     public decimal SubTotal { get; set; }
     public decimal DiscountAmount { get; set; }

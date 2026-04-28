@@ -224,7 +224,7 @@ public class OrderController : Controller
         if (!string.IsNullOrEmpty(reason) && reason.Length > MaxCancelReasonLength)
             reason = reason[..MaxCancelReasonLength];
 
-        var (ok, msg) = await _orderService.CancelAsync(orderId, reason);
+        var (ok, msg) = await _orderService.CancelAsync(orderId, reason, UserId);
         TempData[ok ? "Success" : "Error"] = msg;
         return RedirectToAction(nameof(Details), new { id = orderId });
     }
