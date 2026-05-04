@@ -85,14 +85,13 @@
                                 </li>
                                 <li class="dropdown">
                                     <a data-toggle="dropdown" class="dropdown-toggle disabled" asp-controller="Book" asp-action="Shop">Sách</a>
-                                    <ul class="dropdown-menu">
-                                        <li><a asp-controller="Book" asp-action="Categories">Theo danh mục (bảng)</a></li>
-                                        <li><a asp-controller="Book" asp-action="Shop">Danh sách sách</a></li>
                                         @if (User.IsInRole("Admin") || User.IsInRole("Manager") || User.IsInRole("Staff"))
-                                        {
-                                            <li><a asp-controller="Book" asp-action="Index">CMS</a></li>
+                                        { 
+                                            <ul class="dropdown-menu">
+                                                <li><a asp-controller="Book" asp-action="Shop">Danh sách sách</a></li>
+                                                <li><a asp-controller="Book" asp-action="Index">CMS</a></li>
+                                            </ul>
                                         }
-                                    </ul>
                                 </li>
                                 <li class="dropdown">
                                     <a data-toggle="dropdown" class="dropdown-toggle disabled" asp-controller="About" asp-action="Index">Tin tức</a>
@@ -107,7 +106,6 @@
                                         <li><a asp-controller="Order" asp-action="MyOrders">Đơn hàng của tôi</a></li>
                                     </ul>
                                 </li>
-                                <li><a asp-controller="About" asp-action="Index">Liên hệ</a></li>
                                 @if (User.IsInRole("Admin"))
                                 {
                                     <li><a asp-controller="User" asp-action="Index">Quản lý Admin</a></li>

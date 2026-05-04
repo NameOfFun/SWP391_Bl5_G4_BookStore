@@ -56,10 +56,17 @@ namespace BookStore.Controllers
         /// <summary>Quản lý CRUD — Admin, Staff, Manager.</summary>
         [Authorize(Roles = "Admin,Staff,Manager")]
         [HttpGet]
-        public async Task<IActionResult> Manage()
+        public async Task<IActionResult> Manage(string? search)
         {
             ViewData["Title"] = "Quản lý Giới thiệu / Tin tức";
-            return View(await _aboutService.GetAllAboutAsync());
+            ViewData["Search"] = search;
+
+            var all = await _aboutService.GetAllAboutAsync();
+
+            if (!string.IsNullOrWhiteSpace(search))
+                all = all.Where(x => x.Title.Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            return View(all);
         }
 
         [Authorize(Roles = "Admin,Staff,Manager")]
