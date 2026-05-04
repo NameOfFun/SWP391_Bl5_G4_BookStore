@@ -34,11 +34,6 @@
 
     @RenderBody()
 
-    @if (ViewData["HideLibrariaSocial"] as bool? != true)
-    {
-        @await Html.PartialAsync("Partials/Libraria/_LibrariaSocial")
-    }
-
     @await Html.PartialAsync("Partials/Libraria/_LibrariaFooter")
 
     <!-- Scripts (thứ tự theo wwwroot/index.html — rút gọn file có sẵn + MixItUp CDN) -->

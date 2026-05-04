@@ -8,7 +8,6 @@
     var totalActive = ViewBag.TotalActiveCount as int? ?? 0;
     var categoryId = ViewBag.CategoryId as int?;
     var search = ViewBag.Search as string;
-    var viewMode = ViewBag.ViewMode as string ?? "list";
     var order = ViewBag.Order as string ?? "newest";
     var total = ViewBag.TotalCount as int? ?? Model.Count;
 }
@@ -57,8 +56,7 @@
                                 <div class="filter-box">
                                     <h3>Bạn đang tìm cuốn sách nào?</h3>
                                     <form asp-action="Shop" method="get" id="shopFilterForm">
-                                        <input type="hidden" name="view" value="@viewMode" />
-                                        <div class="col-md-4 col-sm-6">
+<div class="col-md-4 col-sm-6">
                                             <div class="form-group">
                                                 <label class="sr-only" for="shop-q">Từ khóa</label>
                                                 <input class="form-control" placeholder="Tìm theo tên sách" id="shop-q" name="q" type="search" maxlength="200" autocomplete="off" value="@search" />
@@ -115,35 +113,17 @@
                                             @(string.IsNullOrEmpty(search) ? "" : "Từ khóa: \"" + search + "\"")
                                         </div>
                                     </div>
-                                    <div class="col-md-3 col-sm-3 pull-right">
-                                        <div class="filter-toggle">
-                                            <a asp-action="Shop" asp-route-q="@search" asp-route-categoryId="@categoryId" asp-route-order="@order" asp-route-view="grid" class="@(viewMode == "grid" ? "active" : null)"><i class="glyphicon glyphicon-th-large"></i></a>
-                                            <a asp-action="Shop" asp-route-q="@search" asp-route-categoryId="@categoryId" asp-route-order="@order" asp-route-view="list" class="@(viewMode == "list" ? "active" : null)"><i class="glyphicon glyphicon-th-list"></i></a>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
 
-                            @if (viewMode == "grid")
-                            {
-                                <div class="books-gird">
-                                    <ul>
-                                        @foreach (var book in Model)
-                                        {
-                                            @await Html.PartialAsync("_ShopBookGridItem", book)
-                                        }
-                                    </ul>
-                                </div>
-                            }
-                            else
-                            {
-                                <div class="books-list">
+                            <div class="books-gird">
+                                <ul>
                                     @foreach (var book in Model)
                                     {
-                                        @await Html.PartialAsync("_ShopBookListItem", book)
+                                        @await Html.PartialAsync("_ShopBookGridItem", book)
                                     }
-                                </div>
-                            }
+                                </ul>
+                            </div>
 
                             @if (!Model.Any())
                             {
@@ -167,13 +147,6 @@
                                             </ul>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="widget">
-                                    <h4 class="widget-title">Xem thêm</h4>
-                                    <ul class="list-unstyled">
-                                        <li><a asp-action="Categories"><i class="fa fa-th-large"></i> Sách theo nhóm danh mục</a></li>
-                                        <li><a asp-controller="Home" asp-action="Index"><i class="fa fa-home"></i> Trang chủ</a></li>
-                                    </ul>
                                 </div>
                             </aside>
                         </div>
