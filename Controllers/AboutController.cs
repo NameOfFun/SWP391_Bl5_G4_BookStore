@@ -73,7 +73,7 @@ namespace BookStore.Controllers
         [HttpGet]
         public IActionResult Create() => View(new AboutDto());
 
-        [Authorize(Roles = "Admin,Staff,Manager")]
+        [Authorize(Roles = "Staff")]
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(AboutDto dto)
         {
@@ -100,7 +100,7 @@ namespace BookStore.Controllers
             }
         }
 
-        [Authorize(Roles = "Staff,Manager")]
+        [Authorize(Roles = "Staff")]
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
@@ -113,7 +113,7 @@ namespace BookStore.Controllers
             return View(about);
         }
 
-        [Authorize(Roles = "Staff,Manager")]
+        [Authorize(Roles = "Staff")]
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, AboutDto dto)
         {
@@ -152,7 +152,7 @@ namespace BookStore.Controllers
             }
         }
 
-        [Authorize(Roles = "Staff,Manager")]
+        [Authorize(Roles = "Staff")]
         [HttpGet]
         public async Task<IActionResult> Delete(int id)
         {
@@ -165,7 +165,7 @@ namespace BookStore.Controllers
             return View(about);
         }
 
-        [Authorize(Roles = "Staff,Manager")]
+        [Authorize(Roles = "Staff")]
         [HttpPost, ActionName("Delete"), ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
