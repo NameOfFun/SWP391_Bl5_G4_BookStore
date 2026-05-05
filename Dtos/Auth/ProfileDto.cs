@@ -21,6 +21,7 @@ public class ProfileDto
 
 public class EditProfileDto
 {
+    [Required (ErrorMessage = "Tên không được để trống")]
     [MaxLength(100, ErrorMessage = "Tên không được vượt quá 100 ký tự")]
     public string? Name { get; set; }
     [RegularExpression(@"^\d{10}$", ErrorMessage = "Số điện thoại phải gồm đúng 10 chữ số")]
