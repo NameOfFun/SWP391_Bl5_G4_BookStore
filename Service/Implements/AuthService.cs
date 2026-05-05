@@ -131,12 +131,15 @@ public class AuthService : IAuthService
         await _signInManager.SignOutAsync();
     }
 
+
     public async Task<bool> IsEmailConfirmedAsync(string userId)
     {
         var user = await _userManager.FindByIdAsync(userId);
         return user != null && await _userManager.IsEmailConfirmedAsync(user);
     }
 
+   
+    
     public async Task<string> GenerateEmailConfirmationTokenAsync(string userId)
     {
         var user = await _userManager.FindByIdAsync(userId);

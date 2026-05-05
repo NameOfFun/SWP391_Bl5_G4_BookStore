@@ -28,6 +28,11 @@ namespace BookStore
                 .AddEntityFrameworkStores<BookStoreDbContext>()
                 .AddDefaultTokenProviders();
 
+            builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
+            {
+                options.TokenLifespan = TimeSpan.FromMinutes(10);
+            });
+
             // DI Services
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IAboutService, AboutService>();
@@ -35,7 +40,7 @@ namespace BookStore
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<IHomeSliderService, HomeSliderService>();
             builder.Services.AddScoped<IBookTagService, BookTagService>();
-builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IRoleService, RoleService>();
             builder.Services.AddScoped<ICartService, CartService>();
             builder.Services.AddScoped<IEmailService, EmailService>();
