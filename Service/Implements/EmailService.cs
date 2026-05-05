@@ -78,7 +78,7 @@ namespace BookStore.Service.Implements
                             Đặt lại mật khẩu
                         </a>
                     </p>
-                        Liên kết này sẽ hết hạn sau 24 giờ.<br/>
+                        Liên kết này sẽ hết hạn sau 10 phút.<br/>
                         Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.
                     </p>
                 </div>

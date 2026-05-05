@@ -317,12 +317,25 @@ public class AccountController : Controller
 
     [HttpGet]
     [AllowAnonymous]
-    public IActionResult ResetPassword(string? email, string? token)
+    public async Task <IActionResult> ResetPassword(string? email, string? token)
     {
         if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(token))
         {
             return RedirectToAction("Login");
         }
+        var user = await _userManager.FindByEmailAsync(email);
+
+        var isValidToken = await _userManager.VerifyUserTokenAsync(
+       user,
+       _userManager.Options.Tokens.PasswordResetTokenProvider,
+       "ResetPassword",
+       token);
+        if (!isValidToken)
+        {
+            TempData["ErrorMessage"] = "Link đặt lại mật khẩu đã hết hạn hoặc không hợp lệ. Vui lòng yêu cầu gửi lại email.";
+            return RedirectToAction("Login");
+        }
+
         var model = new ResetPasswordDto
         {
             Email = email,
